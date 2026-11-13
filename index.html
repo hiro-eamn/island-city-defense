@@ -3324,7 +3324,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月14日','ライフ3つ（ダウンしても2回まではその場で復活）／アイテムを拾い終えてもボタンが残る不具合を修正'],
+  [['2026年11月14日','次の安全エリアが先に分かる（地図の白い点線、場所は毎回ランダム）／プラクティス（ロボットなし）'],
+   ['2026年11月14日','ライフ3つ（ダウンしても2回まではその場で復活）／アイテムを拾い終えてもボタンが残る不具合を修正'],
    ['2026年11月14日','スタジアムシティにジップライン（高いビルの屋上からスタジアム上空を渡る）'],
    ['2026年11月14日','アバターを描き直し（顔・髪型・輪郭、髪型2種を追加）／写真から作ると肌と髪の色が写真どおりになる'],
    ['2026年11月13日','約3分ごとの毒ガスで安全エリアが狭まる／ソロは3回しのぐと最終決戦（30台殲滅）、勝つとクリアで「のるーと利用券」'],
@@ -3403,8 +3404,8 @@ function updMeta(dt,use){
 function metaHud(){
   var g=goalNow();
   var solo=soloRun(),GG=hs&&hs.g,FF=hs&&hs.f;
-  elGoal.textContent='';var b=document.createElement('b');b.textContent=solo?(FF&&FF[0]===1?'最終決戦　ロボット'+FIN_N+'台を殲滅':'目標 毒ガスを3回しのいで最終決戦に勝つ'):'目標 WAVE '+g+' 突破';elGoal.appendChild(b);gasHud();
-  elGoal.appendChild(document.createTextNode((solo?'（毒ガス '+Math.min(3,GG?GG[3]:0)+' / 3回）':'（いま WAVE '+(hs?hs.w:0)+'）')+'　利用券 '+tickets+'　コイン '+Math.floor(coins)+(hasKey?'　駐車場キー':'')));
+  elGoal.textContent='';var b=document.createElement('b');b.textContent=practice?'プラクティス（ロボットも毒ガスも来ません）':solo?(FF&&FF[0]===1?'最終決戦　ロボット'+FIN_N+'台を殲滅':'目標 毒ガスを3回しのいで最終決戦に勝つ'):'目標 WAVE '+g+' 突破';elGoal.appendChild(b);gasHud();
+  elGoal.appendChild(document.createTextNode((practice?'':solo?'（毒ガス '+Math.min(3,GG?GG[3]:0)+' / 3回）':'（いま WAVE '+(hs?hs.w:0)+'）')+'　利用券 '+tickets+'　コイン '+Math.floor(coins)+(hasKey?'　駐車場キー':'')));
   bBand.textContent='包帯 '+bands;bKit.textContent='応急 '+kits;bBand.classList.toggle('none',bands<=0);bKit.classList.toggle('none',kits<=0);
 }
 
@@ -3525,6 +3526,15 @@ function tpsCamera(){ // pull the camera back over the right shoulder; come in c
 
 /* ---------- poison gas that closes in every few minutes, and the solo final battle after the third time ---------- */
 var GAS_R=[420,240,130],GAS_WAIT=180,GAS_MOVE=45,FIN_N=30,gasSeen={},gasIn=false,gasD=0,gasCough=0,finSeen=0,finGen=null,finOn=false,finT=0,gasMesh,gasTex,elGasL,elGasO,elFin,elFinT,elFinB,elFinale,elFinV;
+var practice=false,gasNext,gasDT=0;
+function gasPlanned(G){return !!G&&G[5]<2&&(G[8]<G[2]-0.5||G[6]!==G[0]||G[7]!==G[1]);}
+function gasPlan(G){ // somewhere at random each time: near the players the first time, afterwards anywhere that keeps the new circle inside the old one
+  var n=G[3],tr=GAS_R[Math.min(n,2)],p=alivePlayers()[0]||me,px=p.x,pz=p.z,cx=0,cz=0,i,a,d,lim;
+  if(zoneOf(px,pz).i||!inIsland(px,pz,6)){px=SPAWN.x;pz=SPAWN.z;}
+  if(n===0){for(i=0;i<40;i++){a=Math.random()*6.283;d=Math.sqrt(Math.random())*320;cx=px+Math.cos(a)*d;cz=pz+Math.sin(a)*d;if(inIsland(cx,cz,60))break;}if(i===40){cx=px;cz=pz;}G[0]=cx;G[1]=cz;}
+  else{lim=n>=3?90:(G[2]-tr)*0.92;for(i=0;i<40;i++){a=Math.random()*6.283;d=(0.25+0.75*Math.sqrt(Math.random()))*lim;cx=G[0]+Math.cos(a)*d;cz=G[1]+Math.sin(a)*d;if(inIsland(cx,cz,20))break;}if(i===40){cx=G[0];cz=G[1];}}
+  G[6]=cx;G[7]=cz;G[8]=tr;
+}
 function soloRun(){return NET.mode!=='coop';}
 function gasActive(){var G=hs&&hs.g;return !!G&&(G[3]>0||G[5]===1);}
 function gasFresh(){return [SPAWN.x,SPAWN.z,2600,0,GAS_WAIT,0,SPAWN.x,SPAWN.z,2600];} // centre x z, radius, times closed, timer, phase (0 waiting, 1 closing, 2 held for the final battle), target x z radius
@@ -3539,13 +3549,8 @@ function gasHost(dt){
   }
   G[4]-=dt;
   if(G[5]===0){
-    if(G[4]<=0){ // the gas comes: decide where the safe area will end up, pulled toward a player
-      var n=G[3],tr=GAS_R[Math.min(n,2)],p=alivePlayers()[0]||me,px=p.x,pz=p.z,cx,cz;
-      if(zoneOf(px,pz).i||!inIsland(px,pz,6)){px=SPAWN.x;pz=SPAWN.z;}
-      if(n===0){G[0]=cx=px;G[1]=cz=pz;}
-      else{var lim=n>=3?80:(G[2]-tr)*0.5,dx=px-G[0],dz=pz-G[1],d=Math.hypot(dx,dz)||1,k=Math.min(1,lim/d);cx=G[0]+dx*k;cz=G[1]+dz*k;if(!inIsland(cx,cz,10)){cx=G[0];cz=G[1];}}
-      G[6]=cx;G[7]=cz;G[8]=tr;G[5]=1;G[4]=GAS_MOVE;
-    }
+    if(!gasPlanned(G))gasPlan(G);
+    if(G[4]<=0){G[5]=1;G[4]=GAS_MOVE;}
   }else if(G[5]===1){
     var k2=G[4]>0?Math.min(1,dt/(G[4]+dt)):1;
     G[0]+=(G[6]-G[0])*k2;G[1]+=(G[7]-G[1])*k2;G[2]+=(G[8]-G[2])*k2;
@@ -3578,9 +3583,11 @@ function livesTick(){ // three lives a game: going down costs one and you are ba
 }
 function gasTick(dt){
   livesTick();
-  if(amHost)gasHost(dt);
+  if(practice&&amHost){hs.st='break';hs.t=99;hs.left=0;if(sim.enemies.length){sim.enemies.length=0;hs.e=[];}hs.g=null;hs.f=null;}   // practice: nothing comes
+  if(amHost&&!practice)gasHost(dt);
   var G=hs.g,F=hs.f||[0,0,0],act=gasActive(),isl=!zoneOf(me.x,me.z).i,gk=hs.gen+'_'+(G?G[3]:0),q;
   if(G){
+    if(gasPlanned(G)&&G[5]===0&&gasSeen.p!==gk){gasSeen.p=gk;if(G[4]>35)banner('次の安全エリアが決まった','地図の白い点線の円。'+Math.ceil(G[4]/60)+'分後に毒ガス',4);}
     if(G[5]===0&&G[4]<30&&G[4]>0&&gasSeen.w!==gk){gasSeen.w=gk;banner('まもなく毒ガス','30秒後に安全エリアが狭まります',3.5);sRadio(520,0);sRadio(520,0.3);sRadio(520,0.6);}
     if(G[5]===1&&gasSeen.s!==gk){gasSeen.s=gk;banner('毒ガス発生','安全エリア（地図の緑の円）の中へ急げ',4);for(q=0;q<3;q++)tone({f:500,f1:900,dur:0.5,v:0.06,type:'sawtooth',t0:q*0.6});}
   }
@@ -3591,6 +3598,7 @@ function gasTick(dt){
     if(me.hp<=0){me.hp=0;me.down=true;me.downT=10;firing=false;adsTog=false;}
   }
   elGasO.style.opacity=gasIn?0.6:0;
+  var pl=gasPlanned(G);gasDT=pl?Math.hypot(me.x-G[6],me.z-G[7])-G[8]:-1;gasNext.visible=pl&&isl;if(gasNext.visible){gasNext.position.set(G[6],0,G[7]);gasNext.scale.set(G[8],1,G[8]);}
   gasMesh.visible=act&&isl;
   if(gasMesh.visible){gasMesh.position.set(G[0],0,G[1]);gasMesh.scale.set(G[2],1,G[2]);gasTex.repeat.x=Math.max(6,Math.round(G[2]/9));gasTex.offset.x+=dt*0.004;gasTex.offset.y=Math.sin(now*0.3)*0.02;}
   // the final battle
@@ -3612,17 +3620,20 @@ function gasHud(){
   function ms(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
   if(G){
     if(gasIn){t='⚠ 毒ガスの中！ 安全エリアまで '+Math.ceil(gasD)+'m';warn=true;}
-    else if(G[5]===1){t='毒ガス拡大中　あと '+Math.ceil(Math.max(0,G[4]))+'秒'+(gasD>-60?'　端まで '+Math.ceil(-gasD)+'m':'');warn=true;}
+    else if(G[5]===1){t='毒ガス拡大中　あと '+Math.ceil(Math.max(0,G[4]))+'秒'+(gasDT>0?'　安全エリアまで '+Math.ceil(gasDT)+'m':'　このままで安全');warn=gasDT>0;}
     else if(G[5]===2)t='毒ガスは止まっている';
-    else t=(G[3]?'次の毒ガスまで ':'毒ガスまで ')+ms(G[4])+(G[3]&&gasD>-40&&!zoneOf(me.x,me.z).i?'　端まで '+Math.ceil(-gasD)+'m':'');
+    else t=(G[3]?'次の毒ガスまで ':'毒ガスまで ')+ms(G[4])+(gasPlanned(G)&&!zoneOf(me.x,me.z).i?(gasDT>0?'　次の安全エリアまで '+Math.ceil(gasDT)+'m':'　次の安全エリアの中'):'');
   }
   if(elGasL.textContent!==t)elGasL.textContent=t;elGasL.classList.toggle('w',warn);
 }
 function gasMap(g,X,Z,k,W,H){ // the safe circle on the minimap and the full map
-  var G=hs&&hs.g;if(!G||!gasActive()||zoneOf(me.x,me.z).i)return;
-  g.save();g.beginPath();g.rect(0,0,W,H);g.arc(X(G[0]),Z(G[1]),G[2]*k,0,6.2832);g.fillStyle='rgba(120,215,50,.34)';g.fill('evenodd');
-  g.beginPath();g.arc(X(G[0]),Z(G[1]),G[2]*k,0,6.2832);g.strokeStyle='#c4ff5e';g.lineWidth=W>300?4:2;g.stroke();
-  if(G[5]===1){g.beginPath();g.arc(X(G[6]),Z(G[7]),G[8]*k,0,6.2832);g.strokeStyle='#ffffff';g.lineWidth=W>300?3:1.5;g.setLineDash(W>300?[12,9]:[5,4]);g.stroke();}
+  var G=hs&&hs.g;if(!G||zoneOf(me.x,me.z).i)return;
+  g.save();
+  if(gasActive()){g.beginPath();g.rect(0,0,W,H);g.arc(X(G[0]),Z(G[1]),G[2]*k,0,6.2832);g.fillStyle='rgba(120,215,50,.34)';g.fill('evenodd');
+    g.beginPath();g.arc(X(G[0]),Z(G[1]),G[2]*k,0,6.2832);g.strokeStyle='#c4ff5e';g.lineWidth=W>300?4:2;g.stroke();}
+  if(gasPlanned(G)){g.beginPath();g.arc(X(G[6]),Z(G[7]),G[8]*k,0,6.2832);g.strokeStyle='#ffffff';g.lineWidth=W>300?4:2;g.setLineDash(W>300?[14,9]:[5,4]);g.stroke();g.setLineDash([]);
+    if(W>300){g.font='bold 20px sans-serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.75)';g.strokeText('次の安全エリア',X(G[6]),Z(G[7]));g.fillStyle='#ffffff';g.fillText('次の安全エリア',X(G[6]),Z(G[7]));}
+    else{var ax=X(G[6]),az=Z(G[7]);if(ax<6||az<6||ax>W-6||az>H-6){ax=Math.min(W-9,Math.max(9,ax));az=Math.min(H-9,Math.max(9,az));g.fillStyle='#ffffff';g.beginPath();g.arc(ax,az,5,0,6.2832);g.fill();g.fillStyle='#17335c';g.beginPath();g.arc(ax,az,2.5,0,6.2832);g.fill();}}}
   g.restore();
 }
 (function(){
@@ -3656,6 +3667,7 @@ function gasMap(g,X,Z,k,W,H){ // the safe circle on the minimap and the full map
   var geo=new THREE.CylinderGeometry(1,1,80,160,1,true);geo.translate(0,40,0);
   gasMesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:gasTex,transparent:true,opacity:0.8,side:THREE.DoubleSide,depthWrite:false,fog:false}));
   gasMesh.renderOrder=3;gasMesh.frustumCulled=false;gasMesh.visible=false;scene.add(gasMesh);
+  var g2=new THREE.CylinderGeometry(1,1,3,160,1,true);g2.translate(0,1.5,0);gasNext=new THREE.Mesh(g2,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.45,side:THREE.DoubleSide,depthWrite:false,fog:false}));gasNext.renderOrder=3;gasNext.frustumCulled=false;gasNext.visible=false;scene.add(gasNext);   // a low white ring where the next safe area will be
 })();
 
 /* ---------- zip line at Stadium City: from the roof of the tall block, over both stand roofs and the pitch, down to a tower on the far side ---------- */
@@ -3940,7 +3952,7 @@ var bigEl=$('bigmap'),bctx=bigEl.getContext('2d'),bigOpen=false,bigZ=1,bigCx=0,b
     var e=document.createElement('button');e.type='button';e.id=b[0];e.textContent=b[1];e.addEventListener('pointerdown',function(ev){ev.preventDefault();ev.stopPropagation();b[2]();if(bigOpen)drawBig();});bigBar.appendChild(e);});
 })();
 function toggleMap(v){
-  bigOpen=v===undefined?!bigOpen:v;bigEl.classList.toggle('off',!bigOpen);bigBar.classList.toggle('off',!bigOpen);
+  bigOpen=v===undefined?!bigOpen:v;bigEl.classList.toggle('off',!bigOpen);['bView','bPause','bFull'].forEach(function(id){var b=$(id);if(b)b.style.visibility=bigOpen?'hidden':'';});   // the map's own buttons take that spotbigBar.classList.toggle('off',!bigOpen);
   if(bigOpen){setMap();bigZ=1;bigCx=MPX;bigCz=MPZ;bigP={};drawBig();}
 }
 function drawBig(){
@@ -4071,9 +4083,9 @@ function drawHud(dt){
   bD.classList.toggle('on',adsTog);
   var H=hs;el.wave.textContent='';
   if(H){
-    el.wave.appendChild(document.createTextNode(H.w>0?('WAVE '+H.w):'準備中'));
+    el.wave.appendChild(document.createTextNode(practice?'プラクティス':(H.w>0?('WAVE '+H.w):'準備中')));
     var s=document.createElement('small');
-    s.textContent=H.st==='fight'?('敵 残り '+(H.left+H.e.length)+'　撃破 '+H.k):(H.w>0?'次のウェーブまで '+Math.ceil(Math.max(0,H.t))+'秒':'まもなく開始');
+    s.textContent=practice?'ロボットは来ません':H.st==='fight'?('敵 残り '+(H.left+H.e.length)+'　撃破 '+H.k):(H.w>0?'次のウェーブまで '+Math.ceil(Math.max(0,H.t))+'秒':'まもなく開始');
     el.wave.appendChild(s);
   }
   el.mates.textContent='';
@@ -4127,6 +4139,8 @@ var FOGD=0.00021;
   var coopB=el('button','coopBtn','','協力プレイ（部屋を選ぶ／作る）',a1);coopB.type='button';
   var av=$('avBtn');if(av){a2.appendChild(av);av.lastChild.textContent='アバター';}
   var helpB=el('button','helpBtn','sbtn','操作説明',a2);helpB.type='button';var histB=el('button','histBtn','sbtn','更新履歴',a2);histB.type='button';
+  var a3=el('div','','acts');card.insertBefore(a3,a2);var prB=el('button','pracBtn','sbtn','プラクティス（ロボットなしで練習）',a3);prB.type='button';prB.style.height='44px';prB.style.fontSize='14px';
+  prB.addEventListener('click',function(){practice=true;start('solo');banner('プラクティス','ロボットも毒ガスも来ません。自由に練習できます',5);});
   function pop(id,title){
     var root=el('div',id,'pop off',null,document.body),box=el('div','','box',null,root),h=el('h2','','',null,box);h.appendChild(document.createTextNode(title));
     var x=el('button','','x','✕ 閉じる',h);x.type='button';var body=el('div','','',null,box);body.style.display='flex';body.style.flexDirection='column';body.style.gap='10px';
@@ -4140,7 +4154,7 @@ var FOGD=0.00021;
     sec('動く・見る',[['画面左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面右をドラッグ','向きを変える'],['右上のスティック','首だけ振って周りや後ろを見る']]);
     sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['銃のアイコン','押すたびに持ち替え（数字は持っている丁数）'],['グレネードのアイコン','押すと投げる（数字は残り個数）'],['リュック','持ち物を見る。包帯や応急処置セットはここから使う'],['AUTO','照準が敵に合うと自動で撃つ']]);
     sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の3つのボタン','視点（一人称 / 三人称）・ポーズ・全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
-    sec('毒ガスとクリア',[['ライフ','3つ。ダウンすると1つ減ってすぐ復活。最後の1つでダウンすると全滅（ソロ）'],['約3分ごと','毒ガスが出て安全エリア（地図の緑の円）が狭まる。外にいると体力が減り続ける'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
+    sec('毒ガスとクリア',[['ライフ','3つ。ダウンすると1つ減ってすぐ復活。最後の1つでダウンすると全滅（ソロ）'],['約3分ごと','毒ガスが出て安全エリアが狭まる。次の安全エリアは先に地図の白い点線の円で分かる（場所は毎回変わる）。外にいると体力が減り続ける'],['プラクティス','トップのボタンから。ロボットも毒ガスも来ない練習用'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
   }else{
     sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（クリックで固定）']]);
     sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ'],['V','一人称 / 三人称の切り替え']]);
