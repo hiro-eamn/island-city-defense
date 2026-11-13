@@ -2956,11 +2956,11 @@ var elLoot,elInv,elAr,elScope,bSwap,bNade,bFull;
   // full screen, like the corner button on a video
   bFull=el('button','bFull','btn','⛶');bFull.type='button';bFull.setAttribute('aria-label','全画面');
   var de=document.documentElement,can=de.requestFullscreen||de.webkitRequestFullscreen;
-  if(!can)bFull.classList.add('off');
   bFull.addEventListener('click',function(){
+    if(!can){fsTip();return;}
     try{
       if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}
-      else{var p=can.call(de,{navigationUI:'hide'});if(p&&p.then)p.then(function(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});}catch(_){}}).catch(function(){});}
+      else{var p=can.call(de,{navigationUI:'hide'});if(p&&p.then)p.then(function(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});}catch(_){}}).catch(function(){fsTip();});}
     }catch(_){}
   });
   // avatar editor on the start card
@@ -3305,6 +3305,86 @@ function metaHud(){
   bBand.textContent='包帯 '+bands;bKit.textContent='応急 '+kits;bBand.classList.toggle('none',bands<=0);bKit.classList.toggle('none',kits<=0);
 }
 
+/* ---------- pause, full screen, backpack, and icon buttons with counts for the rifle and grenades ---------- */
+var paused=false,packOpen=false,packSig='',bPack,bPause,elPack,elPause,elTip,tipT;
+function fsTip(){ // shown where the browser cannot go full screen
+  tipT.textContent='このブラウザでは全画面にできません。iPhoneのSafariは、共有ボタン →「ホーム画面に追加」で作ったアイコンから開くと、アドレスバーなしの全画面で遊べます（Claudeのページの中では全画面にできません）。';
+  elTip.classList.remove('off');
+}
+function setPause(v){
+  if(!me.inGame)return;
+  paused=v;elPause.classList.toggle('off',!v);firing=false;mouseDown=false;adsHeld=false;keys={};
+  elPause.querySelector('.n').textContent=NET.mode==='coop'?'協力プレイ中は、ほかの人のためにゲームは止まりません。':'ゲームを止めています。';
+  try{if(ac&&NET.mode!=='coop'){if(v)ac.suspend();else ac.resume();}}catch(e){}
+  if(v){try{if(document.exitPointerLock)document.exitPointerLock();}catch(e){}}
+}
+function setPack(v){packOpen=v;elPack.classList.toggle('off',!v);packSig='';if(v){try{if(document.exitPointerLock)document.exitPointerLock();}catch(e){}drawPack();}}
+function drawPack(){
+  var sig=[cur,slots[0].k,slots[1]?slots[1].k:'',me.ammo,nades,bands,kits,Math.round(armor),hasScope,hasKey,tickets,Math.floor(coins),Math.round(me.hp)].join('|');
+  if(sig===packSig)return;packSig=sig;
+  var g=elPack.querySelector('.g');g.textContent='';
+  function tile(name,sub,act,on,dis){
+    var b=document.createElement('button');b.type='button';b.className='pt'+(on?' on':'')+(dis?' dis':'');
+    var a=document.createElement('b');a.textContent=name;b.appendChild(a);var s=document.createElement('span');s.textContent=sub;b.appendChild(s);
+    if(act&&!dis)b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();act();packSig='';drawPack();});
+    g.appendChild(b);
+  }
+  slots.forEach(function(s,i){if(!s)return;tile(WPN[s.k].name,i===cur?'装備中　弾 '+me.ammo+' / '+MAG:'押して持ち替え　弾 '+s.ammo,i===cur?null:function(){setWeapon(i);},i===cur);});
+  tile('グレネード','× '+nades+'　押して投げる',function(){setPack(false);throwNade();},false,nades<=0);
+  tile('包帯','× '+bands+'　体力 +35',function(){useBand();},false,bands<=0||me.hp>=100);
+  tile('応急処置セット','× '+kits+'　全回復',function(){useKit();},false,kits<=0);
+  tile('防弾チョッキ',armor>0?'残り '+Math.round(armor)+'%':'なし',null,false,armor<=0);
+  tile('スコープ',hasScope?'取り付け済み':'なし',null,false,!hasScope);
+  tile('駐車場の自動キー',hasKey?'持っている':'なし',null,false,!hasKey);
+  tile('のるーと利用券','× '+tickets,null,false,tickets<=0);
+  tile('コイン',Math.floor(coins)+' 枚',null,false,false);
+}
+(function(){
+  function el(tag,id,cls,txt,parent){var e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(txt)e.textContent=txt;(parent||document.body).appendChild(e);return e;}
+  var st=document.createElement('style');
+  st.textContent=[
+  '.btn svg{width:60%;height:60%;display:block;margin:0 auto;pointer-events:none}','.btn .bdg{position:absolute;right:-4px;top:-4px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--signal);color:#1a1200;font:700 13px/20px var(--num);text-align:center;pointer-events:none}',
+  '.btn .lb{position:absolute;left:0;right:0;bottom:3px;font:700 9px/1 var(--num);letter-spacing:.04em;text-align:center;pointer-events:none}','#bSwap svg{width:74%;height:auto;margin-top:-4px}','#bNade.none .bdg,#bPack.none .bdg{background:rgba(255,255,255,.4)}',
+  '#bSwap,#bNade,#bPack{overflow:visible}','#bPack{right:252px;bottom:66px;width:52px;height:52px}','#bBand,#bKit{display:none!important}',
+  '#bPause,#bFull{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:auto!important;width:40px!important;height:40px!important;border-radius:8px;z-index:12;padding:0}',
+  '#bPause{left:calc(50% - 44px)}','#bFull{left:calc(50% + 4px)!important;font-size:0}','#bPause svg,#bFull svg{width:54%;height:54%}',
+  '#pause,#tip{position:fixed;inset:0;z-index:16;background:rgba(8,18,27,.88);display:flex;align-items:center;justify-content:center;padding:14px}',
+  '#pause .box,#tip .box{width:min(340px,100%);display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid rgba(255,255,255,.35);border-radius:8px;background:rgba(12,26,38,.95);text-align:center}',
+  '#pause h2{margin:0;font:700 30px/1 var(--num);letter-spacing:.14em;color:var(--signal)}','#pause .n,#tip .t{font-size:13px;line-height:1.6;color:var(--ink)}',
+  '#pause button,#tip button{height:46px;font:700 15px var(--body);color:var(--ink);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);border-radius:6px}','#pause button.go{background:var(--signal);color:#1a1200;border:0}',
+  '#pack{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;width:min(430px,94vw);max-height:88vh;overflow:auto;padding:12px;background:rgba(8,18,27,.95);border:1px solid rgba(255,255,255,.4);border-radius:8px;display:flex;flex-direction:column;gap:10px;pointer-events:auto;touch-action:pan-y}',
+  '#pack h2{margin:0;font:700 17px/1.2 var(--body);display:flex;justify-content:space-between;align-items:center}','#pack h2 button{height:34px;padding:0 12px;font:700 13px var(--body);color:var(--ink);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);border-radius:4px}',
+  '#pack .g{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}',
+  '.pt{min-height:58px;padding:7px 8px;display:flex;flex-direction:column;gap:3px;align-items:flex-start;justify-content:center;text-align:left;color:var(--ink);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.35);border-radius:6px;touch-action:none}',
+  '.pt b{font:700 13px/1.25 var(--body)}','.pt span{font-size:11.5px;color:var(--dim);line-height:1.3}','.pt.on{border-color:var(--signal);background:rgba(255,176,0,.16)}','.pt.dis{opacity:.4}',
+  '@media (orientation:landscape) and (max-height:540px){','#bPack{right:calc(256px + env(safe-area-inset-right,0px));bottom:18px;width:44px;height:44px}','#bPause,#bFull{width:34px!important;height:34px!important;top:6px!important}','#bPause{left:calc(50% - 38px)}','#pack{max-height:94vh;padding:8px}','.pt{min-height:46px}','}'].join('\n');
+  document.head.appendChild(st);
+  var I={gun:'<svg viewBox="0 0 48 24"><path fill="currentColor" d="M2 8h29V5h4v3h11v3H37l-3 4h-6l-2 7h-5l1-7h-9l-3 4H5l3-8H2z"/></svg>',
+    nade:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 2h6v4H9zM15 3h5v2h-3v4h-2z"/><ellipse fill="currentColor" cx="12" cy="15" rx="7" ry="8"/></svg>',
+    pack:'<svg viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M8 5a4 4 0 0 1 8 0h1a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3zm2 0h4a2 2 0 0 0-4 0zM8 13v5h8v-5z"/></svg>',
+    pause:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
+    full:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h7v2H5v5H3zM14 3h7v7h-2V5h-5zM3 14h2v5h5v2H3zM19 14h2v7h-7v-2h5z"/></svg>'};
+  function icon(b,svg,lb){b.textContent='';b.innerHTML=svg;if(lb!==undefined){var l=document.createElement('span');l.className='lb';l.textContent=lb;b.appendChild(l);}var d=document.createElement('span');d.className='bdg';b.appendChild(d);return d;}
+  bSwap.setAttribute('aria-label','武器の持ち替え');bNade.setAttribute('aria-label','グレネードを投げる');
+  var dGun=icon(bSwap,I.gun,''),dNade=icon(bNade,I.nade);
+  bPack=el('button','bPack','btn off');bPack.type='button';bPack.setAttribute('aria-label','リュック');var dPack=icon(bPack,I.pack);
+  bPack.addEventListener('pointerdown',function(e){e.preventDefault();setPack(!packOpen);});
+  bPause=el('button','bPause','btn off');bPause.type='button';bPause.setAttribute('aria-label','ポーズ');bPause.innerHTML=I.pause;
+  bPause.addEventListener('pointerdown',function(e){e.preventDefault();setPause(!paused);});
+  bFull.innerHTML=I.full;
+  elPack=el('div','pack','off');var ph=el('h2','','','リュック',elPack),px=el('button','','','✕ 閉じる',ph);px.type='button';px.addEventListener('pointerdown',function(e){e.preventDefault();setPack(false);});el('div','','g',null,elPack);
+  elPause=el('div','pause','off');var pb=el('div','','box',null,elPause);el('h2','','','PAUSE',pb);el('div','','n','',pb);
+  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','操作説明',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';
+  r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});r3b.addEventListener('click',function(){try{location.reload();}catch(e){}});
+  elTip=el('div','tip','off');var tb=el('div','','box',null,elTip);tipT=el('div','','t','',tb);var tk=el('button','','','OK',tb);tk.type='button';tk.addEventListener('click',function(){elTip.classList.add('off');});
+  hud2Tick=function(){
+    var n=slots[1]?2:1;dGun.textContent=n;bSwap.querySelector('.lb').textContent={rifle:'AR',smg:'SMG',shot:'SG',snip:'SR'}[slots[cur].k];
+    dNade.textContent=nades;bNade.classList.toggle('none',nades<=0);dPack.textContent=bands+kits;bPack.classList.toggle('none',bands+kits<=0);
+    if(packOpen)drawPack();
+  };
+})();
+var hud2Tick;
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){
   if(myVeh)leaveVeh();
@@ -3582,7 +3662,7 @@ bigEl.addEventListener('wheel',function(e){e.preventDefault();bigZ=clamp(bigZ*(e
 function hold(b,fn){b.addEventListener('pointerdown',function(e){e.preventDefault();fn(true);try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',function(){fn(false);});b.addEventListener('pointercancel',function(){fn(false);});}
 hold(bUp,function(v){heliUp=v;});hold(bDn,function(v){heliDn=v;});
-window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
+window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyP')setPause(!paused);if(e.code==='KeyB')setPack(!packOpen);if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
 window.addEventListener('keyup',function(e){keys[e.code]=false;});
 window.addEventListener('blur',function(){keys={};mouseDown=false;adsHeld=false;});
 
@@ -3651,7 +3731,7 @@ function drawHud(dt){
   el.cross.style.transform='scale('+(1+me.spread*0.9+me.amp*0.35).toFixed(2)+')';
   hudT-=dt;if(hudT>0)return;hudT=0.12;
   if(bigOpen)drawBig();
-  metaHud();
+  metaHud();hud2Tick();
   var hp=Math.round(me.hp);
   el.hp.style.transform='scaleX('+(hp/100)+')';el.hp.style.background=hp>50?'var(--ok)':(hp>25?'var(--signal)':'var(--danger)');el.hpt.textContent=hp;
   el.ammo.textContent=myVeh?Math.round(Math.abs(myVeh.s)*3.6):(carry?'—':(me.reload>0?'…':me.ammo));
@@ -3733,11 +3813,11 @@ var FOGD=0.00021;
   function sec(title,rows){var d=el('div','','',null,grid);el('h3','','',title,d);rows.forEach(function(r){var l=el('div','','',null,d);el('b','','',r[0],l);l.appendChild(document.createTextNode('　'+r[1]));});}
   if(isTouch){
     sec('動く・見る',[['画面左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面右をドラッグ','向きを変える'],['右上のスティック','首だけ振って周りや後ろを見る']]);
-    sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['武器','2丁を持ち替え'],['グレネード','投げる（約2.4秒で爆発）'],['包帯・応急','体力を回復'],['AUTO','照準が敵に合うと自動で撃つ']]);
-    sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['右下の ⛶','全画面（対応端末のみ）'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
+    sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['銃のアイコン','押すたびに持ち替え（数字は持っている丁数）'],['グレネードのアイコン','押すと投げる（数字は残り個数）'],['リュック','持ち物を見る。包帯や応急処置セットはここから使う'],['AUTO','照準が敵に合うと自動で撃つ']]);
+    sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の ⏸ と ⛶','ポーズ / 全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
   }else{
     sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（クリックで固定）']]);
-    sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え']]);
+    sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ']]);
     sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出しなど'],['1 2 3','補給箱の中身を選んで拾う'],['M','全体マップ（ホイールで拡大、ドラッグで移動）'],['右下の ⛶','全画面']]);
   }
   sec('遊び方',[['目標','WAVE 5 ごとに STAGE CLEAR。のるーと利用券がもらえる'],['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ','中で品出しを終えると武器が強くなる'],['乗り物','車・バイク・ヘリは歩いて触れると乗れる'],['ワープ','スタート地点そばのゲートからドーム、そこから長崎へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える'],['回復','包帯、応急処置セット、バーベキュー']]);
@@ -3752,8 +3832,8 @@ var FOGD=0.00021;
     NET.mode=mode;NET.created=!!created;NET.rid=created?Math.random().toString(36).slice(2,10):(rid||'');roomCode=mode==='coop'?String(code):'';netState=mode==='coop'?'wait':'solo';netFails=0;
     initAudio();me.inGame=true;nm.blur();tryJoin();
     $('start').classList.add('off');cp.root.classList.add('off');
-    ['tl','tr','cross','ammo','prompt'].forEach(function(id){$(id).classList.remove('off');});
-    if(isTouch)['bFire','bReload','bAuto','bAds','look','bSwap','bNade','bBand','bKit'].forEach(function(id){$(id).classList.remove('off');});
+    ['tl','tr','cross','ammo','prompt','bPause','bPack'].forEach(function(id){$(id).classList.remove('off');});
+    if(isTouch)['bFire','bReload','bAuto','bAds','look','bSwap','bNade'].forEach(function(id){$(id).classList.remove('off');});
     showAuto();gun.visible=true;scene.fog.density=FOGD;seaU.uFog.value=FOGD;camera.near=0.25;resize();
     setShadow(LOW?95:170,600);
     if(created)banner('部屋コード '+roomCode,'このコードを仲間に伝えてください（右上にも出ています）',7);
@@ -3840,6 +3920,7 @@ function frame(tms,manual){
   if(manual!==true)requestAnimationFrame(frame);
   var dt=Math.min(0.05,(tms-last)/1000),i;last=tms;if(!(dt>0))dt=0.016;now+=dt;
   skyU.uTime.value=seaU.uTime.value=windU.value=now;
+  if(paused&&me.inGame&&NET.mode!=='coop'){now-=dt;drawScene(true);return;}
   readPeers();
   if(!me.inGame){
     if(!reduceMotion)orbit+=dt*0.07;
