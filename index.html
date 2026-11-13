@@ -3594,7 +3594,7 @@ function gasTick(dt){
   }
   gasD=G?Math.hypot(me.x-G[0],me.z-G[1])-G[2]:-1;gasIn=act&&isl&&gasD>0;
   if(gasIn&&!me.down&&me.inv<=0){
-    me.hp-=(3+2*G[3])*dt;me.lastHurt=now;hurtA=Math.max(hurtA,0.2);
+    me.hp-=(0.6+0.4*G[3])*dt;   // a fifth of what it was: 0.6 a second at first, 1.0 and 1.4 after the later closingsme.lastHurt=now;hurtA=Math.max(hurtA,0.2);
     gasCough-=dt;if(gasCough<=0){gasCough=1.4;burst({dur:0.12,type:'bandpass',f:900,q:1.2,v:0.25});burst({dur:0.1,type:'bandpass',f:800,q:1.2,v:0.2,t0:0.18});}
     if(me.hp<=0){me.hp=0;me.down=true;me.downT=10;firing=false;adsTog=false;}
   }
