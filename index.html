@@ -2080,7 +2080,7 @@ function cleanHs(h){
   var e=[];
   for(var i=0;i<h.e.length&&i<24;i++){var a=h.e[i];
     if(Array.isArray(a)&&fin(a[0])&&(a[1]===0||a[1]===1||a[1]===2)&&fin(a[2])&&fin(a[3])&&fin(a[4]))e.push([a[0],a[1],clamp(a[2],-20000,20000),clamp(a[3],-20000,20000),a[4]]);}
-  return {gen:h.gen,w:clamp(Math.floor(h.w),0,999),k:fin(h.k)?h.k:0,st:h.st==='fight'?'fight':'break',t:fin(h.t)?h.t:0,left:fin(h.left)?h.left:0,e:e};
+  return {gen:h.gen,w:clamp(Math.floor(h.w),0,999),k:fin(h.k)?h.k:0,st:h.st==='fight'?'fight':'break',t:fin(h.t)?h.t:0,left:fin(h.left)?h.left:0,e:e,g:(Array.isArray(h.g)&&h.g.length===9&&h.g.every(function(v){return fin(v);}))?h.g.slice():null,f:(Array.isArray(h.f)&&h.f.length===3&&h.f.every(function(v){return fin(v);}))?h.f.slice():null};
 }
 var sendT=0;
 function sendPresence(dt){
@@ -2088,7 +2088,7 @@ function sendPresence(dt){
   sendT-=dt;if(sendT>0)return;sendT=0.1;
   var d={},k;for(k in myDmg)d[k]=myDmg[k];
   var pr={g:1,k:stockOut(),v:vehOut(),t:lootOut(),f:myFace,n:me.name,p:[r1(me.x),r1(me.z),r2(me.yaw)],hp:Math.max(0,Math.round(me.hp)),d:d,s:[me.shots,me.hit[0],me.hit[1],me.hit[2]],
-    h:(amHost&&hs)?{gen:hs.gen,w:hs.w,k:hs.k,st:hs.st,t:r1(hs.t),left:hs.left,e:hs.e}:null};
+    h:(amHost&&hs)?{gen:hs.gen,w:hs.w,k:hs.k,st:hs.st,t:r1(hs.t),left:hs.left,e:hs.e,g:hs.g?hs.g.map(function(v){return r1(v);}):null,f:hs.f||null}:null};
   try{room.presence(pr).catch(function(){});}catch(e){}
 }
 
@@ -3253,7 +3253,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月13日','一人称／三人称の切り替え／停まっている車に全部乗れる／立体駐車場の入口を入口から見て左手前に、歩きなら鍵なしで入れる／ポーズ、リュック、銃とグレネードのアイコン'],
+  [['2026年11月13日','約3分ごとの毒ガスで安全エリアが狭まる／ソロは3回しのぐと最終決戦（30台殲滅）、勝つとクリアで「のるーと利用券」'],
+   ['2026年11月13日','一人称／三人称の切り替え／停まっている車に全部乗れる／立体駐車場の入口を入口から見て左手前に、歩きなら鍵なしで入れる／ポーズ、リュック、銃とグレネードのアイコン'],
    ['2026年11月13日','ドームエリア・長崎スタジアムシティ・ショッピングモールへのワープ／WAVE 5ごとのクリアと「のるーと利用券」／包帯・応急処置セット／フォレストプレイスの外観と門、鍵つき立体駐車場／全体マップのズーム／更新履歴'],
    ['2026年11月13日','クルーズ船と船内ロビー／バーベキューのミニゲーム／陰影つきの顔と服装6種／銃4種、補給箱のアイテム、グレネード、防弾チョッキ／横画面、全画面ボタン／草むら、信号機、自販機、建物の足元の影'],
    ['2026年11月12日','全体マップ、右上の視点スティック（首振り）、走り続ける操作／地図を最新のOpenStreetMapに更新、セブンの場所にコンビニ、対岸を実際の街並みに／車・バイク・ヘリコプター／入れるコンビニと品出しミッション'],
@@ -3289,8 +3290,9 @@ function openWear(){
 function updMeta(dt,use){
   if(!hs)return;
   // clear every fifth wave
+  gasTick(dt);
   var key=hs.gen+'_'+hs.w;
-  if(hs.st==='break'&&hs.w>0&&hs.w%5===0&&!cleared[key]){cleared[key]=1;tickets++;saveMeta();showClear(hs.w);}
+  if(!soloRun()&&hs.st==='break'&&hs.w>0&&hs.w%5===0&&!cleared[key]){cleared[key]=1;tickets++;saveMeta();showClear(hs.w);}
   saveT-=dt;if(saveT<=0){saveT=12;saveMeta();}
   if(amHost){relT-=dt;if(relT<=0){relT=1.5;relocEnemies();}}
   // healing in progress
@@ -3313,7 +3315,7 @@ function updMeta(dt,use){
   if(promptAct)return;
   for(var i=0;i<WARPS.length;i++){
     var W=WARPS[i];if(Math.hypot(W.x-me.x,W.z-me.z)>3.4)continue;
-    if(W.need&&tickets<=0){promptTxt='のるーと利用券が必要です（WAVE 5 ごとのクリアでもらえます）';return;}
+    if(W.need&&tickets<=0){promptTxt='のるーと利用券が必要です（クリアするともらえます）';return;}
     promptTxt=(W.peace?'✌ ピースワープ：長崎スタジアムシティへ':W.label+(W.need?'に乗る（利用券 '+tickets+'枚）':'を使う'));promptAct=true;
     if(use){
       if(W.need){tickets--;saveMeta();}
@@ -3326,8 +3328,9 @@ function updMeta(dt,use){
 }
 function metaHud(){
   var g=goalNow();
-  elGoal.textContent='';var b=document.createElement('b');b.textContent='目標 WAVE '+g+' 突破';elGoal.appendChild(b);
-  elGoal.appendChild(document.createTextNode('（いま WAVE '+(hs?hs.w:0)+'）　利用券 '+tickets+'　コイン '+Math.floor(coins)+(hasKey?'　駐車場キー':'')));
+  var solo=soloRun(),GG=hs&&hs.g,FF=hs&&hs.f;
+  elGoal.textContent='';var b=document.createElement('b');b.textContent=solo?(FF&&FF[0]===1?'最終決戦　ロボット'+FIN_N+'台を殲滅':'目標 毒ガスを3回しのいで最終決戦に勝つ'):'目標 WAVE '+g+' 突破';elGoal.appendChild(b);gasHud();
+  elGoal.appendChild(document.createTextNode((solo?'（毒ガス '+Math.min(3,GG?GG[3]:0)+' / 3回）':'（いま WAVE '+(hs?hs.w:0)+'）')+'　利用券 '+tickets+'　コイン '+Math.floor(coins)+(hasKey?'　駐車場キー':'')));
   bBand.textContent='包帯 '+bands;bKit.textContent='応急 '+kits;bBand.classList.toggle('none',bands<=0);bKit.classList.toggle('none',kits<=0);
 }
 
@@ -3444,6 +3447,125 @@ function tpsCamera(){ // pull the camera back over the right shoulder; come in c
   bView.innerHTML='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 5c5 0 9 4.5 10 7-1 2.500-5 7-10 7S3 14.500 2 12c1-2.500 5-7 10-7zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>';
   document.body.appendChild(bView);
   bView.addEventListener('pointerdown',function(e){e.preventDefault();setTps(!tps);});
+})();
+
+/* ---------- poison gas that closes in every few minutes, and the solo final battle after the third time ---------- */
+var GAS_R=[420,240,130],GAS_WAIT=180,GAS_MOVE=45,FIN_N=30,gasSeen={},gasIn=false,gasD=0,gasCough=0,finSeen=0,finGen=null,finOn=false,finT=0,gasMesh,gasTex,elGasL,elGasO,elFin,elFinT,elFinB,elFinale,elFinV;
+function soloRun(){return NET.mode!=='coop';}
+function gasActive(){var G=hs&&hs.g;return !!G&&(G[3]>0||G[5]===1);}
+function gasFresh(){return [SPAWN.x,SPAWN.z,2600,0,GAS_WAIT,0,SPAWN.x,SPAWN.z,2600];} // centre x z, radius, times closed, timer, phase (0 waiting, 1 closing, 2 held for the final battle), target x z radius
+function gasHost(dt){
+  if(!hs.g)hs.g=gasFresh();
+  if(!hs.f)hs.f=[0,0,0];                                   // final battle: running, kills when it began, times won
+  var G=hs.g,F=hs.f;
+  if(F[0]===1){
+    var rem=FIN_N-(hs.k-F[1]);
+    if(rem<=0||hs.st==='break'){F[0]=0;F[2]++;sim.enemies.length=0;hs.e=[];hs.left=0;hs.st='break';hs.t=15;hs.g=gasFresh();return;}
+    hs.left=Math.max(0,rem-sim.enemies.length);return;
+  }
+  G[4]-=dt;
+  if(G[5]===0){
+    if(G[4]<=0){ // the gas comes: decide where the safe area will end up, pulled toward a player
+      var n=G[3],tr=GAS_R[Math.min(n,2)],p=alivePlayers()[0]||me,px=p.x,pz=p.z,cx,cz;
+      if(zoneOf(px,pz).i||!inIsland(px,pz,6)){px=SPAWN.x;pz=SPAWN.z;}
+      if(n===0){G[0]=cx=px;G[1]=cz=pz;}
+      else{var lim=n>=3?80:(G[2]-tr)*0.5,dx=px-G[0],dz=pz-G[1],d=Math.hypot(dx,dz)||1,k=Math.min(1,lim/d);cx=G[0]+dx*k;cz=G[1]+dz*k;if(!inIsland(cx,cz,10)){cx=G[0];cz=G[1];}}
+      G[6]=cx;G[7]=cz;G[8]=tr;G[5]=1;G[4]=GAS_MOVE;
+    }
+  }else if(G[5]===1){
+    var k2=G[4]>0?Math.min(1,dt/(G[4]+dt)):1;
+    G[0]+=(G[6]-G[0])*k2;G[1]+=(G[7]-G[1])*k2;G[2]+=(G[8]-G[2])*k2;
+    if(G[4]<=0){
+      G[0]=G[6];G[1]=G[7];G[2]=G[8];G[3]++;G[5]=0;G[4]=GAS_WAIT;
+      if(soloRun()&&G[3]>=3){F[0]=1;F[1]=hs.k;G[5]=2;hs.w++;hs.st='fight';hs.left=Math.max(0,FIN_N-sim.enemies.length);sim.spawnT=3;}
+    }
+  }
+}
+function showFinalClear(){
+  elClear.textContent='';
+  var a=document.createElement('h2');a.textContent='MISSION CLEAR';elClear.appendChild(a);
+  [['毒ガスを3回しのぎ、最終決戦でロボット '+FIN_N+'台を殲滅',''],['撃破数 '+(hs?hs.k:0),''],['のるーと利用券 ×1 を手に入れた（所持 '+tickets+'枚）','tk'],['スタート地点そばの「のるーと のりば」からショッピングモールへ行けます',''],['毒ガスは晴れました。このまま次の周回に挑めます','']].forEach(function(r){var p=document.createElement('p');p.textContent=r[0];if(r[1])p.className=r[1];elClear.appendChild(p);});
+  elClear.classList.remove('off');clearTimeout(showClear.t);showClear.t=setTimeout(function(){elClear.classList.add('off');},9000);
+  [523,659,784,1047,1319].forEach(function(f,i){tone({f:f,dur:i===4?0.9:0.2,v:0.08,type:'triangle',t0:i*0.17,rv:0.4});tone({f:f/2,dur:i===4?0.9:0.2,v:0.05,type:'square',t0:i*0.17});});
+}
+function gasTick(dt){
+  if(amHost)gasHost(dt);
+  var G=hs.g,F=hs.f||[0,0,0],act=gasActive(),isl=!zoneOf(me.x,me.z).i,gk=hs.gen+'_'+(G?G[3]:0),q;
+  if(G){
+    if(G[5]===0&&G[4]<30&&G[4]>0&&gasSeen.w!==gk){gasSeen.w=gk;banner('まもなく毒ガス','30秒後に安全エリアが狭まります',3.5);sRadio(520,0);sRadio(520,0.3);sRadio(520,0.6);}
+    if(G[5]===1&&gasSeen.s!==gk){gasSeen.s=gk;banner('毒ガス発生','安全エリア（地図の緑の円）の中へ急げ',4);for(q=0;q<3;q++)tone({f:500,f1:900,dur:0.5,v:0.06,type:'sawtooth',t0:q*0.6});}
+  }
+  gasD=G?Math.hypot(me.x-G[0],me.z-G[1])-G[2]:-1;gasIn=act&&isl&&gasD>0;
+  if(gasIn&&!me.down&&me.inv<=0){
+    me.hp-=(3+2*G[3])*dt;me.lastHurt=now;hurtA=Math.max(hurtA,0.2);
+    gasCough-=dt;if(gasCough<=0){gasCough=1.4;burst({dur:0.12,type:'bandpass',f:900,q:1.2,v:0.25});burst({dur:0.1,type:'bandpass',f:800,q:1.2,v:0.2,t0:0.18});}
+    if(me.hp<=0){me.hp=0;me.down=true;me.downT=10;firing=false;adsTog=false;}
+  }
+  elGasO.style.opacity=gasIn?0.6:0;
+  gasMesh.visible=act&&isl;
+  if(gasMesh.visible){gasMesh.position.set(G[0],0,G[1]);gasMesh.scale.set(G[2],1,G[2]);gasTex.repeat.x=Math.max(6,Math.round(G[2]/9));gasTex.offset.x+=dt*0.004;gasTex.offset.y=Math.sin(now*0.3)*0.02;}
+  // the final battle
+  var on=F[0]===1;
+  if(on&&!finOn){
+    finT=4.6;elFinale.classList.remove('off');elFinale.classList.remove('go');void elFinale.offsetWidth;elFinale.classList.add('go');shake=1;
+    for(q=0;q<4;q++){tone({f:330,f1:660,dur:0.45,v:0.07,type:'sawtooth',t0:q*0.5});tone({f:165,dur:0.4,v:0.06,type:'square',t0:q*0.5});}
+    burst({dur:1.4,type:'lowpass',f:300,f1:50,v:0.9,rv:0.6});burst({dur:0.8,type:'lowpass',f:160,f1:40,v:0.8,t0:2.0,rv:0.6});
+  }
+  finOn=on;
+  if(finT>0){finT-=dt;if(finT<=0)elFinale.classList.add('off');}
+  elFin.classList.toggle('off',!on);elFinV.classList.toggle('off',!on);
+  if(on){var rem=clamp(FIN_N-(hs.k-F[1]),0,FIN_N),tx='最終決戦　残り '+rem+' / '+FIN_N+'台';if(elFinT.textContent!==tx)elFinT.textContent=tx;elFinB.style.width=((FIN_N-rem)/FIN_N*100)+'%';}
+  if(finGen!==hs.gen){finGen=hs.gen;finSeen=F[2];}
+  else if(F[2]>finSeen){finSeen=F[2];tickets++;saveMeta();showFinalClear();}
+}
+function gasHud(){
+  var G=hs&&hs.g,t='',warn=false;
+  function ms(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
+  if(G){
+    if(gasIn){t='⚠ 毒ガスの中！ 安全エリアまで '+Math.ceil(gasD)+'m';warn=true;}
+    else if(G[5]===1){t='毒ガス拡大中　あと '+Math.ceil(Math.max(0,G[4]))+'秒'+(gasD>-60?'　端まで '+Math.ceil(-gasD)+'m':'');warn=true;}
+    else if(G[5]===2)t='毒ガスは止まっている';
+    else t=(G[3]?'次の毒ガスまで ':'毒ガスまで ')+ms(G[4])+(G[3]&&gasD>-40&&!zoneOf(me.x,me.z).i?'　端まで '+Math.ceil(-gasD)+'m':'');
+  }
+  if(elGasL.textContent!==t)elGasL.textContent=t;elGasL.classList.toggle('w',warn);
+}
+function gasMap(g,X,Z,k,W,H){ // the safe circle on the minimap and the full map
+  var G=hs&&hs.g;if(!G||!gasActive()||zoneOf(me.x,me.z).i)return;
+  g.save();g.beginPath();g.rect(0,0,W,H);g.arc(X(G[0]),Z(G[1]),G[2]*k,0,6.2832);g.fillStyle='rgba(120,215,50,.34)';g.fill('evenodd');
+  g.beginPath();g.arc(X(G[0]),Z(G[1]),G[2]*k,0,6.2832);g.strokeStyle='#c4ff5e';g.lineWidth=W>300?4:2;g.stroke();
+  if(G[5]===1){g.beginPath();g.arc(X(G[6]),Z(G[7]),G[8]*k,0,6.2832);g.strokeStyle='#ffffff';g.lineWidth=W>300?3:1.5;g.setLineDash(W>300?[12,9]:[5,4]);g.stroke();}
+  g.restore();
+}
+(function(){
+  function el(tag,id,cls,txt,parent){var e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(txt)e.textContent=txt;(parent||document.body).appendChild(e);return e;}
+  var st=document.createElement('style');
+  st.textContent=[
+  '#gasl{font-size:12px;font-weight:700;color:#c4ff5e;text-shadow:0 1px 2px #000;line-height:1.45}','#gasl.w{color:#ff6a4d}',
+  '#gaso{inset:0;z-index:2;opacity:0;transition:opacity .5s;background:radial-gradient(ellipse at center,rgba(120,200,40,.28) 20%,rgba(70,150,20,.72) 100%)}',
+  '#fin{left:50%;top:calc(56px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(300px,62vw);padding:6px 10px 8px;background:rgba(60,6,6,.82);border:1px solid #ff5a47;border-radius:6px;text-align:center;z-index:5}',
+  '#fin .t{font:700 15px/1.3 var(--body);color:#fff;text-shadow:0 1px 2px #000}','#fin .b{height:6px;margin-top:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden}','#fin .b i{display:block;height:100%;width:0;background:#ff5a47;transition:width .3s}',
+  '#finv{inset:0;z-index:2;box-shadow:inset 0 0 120px 30px rgba(255,40,20,.55);animation:finv 1.6s ease-in-out infinite}','@keyframes finv{0%,100%{opacity:.45}50%{opacity:1}}',
+  '#finale{inset:0;z-index:12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;background:radial-gradient(ellipse at center,rgba(120,0,0,.2),rgba(60,0,0,.78))}',
+  '#finale h2{margin:0;font:900 64px/1 var(--body);letter-spacing:.2em;color:#fff;text-shadow:0 0 18px #ff2a14,0 0 44px #ff2a14,0 4px 10px #000}','#finale p{margin:0;font:700 22px/1.3 var(--body);color:#ffd9d2;text-shadow:0 2px 6px #000;letter-spacing:.08em}','#finale small{font:700 13px var(--num);letter-spacing:.5em;color:#ff8a7a}',
+  '#finale.go{animation:finbg 4.6s ease-out both}','#finale.go h2{animation:finh 4.6s cubic-bezier(.2,.9,.2,1) both}','#finale.go p{animation:finp 4.6s ease-out both}',
+  '@keyframes finbg{0%{opacity:0;background-color:#fff}6%{opacity:1;background-color:rgba(255,60,30,.7)}18%{background-color:transparent}85%{opacity:1}100%{opacity:0}}',
+  '@keyframes finh{0%{transform:scale(3.2);opacity:0}14%{transform:scale(.94);opacity:1}20%{transform:scale(1.04)}26%,100%{transform:scale(1)}}',
+  '@keyframes finp{0%,22%{opacity:0;transform:translateY(14px)}34%,100%{opacity:1;transform:none}}',
+  '@media (prefers-reduced-motion:reduce){#finv,#finale.go,#finale.go h2,#finale.go p{animation:none}}',
+  '@media (orientation:landscape) and (max-height:540px){','#fin{top:44px;padding:3px 8px 5px}','#fin .t{font-size:13px}','#finale h2{font-size:44px}','#finale p{font-size:17px}','}'].join('\n');
+  document.head.appendChild(st);
+  elGasL=el('div','gasl','',null,$('tl'));$('tl').insertBefore(elGasL,$('mates'));
+  elGasO=el('div','gaso','hud');elFinV=el('div','finv','hud off');
+  elFin=el('div','fin','hud off');elFinT=el('div','','t','',elFin);elFinB=el('i','','',null,el('div','','b',null,elFin));
+  elFinale=el('div','finale','hud off');el('small','','','FINAL BATTLE',elFinale);el('h2','','','最終決戦',elFinale);el('p','','','ロボット '+FIN_N+'台を殲滅せよ',elFinale);
+  // the wall of gas: a tall ring that fades upward
+  var c=cvs(256),g=c.getContext('2d'),i,gr=g.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0,'rgba(190,255,90,0)');gr.addColorStop(0.45,'rgba(170,240,70,.35)');gr.addColorStop(1,'rgba(150,230,50,.9)');g.fillStyle=gr;g.fillRect(0,0,256,256);
+  for(i=0;i<70;i++){var x=Math.random()*256,w=6+Math.random()*30,y=60+Math.random()*196;g.fillStyle='rgba(235,255,170,'+(0.02+Math.random()*0.05)+')';g.beginPath();g.ellipse(x,y,w,w*(0.5+Math.random()),0,0,6.283);g.fill();if(x<40){g.beginPath();g.ellipse(x+256,y,w,w*0.7,0,0,6.283);g.fill();}}
+  gasTex=new THREE.CanvasTexture(c);gasTex.wrapS=THREE.RepeatWrapping;gasTex.encoding=THREE.sRGBEncoding;
+  var geo=new THREE.CylinderGeometry(1,1,80,160,1,true);geo.translate(0,40,0);
+  gasMesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:gasTex,transparent:true,opacity:0.8,side:THREE.DoubleSide,depthWrite:false,fog:false}));
+  gasMesh.renderOrder=3;gasMesh.frustumCulled=false;gasMesh.visible=false;scene.add(gasMesh);
 })();
 
 /* ---------- per-client logic ---------- */
@@ -3700,6 +3822,7 @@ function drawBig(){
   VEH.forEach(function(V){var px=SX(V.x),py=SZ(V.z);
     if(V.type==='heli'){g.fillStyle='#ffd24a';g.fillRect(px-9,py-9,18,18);g.fillStyle='#222';g.fillRect(px-5,py-5,3,10);g.fillRect(px+2,py-5,3,10);g.fillRect(px-5,py-1.5,10,3);if(bigZ>1.5)tag(V.x,V.z,'ヘリ','#ffe9a0');}
     else{g.fillStyle='#000';g.beginPath();g.arc(px,py,V.type==='car'?8:6.5,0,7);g.fill();g.fillStyle=V.type==='car'?'#f4f4f4':'#8fd0ff';g.beginPath();g.arc(px,py,V.type==='car'?6:4.5,0,7);g.fill();}});
+  gasMap(g,SX,SZ,MS*k,BW,BH);
   g.fillStyle='#ff4d3d';views.forEach(function(v){g.fillRect(SX(v.x)-4,SZ(v.z)-4,8,8);});
   others.forEach(function(o){g.fillStyle='#39c0ff';g.beginPath();g.arc(SX(o.x),SZ(o.z),8,0,7);g.fill();tag(o.x,o.z,o.n,'#bfeaff');});
   g.save();g.translate(SX(me.x),SZ(me.z));g.rotate(-me.yaw);g.fillStyle='#000';g.beginPath();g.moveTo(0,-20);g.lineTo(14,14);g.lineTo(-14,14);g.closePath();g.fill();
@@ -3830,6 +3953,7 @@ function drawHud(dt){
     if(V.type==='heli'){mctx.fillStyle='#ffd24a';mctx.fillRect(px-5,py-5,10,10);mctx.fillStyle='#222';mctx.fillRect(px-3,py-3,2,6);mctx.fillRect(px+1,py-3,2,6);mctx.fillRect(px-3,py-1,6,2);}
     else{mctx.fillStyle=V.type==='car'?'#f4f4f4':'#8fd0ff';mctx.beginPath();mctx.arc(px,py,V.type==='car'?3.5:2.6,0,7);mctx.fill();}});
   STORES.forEach(function(S){var px=clamp(mx(S.x),8,232),py=clamp(mz(S.z),8,182);mctx.fillStyle='#fff';mctx.fillRect(px-6,py-6,12,12);mctx.fillStyle='#17335c';mctx.fillRect(px-4,py-4,8,8);mctx.fillStyle='#f0a81c';mctx.fillRect(px-4,py+1,8,2);});
+  gasMap(mctx,mx,mz,MZM,240,190);
   mctx.fillStyle='#ff4d3d';views.forEach(function(v){mctx.fillRect(mx(v.x)-2,mz(v.z)-2,4,4);});
   mctx.fillStyle='#39c0ff';others.forEach(function(o){mctx.beginPath();mctx.arc(mx(o.x),mz(o.z),4,0,7);mctx.fill();});
   mctx.save();mctx.translate(mx(me.x),mz(me.z));mctx.rotate(-me.yaw);mctx.fillStyle='#ffb000';mctx.beginPath();mctx.moveTo(0,-7);mctx.lineTo(5,5);mctx.lineTo(-5,5);mctx.closePath();mctx.fill();mctx.restore();
@@ -3876,6 +4000,7 @@ var FOGD=0.00021;
     sec('動く・見る',[['画面左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面右をドラッグ','向きを変える'],['右上のスティック','首だけ振って周りや後ろを見る']]);
     sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['銃のアイコン','押すたびに持ち替え（数字は持っている丁数）'],['グレネードのアイコン','押すと投げる（数字は残り個数）'],['リュック','持ち物を見る。包帯や応急処置セットはここから使う'],['AUTO','照準が敵に合うと自動で撃つ']]);
     sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の3つのボタン','視点（一人称 / 三人称）・ポーズ・全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
+    sec('毒ガスとクリア',[['約3分ごと','毒ガスが出て安全エリア（地図の緑の円）が狭まる。外にいると体力が減り続ける'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
   }else{
     sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（クリックで固定）']]);
     sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ'],['V','一人称 / 三人称の切り替え']]);
