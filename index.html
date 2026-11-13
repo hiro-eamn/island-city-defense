@@ -832,12 +832,11 @@ function buildPark(p,h,W,roofM,AOP,roadDist,cars,FG){ // multi-storey car park: 
   var le=0,ux=1,uz=0,a0=1e9,a1=-1e9,n0=1e9,n1=-1e9,q,j=p.length-1,i,k;
   for(q=0;q<p.length;j=q++){var el=Math.hypot(p[q][0]-p[j][0],p[q][1]-p[j][1]);if(el>le){le=el;ux=(p[q][0]-p[j][0])/el;uz=(p[q][1]-p[j][1])/el;}}
   for(q=0;q<p.length;q++){var pa=p[q][0]*ux+p[q][1]*uz,pn=-p[q][0]*uz+p[q][1]*ux;a0=Math.min(a0,pa);a1=Math.max(a1,pa);n0=Math.min(n0,pn);n1=Math.max(n1,pn);}
-  var L0=Math.min(a1-a0,70),D0=Math.min(n1-n0,44),ac=(a0+a1)/2,nc=(n0+n1)/2,cx=ux*ac-uz*nc,cz=uz*ac+ux*nc,L,Dp,nx,nz;
+  var L0=Math.min(a1-a0,115),D0=Math.min(n1-n0,44),ac=(a0+a1)/2,nc=(n0+n1)/2,cx=ux*ac-uz*nc,cz=uz*ac+ux*nc,L,Dp,nx,nz;
   var fx=FG?FG.x-cx:-uz,fz=FG?FG.z-cz:ux,da=fx*ux+fz*uz,db=-fx*uz+fz*ux;
-  if(Math.abs(db)/D0>=Math.abs(da)/L0){L=L0;Dp=D0;var sg=db>=0?1:-1;nx=-uz*sg;nz=ux*sg;}      // a long side faces the entrance
-  else{var s2=da>=0?1:-1,ou=ux;nx=ux*s2;nz=uz*s2;ux=-uz;uz=ou;L=D0;Dp=L0;}                      // a short side does: turn the frame
+  var s2=da>=0?1:-1,ou=ux;nx=ux*s2;nz=uz*s2;ux=-uz;uz=ou;L=D0;Dp=L0;                             // the gateway is in the short end nearer the Forest Place entrance (the front as you come to it), not in a long side
   var ang=Math.atan2(ux,uz),GW=6.5,ga=0;
-  if(FG){var tx=FG.x+FG.nx*12+FG.nz*30,tz=FG.z+FG.nz*12-FG.nx*30;ga=clamp((tx-cx)*ux+(tz-cz)*uz,-L/2+GW/2+1.5,L/2-GW/2-1.5);}
+  if(FG)ga=clamp((FG.x-cx)*ux+(FG.z-cz)*uz,-L/2+GW/2+1.5,L/2-GW/2-1.5);                         // toward the corner on the entrance's side
   function P(a,b){return [cx+ux*a+nx*b,cz+uz*a+nz*b];}                 // a along the gateway side, b toward it
   function bx2(mb,a,b,y0,w,hh,d,col){var c=P(a,b);return mbBox(mb,c[0],y0,c[1],d,hh,w,ang,col);} // w along, d across
   var CN=rgb(0xb9b6ae),YL=rgb(0xd9a21a),R4=[P(-L/2,-Dp/2),P(L/2,-Dp/2),P(L/2,Dp/2),P(-L/2,Dp/2)];
@@ -848,9 +847,10 @@ function buildPark(p,h,W,roofM,AOP,roadDist,cars,FG){ // multi-storey car park: 
     bx2(W.plain,0,-Dp/2,y,L,1.1,0.25,CN);bx2(W.plain,-L/2,0,y,0.25,1.1,Dp,CN);bx2(W.plain,L/2,0,y,0.25,1.1,Dp,CN);
     if(fi)bx2(W.plain,0,Dp/2,y,L,1.1,0.25,CN);else{bx2(W.plain,c1,Dp/2,y,l1,1.1,0.25,CN);bx2(W.plain,c2,Dp/2,y,l2,1.1,0.25,CN);}
   });
-  for(i=-Math.floor(L/15);i<=Math.floor(L/15);i++)for(k=-1;k<=1;k++){
+  var KR=Math.max(1,Math.round(Dp/30));
+  for(i=-Math.floor(L/15);i<=Math.floor(L/15);i++)for(k=-KR;k<=KR;k++){
     if(Math.abs(i*7.5-ga)<3.6)continue;                                // keep the lane behind the gateway clear
-    var pc=bx2(W.plain,i*7.5,k*(Dp/2-0.5),0,0.55,9.6,0.55,CN);if(k)continue;var cc=addCol(pc,9.6);cc.nn=true;}
+    var pc=bx2(W.plain,i*7.5,k*(Dp/2-0.5)/KR,0,0.55,9.6,0.55,CN);if(Math.abs(k)===KR)continue;var cc=addCol(pc,9.6);cc.nn=true;}
   addCol(rectP(P(0,-Dp/2)[0],P(0,-Dp/2)[1],L/2+0.3,0.3,ang),1.2);addCol(rectP(P(-L/2,0)[0],P(-L/2,0)[1],0.3,Dp/2,ang),1.2);addCol(rectP(P(L/2,0)[0],P(L/2,0)[1],0.3,Dp/2,ang),1.2);
   addCol(rectP(P(c1,Dp/2)[0],P(c1,Dp/2)[1],l1/2,0.3,ang),1.2);addCol(rectP(P(c2,Dp/2)[0],P(c2,Dp/2)[1],l2/2,0.3,ang),1.2);
   [-1,1].forEach(function(sd){bx2(W.plain,ga+sd*(GW/2+0.2),Dp/2,0,0.35,1.6,0.35,YL);});
@@ -1896,9 +1896,8 @@ function makePlayer(peer,name,face){ // the figure other players see: body, clot
   if(of===4){b.tube([0.275,0.53,0],[0.25,0.3,-0.14],0.012,0.012,WHT,4);b.tube([-0.275,0.53,0],[-0.25,0.32,-0.2],0.012,0.012,WHT,4);}
   b.box(0.045,0.07,0.62,0.06,0.33,-0.42,GN);b.box(0.03,0.13,0.05,0.06,0.25,-0.42,GN,0.15);b.cyl(0.012,0.012,0.22,6,0.06,0.34,-0.82,GN,H);b.box(0.045,0.1,0.14,0.07,0.34,-0.06,GN);
   // head: nose and ears as shapes, hair or helmet over the top
-  b.add(SPH,SK,0,0.712,-0.103,0,0,0,0.017,0.03,0.022);b.add(SPH,SK,0.097,0.725,0.004,0,0,0,0.014,0.03,0.02);b.add(SPH,SK,-0.097,0.725,0.004,0,0,0,0.014,0.03,0.02);
   if(F[8]){sp=new THREE.SphereGeometry(0.125,14,8,0,6.283,0,1.7);b.add(sp,of===0?[0.11,0.13,0.08]:TC,0,0.745,0.005,0,0,0,1,0.98,1.1);sp.dispose();b.box(0.012,0.14,0.012,0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);b.box(0.012,0.14,0.012,-0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);}
-  hair3d(b,F,HC,!!F[8]);
+  var hairM=hair3d(F,!!F[8]);if(hairM)hips.add(hairM);
   var body=new THREE.Mesh(b.geo(),soldierMat);body.castShadow=true;body.receiveShadow=true;hips.add(body);
   var hd=new THREE.Mesh(new THREE.SphereGeometry(0.105,22,16),new THREE.MeshStandardMaterial({map:faceTex(F),roughness:0.7}));hd.scale.set([0.93,0.99,0.9][F[12]||0],[1.1,1.05,1.16][F[12]||0],1);hd.position.set(0,0.735,0);hd.castShadow=true;hips.add(hd);
   function leg(x){
@@ -2861,32 +2860,49 @@ function features(g,cx,cy,s,F){ // eyes, brows, nose, mouth, beard and glasses o
       g.stroke();g.save();g.strokeStyle='rgba(255,255,255,0.4)';g.lineWidth=lw(0.012);g.beginPath();g.moveTo(x-gw*0.55,ey-gh*0.1);g.lineTo(x-gw*0.2,ey-gh*0.55);g.stroke();g.restore();});
     g.beginPath();g.moveTo(cx-ex+gw*0.9,ey-gh*0.3);g.quadraticCurveTo(cx,ey-gh*0.62,cx+ex-gw*0.9,ey-gh*0.3);g.stroke();}
 }
-function hair3d(b,F,HC,helm){ // hair on the figure: a cap tilted back so the hairline sits high in front and low at the nape, plus pieces per style. Head centre (0,0.735,0); the figure faces -z
-  var st=F[1],sp,i,HY=0.735,DK=[HC[0]*0.82,HC[1]*0.82,HC[2]*0.82];
-  if(!st)return;
+var HAIRS={ // per style: hairline height at the middle of the forehead, at the temples and beside the ears, and how far down the back it goes (texture rows: 0 crown, 128 eye level, 256 under the chin)
+  1:{f:80,t:86,s:122,n:152},2:{f:94,t:98,s:176,n:256},3:{f:82,t:104,s:256,n:256},4:{f:76,t:80,s:118,n:150},5:{f:80,t:84,s:118,n:146},6:{f:104,t:104,s:186,n:256},7:{f:72,t:84,s:112,n:150}};
+function hair3d(F,helm){ // volume over the painted hair: a cap whose edge sits just inside the painted hairline, so no bare strip or floating rim shows, plus the pieces that hang. Head centre (0,0.735,0); the figure faces -z
+  var st=F[1],b=new GB(),sp,i,HY=0.735,C=[1,1,1],D=[0.8,0.8,0.8];
+  if(!st)return null;
   if(!helm){
-    var th=st===1?1.6:(st===7||st===4?1.56:1.8),tilt=st===7||st===4?0.64:0.5,k=st===1||st===7||st===4?1.035:1.08;
-    sp=new THREE.SphereGeometry(0.108,22,12,0,6.283,0,th);b.add(sp,HC,0,HY+0.004,0.006,tilt,0,0,k,k*1.08,k*1.05);sp.dispose();
-    if(st===2||st===3||st===6||st===5||st===1){ // fringe over the forehead
-      var f0=st===1||st===5?0.62:0.66,fl=st===6?0.56:(st===1||st===5?0.3:0.44);
-      sp=new THREE.SphereGeometry(0.113,12,5,4.712-0.95,1.9,f0,fl);b.add(sp,DK,0,HY+0.004,0.004,0,st===2?0.25:0,0,1,1.08,1.02);sp.dispose();}
-    if(st===5)for(i=0;i<16;i++){var a=i*2.4,t=0.2+(i%4)*0.27,sx=Math.sin(t)*Math.cos(a),sz=Math.sin(t)*Math.sin(a);b.cyl(0.002,0.028,0.1,5,sx*0.115,HY+0.01+Math.cos(t)*0.15,sz*0.115+0.01,i%2?HC:DK,sz*t*0.95,0,-sx*t*0.95);}
-    if(st===2)[-1,1].forEach(function(d){b.add(SPH,HC,d*0.1,0.7,0.022,0,0,0,0.03,0.085,0.07);});
-    if(st===3)[-1,1].forEach(function(d){b.add(SPH,HC,d*0.102,0.64,0.03,0,0,0,0.032,0.15,0.062);});
-    if(st===6)[-1,1].forEach(function(d){b.add(SPH,HC,d*0.1,0.685,0.012,0,0,0,0.036,0.105,0.086);});
+    var long=st===2||st===3||st===6,tilt=long?0.5:0.62,th=long?1.62:1.5,k=st===5?1.03:(long?1.065:1.045);
+    sp=new THREE.SphereGeometry(0.105,26,14,0,6.283,0,th);b.add(sp,C,0,HY+0.002,0.004,tilt,0,0,0.93*k,1.1*k,k);sp.dispose();
+    if(st===2||st===6){sp=new THREE.SphereGeometry(0.105,14,6,4.712-1.05,2.1,0.6,st===6?0.62:0.5);b.add(sp,D,0,HY+0.002,0.002,0,st===2?0.3:0,0,0.93*1.085,1.1*1.07,1.085);sp.dispose();}   // fringe
+    if(st===5)for(i=0;i<18;i++){var a=i*2.4,t=0.15+(i%5)*0.21,sx=Math.sin(t)*Math.cos(a),sz=Math.sin(t)*Math.sin(a);b.cyl(0.002,0.03,0.085,5,sx*0.1,HY+Math.cos(t)*0.135,sz*0.1+0.012,i%2?C:D,sz*t*0.9+0.15,0,-sx*t*0.9);}
+    if(st===2)[-1,1].forEach(function(d){b.add(SPH,C,d*0.094,0.7,0.02,0,0,0,0.026,0.085,0.07);});
+    if(st===3)[-1,1].forEach(function(d){b.add(SPH,C,d*0.096,0.645,0.028,0,0,0,0.028,0.15,0.064);});
+    if(st===6)[-1,1].forEach(function(d){b.add(SPH,C,d*0.094,0.685,0.008,0,0,0,0.03,0.1,0.086);});
   }
-  if(st===2)b.add(SPH,HC,0,0.685,0.082,0,0,0,0.1,0.105,0.05);
-  if(st===3)b.add(SPH,HC,0,0.58,0.092,0,0,0,0.118,0.21,0.05);
-  if(st===6)b.add(SPH,HC,0,0.685,0.07,0,0,0,0.11,0.11,0.062);
-  if(st===4){b.sph(0.036,0,0.8,0.118,DK);b.tube([0,0.8,0.125],[0,0.68,0.185],0.034,0.03,HC,7);b.tube([0,0.68,0.185],[0,0.54,0.17],0.03,0.01,HC,7);}
+  if(st===2)b.add(SPH,C,0,0.69,0.078,0,0,0,0.098,0.1,0.046);
+  if(st===3)b.add(SPH,C,0,0.585,0.086,0,0,0,0.112,0.21,0.046);
+  if(st===6)b.add(SPH,C,0,0.685,0.066,0,0,0,0.106,0.105,0.058);
+  if(st===4){b.sph(0.034,0,0.795,0.112,D);b.tube([0,0.795,0.12],[0,0.68,0.18],0.032,0.028,C,7);b.tube([0,0.68,0.18],[0,0.55,0.165],0.028,0.008,C,7);}
+  if(!b.p.length)return null;
+  var m=new THREE.Mesh(b.geo(),new THREE.MeshStandardMaterial({color:new THREE.Color(hairHex(F)).convertSRGBToLinear(),roughness:0.7,metalness:0,vertexColors:true,envMapIntensity:0.35}));m.castShadow=true;return m;
 }
-function faceTex(F){ // wraps the head: face centred on the side the figure looks toward, hair over the scalp and back
-  var c=cvs(512,256),g=c.getContext('2d'),hc=hairHex(F),st=F[1],i,sh=st===1||st===7||st===4||st===5;
+function faceTex(F){ // wraps the head: the face on the side the figure looks toward (centre x=384), hair painted right onto the scalp with a real hairline, temples and sideburns
+  var c=cvs(512,256),g=c.getContext('2d'),hc=hairHex(F),st=F[1],i,Hs=HAIRS[st];
   g.fillStyle=skinHex(F);g.fillRect(0,0,512,256);
   var gr=g.createLinearGradient(0,150,0,256);gr.addColorStop(0,'rgba(70,35,22,0)');gr.addColorStop(1,'rgba(70,35,22,0.35)');g.fillStyle=gr;g.fillRect(0,150,512,106);
   features(g,384,136,116,F);
-  if(st>0){g.fillStyle=hc;g.fillRect(0,0,512,sh?40:50);g.fillRect(0,0,256,st===3?256:(sh?140:172));g.fillRect(256,0,30,sh?92:124);g.fillRect(482,0,30,sh?92:124);
-    g.strokeStyle='rgba(255,255,255,0.07)';g.lineWidth=1.5;for(i=0;i<140;i++){var hx=Math.random()*512,hy=Math.random()*(sh?40:50);g.beginPath();g.moveTo(hx,hy);g.lineTo(hx+(Math.random()-0.5)*8,hy+14);g.stroke();}}
+  [-1,1].forEach(function(d){var ex=384+d*128;g.fillStyle='rgba(120,60,40,0.28)';g.beginPath();g.ellipse(ex,132,7,15,0,0,6.283);g.fill();g.fillStyle=skinHex(F);g.beginPath();g.ellipse(ex+d*1.5,132,4.5,11,0,0,6.283);g.fill();});   // ears, painted
+  if(Hs){
+    function shape(off){ // back of the head from x=0 to 256, then round the face from one ear to the other
+      g.beginPath();g.moveTo(-2,-2);g.lineTo(514,-2);g.lineTo(514,Hs.s+off);
+      if(st===2){g.bezierCurveTo(476,Hs.s+off,468,150,462,Hs.t+18+off);g.bezierCurveTo(440,Hs.f+16+off,400,Hs.f+12+off,352,Hs.f-18+off);g.bezierCurveTo(330,Hs.f+off,312,Hs.t+10+off,306,150);g.bezierCurveTo(300,Hs.s+off,292,Hs.s+off,256,Hs.s+off);}
+      else if(st===3){g.lineTo(470,Hs.s);g.bezierCurveTo(462,170,462,130,450,Hs.t+off);g.bezierCurveTo(430,Hs.f+6+off,405,Hs.f-2+off,384,Hs.f-8+off);g.bezierCurveTo(363,Hs.f-2+off,338,Hs.f+6+off,318,Hs.t+off);g.bezierCurveTo(306,130,306,170,298,Hs.s);g.lineTo(256,Hs.s);}
+      else if(st===6){g.bezierCurveTo(480,Hs.s+off,466,Hs.s-10+off,462,Hs.f+off);g.lineTo(306,Hs.f+off);g.bezierCurveTo(302,Hs.s-10+off,288,Hs.s+off,256,Hs.s+off);}
+      else if(st===7){g.bezierCurveTo(498,Hs.s+off,492,Hs.t+18+off,474,Hs.t+off);g.bezierCurveTo(452,Hs.f-10+off,426,Hs.f-10+off,412,Hs.f+4+off);g.quadraticCurveTo(398,Hs.f+8+off,384,Hs.f+4+off);g.quadraticCurveTo(370,Hs.f+8+off,356,Hs.f+4+off);g.bezierCurveTo(342,Hs.f-10+off,316,Hs.f-10+off,294,Hs.t+off);g.bezierCurveTo(276,Hs.t+18+off,270,Hs.s+off,256,Hs.s+off);}
+      else{g.bezierCurveTo(498,Hs.s+off,494,Hs.t+22+off,476,Hs.t+4+off);g.bezierCurveTo(450,Hs.f+off,420,Hs.f-3+off,384,Hs.f+off);g.bezierCurveTo(348,Hs.f-3+off,318,Hs.f+off,292,Hs.t+4+off);g.bezierCurveTo(274,Hs.t+22+off,270,Hs.s+off,256,Hs.s+off);}
+      g.lineTo(256,Hs.n+off);g.bezierCurveTo(200,Hs.n+10+off,56,Hs.n+10+off,0,Hs.n+off);g.lineTo(-2,Hs.n+off);g.closePath();
+    }
+    g.fillStyle='rgba(40,20,10,0.22)';shape(5);g.fill();                 // soft shadow under the hairline
+    g.fillStyle=hc;shape(0);g.fill();g.save();g.clip();
+    g.strokeStyle='rgba(255,255,255,0.06)';g.lineWidth=1.5;for(i=0;i<220;i++){var hx=Math.random()*512,hy=Math.random()*200;g.beginPath();g.moveTo(hx,hy);g.lineTo(hx+(Math.random()-0.5)*8,hy+16);g.stroke();}
+    g.strokeStyle='rgba(0,0,0,0.10)';for(i=0;i<120;i++){hx=Math.random()*512;hy=Math.random()*200;g.beginPath();g.moveTo(hx,hy);g.lineTo(hx+(Math.random()-0.5)*8,hy+16);g.stroke();}
+    g.restore();
+  }
   var t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=ANISO;return t;
 }
 function portrait(cv,F){
@@ -3324,7 +3340,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月14日','協力プレイ：味方のいる方向に印（画面の外なら端に矢印と距離）／地図の敵・味方・自分のアイコンを大きく'],
+  [['2026年11月14日','光の表現（明るい所のにじみ、色調）／アバターの髪を作り直し（生え際・もみあげ・後ろ髪）／立体駐車場の入口を手前の辺の左側に／毒ガスのダメージを5分の1に'],
+   ['2026年11月14日','協力プレイ：味方のいる方向に印（画面の外なら端に矢印と距離）／地図の敵・味方・自分のアイコンを大きく'],
    ['2026年11月14日','次の安全エリアが先に分かる（地図の白い点線、場所は毎回ランダム）／プラクティス（ロボットなし）'],
    ['2026年11月14日','ライフ3つ（ダウンしても2回まではその場で復活）／アイテムを拾い終えてもボタンが残る不具合を修正'],
    ['2026年11月14日','スタジアムシティにジップライン（高いビルの屋上からスタジアム上空を渡る）'],
@@ -3768,6 +3785,43 @@ function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as 
     '.mate.dn i{background:rgba(226,60,45,.95)}.mate.dn b{color:#ffb3aa}';
   document.head.appendChild(st);
   matesBox=document.createElement('div');matesBox.id='matesBox';document.body.appendChild(matesBox);
+})();
+
+/* ---------- finishing pass: light spills softly from the brightest things (sky, sunlit walls, water glints, muzzle flash), then a gentle film-like grade. Skipped on low-power devices and where it fails ---------- */
+var POST=null;
+(function(){
+  if(LOW||!renderer.capabilities.isWebGL2)return;
+  var sz=new THREE.Vector2(),rt=null,b1=null,b2=null,cam=new THREE.OrthographicCamera(-1,1,1,-1,0,1),sc=new THREE.Scene(),quad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),null);
+  quad.frustumCulled=false;sc.add(quad);
+  function mat(fs,u){return new THREE.ShaderMaterial({uniforms:u,vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}',fragmentShader:'precision highp float;varying vec2 vUv;'+fs,depthTest:false,depthWrite:false,toneMapped:false,fog:false});}
+  var mBright=mat('uniform sampler2D t;uniform vec2 px;void main(){vec3 c=(texture2D(t,vUv+px*vec2(-1.,-1.)).rgb+texture2D(t,vUv+px*vec2(1.,-1.)).rgb+texture2D(t,vUv+px*vec2(-1.,1.)).rgb+texture2D(t,vUv+px*vec2(1.,1.)).rgb)*0.25;float l=max(c.r,max(c.g,c.b));gl_FragColor=vec4(c*smoothstep(0.80,1.0,l),1.0);}',{t:{value:null},px:{value:new THREE.Vector2()}});
+  var mBlur=mat('uniform sampler2D t;uniform vec2 d;void main(){vec3 c=texture2D(t,vUv).rgb*0.227;c+=(texture2D(t,vUv+d*1.385).rgb+texture2D(t,vUv-d*1.385).rgb)*0.316;c+=(texture2D(t,vUv+d*3.231).rgb+texture2D(t,vUv-d*3.231).rgb)*0.070;gl_FragColor=vec4(c,1.0);}',{t:{value:null},d:{value:new THREE.Vector2()}});
+  var mFinal=mat('uniform sampler2D t;uniform sampler2D b;void main(){vec3 c=texture2D(t,vUv).rgb;vec3 g=texture2D(b,vUv).rgb;'+
+    'c=1.0-(1.0-c)*(1.0-g*0.55);'+                                              // glow, screened on so it never clips hard
+    'c=mix(c,c*c*(3.0-2.0*c),0.14);'+                                           // a little more contrast through the mid-tones
+    'float l=dot(c,vec3(0.299,0.587,0.114));c=mix(vec3(l),c,1.07);'+           // and colour
+    'c+=vec3(0.020,0.008,-0.014)*smoothstep(0.5,1.0,l);c+=vec3(-0.010,0.002,0.016)*(1.0-smoothstep(0.0,0.35,l));'+   // sunlit parts a touch warmer, shade a touch cooler
+    'gl_FragColor=vec4(clamp(c,0.0,1.0),1.0);}',{t:{value:null},b:{value:null}});
+  function pass(m,target){quad.material=m;renderer.setRenderTarget(target);renderer.render(sc,cam);}
+  var slow=false,fN=0,fT=0,fL=0;try{slow=localStorage.getItem('ic_post')==='0';}catch(e){}
+  POST={on:!slow,render:function(withGun){
+    try{
+      var tn=performance.now();if(fL&&tn-fL<200){fT+=tn-fL;fN++;if(fN>=150){if(fT/fN>36){POST.on=false;try{localStorage.setItem('ic_post','0');}catch(e){}}fN=0;fT=0;}}fL=tn;   // too slow on this device: go back to plain drawing, and remember it
+      renderer.getDrawingBufferSize(sz);
+      if(!rt||rt.width!==sz.x||rt.height!==sz.y){
+        if(rt){rt.dispose();b1.dispose();b2.dispose();}
+        rt=new THREE.WebGLMultisampleRenderTarget(sz.x,sz.y,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat});rt.samples=4;rt.texture.encoding=THREE.sRGBEncoding;
+        var w=Math.max(8,sz.x>>2),h=Math.max(8,sz.y>>2),o={minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat,depthBuffer:false};
+        b1=new THREE.WebGLRenderTarget(w,h,o);b2=new THREE.WebGLRenderTarget(w,h,o);
+        mBright.uniforms.px.value.set(1/sz.x,1/sz.y);
+      }
+      renderer.setRenderTarget(rt);renderer.clear();renderer.render(scene,camera);
+      if(withGun){renderer.clearDepth();renderer.render(gunScene,gunCam);}
+      mBright.uniforms.t.value=rt.texture;pass(mBright,b1);
+      for(var i=0;i<2;i++){var k=i?2.2:1;mBlur.uniforms.t.value=b1.texture;mBlur.uniforms.d.value.set(k/b1.width,0);pass(mBlur,b2);mBlur.uniforms.t.value=b2.texture;mBlur.uniforms.d.value.set(0,k/b1.height);pass(mBlur,b1);}
+      mFinal.uniforms.t.value=rt.texture;mFinal.uniforms.b.value=b1.texture;pass(mFinal,null);
+    }catch(e){POST.on=false;renderer.setRenderTarget(null);}
+  }};
 })();
 
 /* ---------- per-client logic ---------- */
@@ -4301,6 +4355,7 @@ function drawScene(withGun){
   sky.position.copy(camera.position);seaU.uCam.value.copy(camera.position);
   glare.position.set(camera.position.x+SUN.x*5000,camera.position.y+SUN.y*5000,camera.position.z+SUN.z*5000);
   glare.material.opacity=glareA*0.85;
+  if(POST&&POST.on){POST.render(withGun);if(POST.on)return;}
   renderer.clear();renderer.render(scene,camera);
   if(withGun){renderer.clearDepth();renderer.render(gunScene,gunCam);}
 }
