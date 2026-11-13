@@ -1915,6 +1915,148 @@ function makePlayer(peer,name,face){ // the figure other players see: body, clot
   return {g:g,hips:hips,lL:lL,lR:lR,sp:lab,name:name,x:0,z:0,yaw:0,shots:null,init:false,ph:0,amp:0};
 }
 
+/* ---------- the figure, rebuilt: a head with real relief (nose, eye sockets, brow, lips, chin, ears), a trunk and limbs lofted as smooth shapes, and a live 3D view of it in the avatar editor ---------- */
+function smoothGeo(p,idx,W,rows){ // indexed mesh with averaged normals; the first and last column of each ring are the same place, so they share a normal
+  var g=new THREE.BufferGeometry(),i,k;g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();
+  var N=g.attributes.normal;
+  for(i=0;i<rows;i++){var a=i*W,b=a+W-1,x=N.getX(a)+N.getX(b),y=N.getY(a)+N.getY(b),z=N.getZ(a)+N.getZ(b),l=Math.hypot(x,y,z)||1;N.setXYZ(a,x/l,y/l,z/l);N.setXYZ(b,x/l,y/l,z/l);}
+  return g;
+}
+function loftGeo(R,seg){ // rings from bottom to top, each [y, half-width, half-depth, centre x, centre z]
+  var p=[],idx=[],n=R.length,W=seg+1,i,j;
+  for(i=0;i<n;i++)for(j=0;j<=seg;j++){var a=j/seg*6.28318;p.push((R[i][3]||0)+Math.cos(a)*R[i][1],R[i][0],(R[i][4]||0)+Math.sin(a)*R[i][2]);}
+  for(i=0;i<n-1;i++)for(j=0;j<seg;j++){var a0=i*W+j,b0=a0+W;idx.push(a0,b0,a0+1,a0+1,b0,b0+1);}
+  var cb=p.length/3;p.push(R[0][3]||0,R[0][0],R[0][4]||0);p.push(R[n-1][3]||0,R[n-1][0],R[n-1][4]||0);
+  for(j=0;j<seg;j++){idx.push(cb,j,j+1);idx.push(cb+1,(n-1)*W+j+1,(n-1)*W+j);}
+  return smoothGeo(p,idx,W,n);
+}
+function limbGeo(P,rad,seg){ // a round limb through the points P with a radius at each
+  var p=[],idx=[],n=P.length,W=seg+1,i,j,t=new THREE.Vector3(),u=new THREE.Vector3(),v=new THREE.Vector3(),ref=new THREE.Vector3();
+  for(i=0;i<n;i++){
+    var A=P[Math.max(0,i-1)],B=P[Math.min(n-1,i+1)];t.set(B[0]-A[0],B[1]-A[1],B[2]-A[2]).normalize();
+    if(Math.abs(t.y)<0.9)ref.set(0,1,0);else ref.set(1,0,0);u.crossVectors(t,ref).normalize();v.crossVectors(t,u);
+    for(j=0;j<=seg;j++){var a=j/seg*6.28318,c=Math.cos(a)*rad[i],s=Math.sin(a)*rad[i];p.push(P[i][0]+u.x*c+v.x*s,P[i][1]+u.y*c+v.y*s,P[i][2]+u.z*c+v.z*s);}
+  }
+  for(i=0;i<n-1;i++)for(j=0;j<seg;j++){var a0=i*W+j,b0=a0+W;idx.push(a0,a0+1,b0,a0+1,b0+1,b0);}
+  var c0=p.length/3;p.push(P[0][0],P[0][1],P[0][2]);p.push(P[n-1][0],P[n-1][1],P[n-1][2]);
+  for(j=0;j<seg;j++){idx.push(c0,j+1,j);idx.push(c0+1,(n-1)*W+j,(n-1)*W+j+1);}
+  return smoothGeo(p,idx,W,n);
+}
+function headGeo(fs){ // a head, not a ball: pushed and pulled from a sphere so the painted face sits on real features. Texture coordinates stay those of the sphere
+  var g=new THREE.SphereGeometry(1,48,36),P=g.attributes.position,i,SX=[0.089,0.094,0.085][fs||0],SY=[0.114,0.108,0.122][fs||0],SZ=0.1;
+  function G(a,p,a0,p0,sa,sp){var da=a-a0,dp=p-p0;return Math.exp(-(da*da/(2*sa*sa)+dp*dp/(2*sp*sp)));}
+  for(i=0;i<P.count;i++){
+    var x=P.getX(i),y=P.getY(i),z=P.getZ(i),az=Math.atan2(x,-z),aa=Math.abs(az),po=Math.acos(clamp(y,-1,1)),r=1;
+    r+=0.03*sm(0,0.8,z)*sm(-0.3,0.4,y);                                   // back of the skull
+    r+=0.2*G(az,po,0,1.90,0.09,0.10)+0.07*G(az,po,0,1.68,0.065,0.14);     // nose and its bridge
+    r+=0.035*G(aa,po,0.1,1.97,0.055,0.035);                              // wings of the nose
+    r-=0.055*G(aa,po,0.355,1.575,0.15,0.08);                              // eye sockets
+    r+=0.028*G(aa,po,0.35,1.41,0.33,0.05);                                  // brow
+    r+=0.038*G(az,po,0,2.165,0.2,0.05)-0.02*G(az,po,0,2.29,0.22,0.05);    // lips, and the dip under them
+    r+=0.04*G(az,po,0,2.52,0.26,0.16);                                    // chin
+    r+=0.02*G(aa,po,0.7,1.88,0.25,0.2);                                  // cheekbones
+    r+=0.12*G(aa,po,1.6,1.7,0.07,0.15);                                   // ears
+    var jaw=1-0.19*sm(0.1,0.95,-y)*(1-0.5*sm(0.3,1,z)),tuck=(y<0&&z>0)?1-0.22*sm(0.2,0.9,-y)*sm(0,0.6,z):1,flat=z<0?0.95:1;
+    P.setXYZ(i,x*r*SX*jaw,y*r*SY,z*r*SZ*tuck*flat);
+  }
+  g.computeVertexNormals();
+  var N=g.attributes.normal,W=49;
+  for(i=0;i<37;i++){var a=i*W,b=a+W-1,nx=N.getX(a)+N.getX(b),ny=N.getY(a)+N.getY(b),nz=N.getZ(a)+N.getZ(b),l=Math.hypot(nx,ny,nz)||1;N.setXYZ(a,nx/l,ny/l,nz/l);N.setXYZ(b,nx/l,ny/l,nz/l);}
+  return g;
+}
+function makePlayer(peer,name,face){ // the figure others see (and you, in third person and in the editor): faces -z
+  var F=cleanFace(face),hsh=0;for(var k=0;k<peer.length;k++)hsh=(hsh*31+peer.charCodeAt(k))>>>0;
+  function hx(h){return rgb(parseInt(h.slice(1),16));}
+  var TC=rgb(PCOL[hsh%PCOL.length]),SK=hx(skinHex(F)),TOP=hx(TOPC[F[10]]),BOT=hx(BOTC[F[11]]),of=F[9],WHT=[0.8,0.8,0.78],GN=[0.03,0.03,0.034],H=Math.PI/2;
+  var top=of===0?[0.10,0.12,0.075]:(of===7?[0.03,0.025,0.02]:(of===8?[0.82,0.82,0.8]:TOP)),bot=of===0?[0.085,0.10,0.065]:(of===3||of===4||of===9?[TOP[0]*0.9,TOP[1]*0.9,TOP[2]*0.9]:(of===8?[0.82,0.82,0.8]:BOT)),short=of===1||of===6,sleeve=short?SK:top,hand=of===0?[0.028,0.03,0.026]:SK,
+      shoe=of===0||of===5?[0.02,0.02,0.02]:(of===3?[0.015,0.012,0.01]:[0.75,0.75,0.73]),dk=[top[0]*0.72,top[1]*0.72,top[2]*0.72];
+  var g=new THREE.Group(),hips=new THREE.Group(),b=new GB(),skb=new GB(),sp,i,WH1=[1,1,1];
+  g.rotation.order='YXZ';hips.position.y=0.95;g.add(hips);
+  function L(R,col,into){var q=loftGeo(R,22);(into||b).add(q,col);q.dispose();}
+  function M(P,rad,col,into){var q=limbGeo(P,rad,12);(into||b).add(q,col);q.dispose();}
+  // trunk: hips, waist, chest, shoulders
+  L([[-0.075,0.12,0.095],[-0.02,0.165,0.115],[0.05,0.172,0.118],[0.115,0.163,0.112]],bot);
+  L([[0.092,0.168,0.116],[0.128,0.166,0.114]],of===3?[0.02,0.02,0.02]:[0.05,0.04,0.03]);
+  L([[0.12,0.163,0.11],[0.2,0.15,0.1,0,-0.002],[0.31,0.162,0.108,0,-0.006],[0.42,0.186,0.12,0,-0.012],[0.5,0.194,0.114,0,-0.008],[0.548,0.168,0.098],[0.578,0.115,0.086],[0.602,0.068,0.066]],top);
+  L([[0.565,0.056,0.06],[0.675,0.05,0.055]],SK,skb);
+  [-1,1].forEach(function(d){b.add(SPH,top,d*0.198,0.505,0,0,0,0,0.056,0.052,0.06);});
+  if(of===0){b.oct(0.43,0.3,0.27,0,0.4,0,[0.045,0.05,0.035]);b.box(0.3,0.36,0.14,0,0.42,0.2,[0.045,0.05,0.035]);for(i=0;i<3;i++)b.box(0.1,0.12,0.05,-0.12+i*0.12,0.3,-0.15,[0.035,0.04,0.03]);b.box(0.09,0.1,0.02,0.215,0.5,0,TC);b.box(0.09,0.1,0.02,-0.215,0.5,0,TC);}
+  if(of===2){b.add(SPH,top,0,0.6,0.08,0,0,0,0.13,0.1,0.11);b.box(0.24,0.1,0.02,0,0.25,-0.112,dk);b.box(0.012,0.2,0.012,0.04,0.5,-0.125,WHT);b.box(0.012,0.2,0.012,-0.04,0.5,-0.125,WHT);}
+  if(of===3){b.box(0.12,0.3,0.012,0,0.46,-0.122,WHT);b.box(0.04,0.28,0.014,0,0.44,-0.127,rgb(0x8f2a2a));b.box(0.07,0.26,0.012,0.075,0.48,-0.124,dk,0,0,0.25);b.box(0.07,0.26,0.012,-0.075,0.48,-0.124,dk,0,0,-0.25);}
+  if(of===4){b.box(0.012,0.5,0.012,0,0.36,-0.122,WHT);}
+  if(of===5){b.oct(0.42,0.34,0.25,0,0.4,0,rgb(0xd9c21f));b.box(0.43,0.04,0.255,0,0.33,0,[0.7,0.7,0.72]);b.box(0.43,0.04,0.255,0,0.45,0,[0.7,0.7,0.72]);}
+  if(of===6)for(i=0;i<10;i++)b.box(0.05,0.05,0.012,-0.15+(i%5)*0.075,0.3+Math.floor(i/5)*0.2+(i%2)*0.06,-0.122,i%2?[0.85,0.8,0.6]:[0.75,0.3,0.12]);
+  if(of===7){b.box(0.012,0.46,0.012,0.03,0.4,-0.124,[0.3,0.3,0.31]);b.box(0.1,0.2,0.012,0.11,0.52,-0.122,[0.06,0.05,0.04],0,0,0.3);b.box(0.1,0.2,0.012,-0.11,0.52,-0.122,[0.06,0.05,0.04],0,0,-0.3);}
+  if(of===8){for(i=-3;i<=3;i++)b.box(0.006,0.5,0.006,i*0.055,0.36,-0.122,[0.05,0.08,0.2]);if(!F[8]){b.add(SPH,TC,0,0.8,0,0,0,0,0.106,0.066,0.115);b.box(0.16,0.012,0.09,0,0.785,-0.14,TC);}}
+  if(of===9){L([[-0.5,0.2,0.14],[-0.2,0.185,0.13],[0.1,0.172,0.12]],top);b.oct(0.36,0.1,0.24,0,0.2,0,[0.5,0.08,0.08]);b.box(0.05,0.3,0.012,0.05,0.44,-0.122,dk,0,0,0.45);b.box(0.05,0.3,0.012,-0.05,0.44,-0.122,dk,0,0,-0.45);}
+  // arms, in a ready hold on the rifle
+  var S1=[0.215,0.52,0],E1=[0.2,0.3,-0.14],W1=[0.06,0.3,-0.36],S2=[-0.215,0.52,0],E2=[-0.2,0.32,-0.2],W2=[0.03,0.3,-0.52];
+  [[S1,E1,W1],[S2,E2,W2]].forEach(function(A){
+    var s=A[0],e=A[1],w=A[2],m=[(s[0]+e[0])/2,(s[1]+e[1])/2,(s[2]+e[2])/2],f=[(e[0]+w[0])/2,(e[1]+w[1])/2-0.004,(e[2]+w[2])/2];
+    if(short){M([s,m],[0.05,0.048],top);M([m,e],[0.044,0.038],SK,skb);}else M([s,m,e],[0.05,0.048,0.04],top);
+    (short?skb:b).sph(0.039,e[0],e[1],e[2],short?SK:top);M([e,f,w],[0.039,0.038,0.028],sleeve,short?skb:b);
+    (of===0?b:skb).add(SPH,hand,w[0],w[1],w[2]-0.02,0,0,0,0.032,0.028,0.048);
+  });
+  if(of===4){b.tube([0.275,0.53,0],[0.25,0.3,-0.14],0.012,0.012,WHT,4);b.tube([-0.275,0.53,0],[-0.25,0.32,-0.2],0.012,0.012,WHT,4);}
+  b.box(0.045,0.07,0.62,0.06,0.33,-0.42,GN);b.box(0.03,0.13,0.05,0.06,0.25,-0.42,GN,0.15);b.cyl(0.012,0.012,0.22,6,0.06,0.34,-0.82,GN,H);b.box(0.045,0.1,0.14,0.07,0.34,-0.06,GN);
+  if(F[8]){sp=new THREE.SphereGeometry(0.125,20,10,0,6.283,0,1.7);b.add(sp,of===0?[0.11,0.13,0.08]:TC,0,0.75,0.005,0,0,0,1,0.98,1.1);sp.dispose();b.box(0.012,0.14,0.012,0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);b.box(0.012,0.14,0.012,-0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);}
+  var hairM=hair3d(F,!!F[8]);if(hairM)hips.add(hairM);
+  var body=new THREE.Mesh(b.geo(),soldierMat);body.castShadow=true;body.receiveShadow=true;hips.add(body);
+  if(skb.p.length){for(i=0;i<skb.c.length;i++)skb.c[i]=1;var skm=new THREE.Mesh(skb.geo(),new THREE.MeshStandardMaterial({color:new THREE.Color(skinHex(F)).convertSRGBToLinear(),roughness:0.58,envMapIntensity:0.5,vertexColors:true}));skm.castShadow=true;hips.add(skm);}
+  var hg=headGeo(F[12]||0),hd=new THREE.Mesh(hg,new THREE.MeshStandardMaterial({map:faceTex(F),roughness:0.58,envMapIntensity:0.5}));hd.position.set(0,0.735,0);hd.castShadow=true;hips.add(hd);
+  function leg(x){
+    var th=new THREE.Group(),sh=new THREE.Group(),q=new GB();th.position.set(x,0,0);sh.position.set(0,-0.45,0);
+    M([[0,0.03,0],[0,-0.2,-0.004],[0,-0.45,0]],[0.098,0.089,0.064],bot,q);q.sph(0.064,0,-0.45,0,bot);if(of===4)q.box(0.012,0.44,0.012,x>0?0.092:-0.092,-0.22,0,WHT);
+    var m=new THREE.Mesh(q.geo(),soldierMat);m.castShadow=true;th.add(m);
+    q=new GB();M([[0,0,0],[0,-0.13,0.012],[0,-0.41,0]],[0.062,0.068,0.044],bot,q);
+    q.add(SPH,shoe,0,-0.452,-0.045,0,0,0,0.052,0.045,0.13);q.box(0.098,0.022,0.26,0,-0.492,-0.045,[0.02,0.02,0.02]);if(of===4)q.box(0.012,0.4,0.012,x>0?0.066:-0.066,-0.2,0,WHT);
+    m=new THREE.Mesh(q.geo(),soldierMat);m.castShadow=true;sh.add(m);
+    th.add(sh);hips.add(th);return {th:th,sh:sh};
+  }
+  var lL=leg(0.1),lR=leg(-0.1);
+  var lab=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex(name),depthTest:false,transparent:true}));
+  lab.scale.set(2.4,0.6,1);lab.position.y=2.25;g.add(lab);
+  scene.add(g);
+  return {g:g,hips:hips,lL:lL,lR:lR,sp:lab,name:name,x:0,z:0,yaw:0,shots:null,init:false,ph:0,amp:0};
+}
+/* the avatar editor shows the real model, lit like a portrait and turning slowly; drag it to look round */
+var PV=null,pvTimer=0,pvYaw=0.35,pvDrag=null,pvHold=0;
+function preview3d(cv,F,yaw,close){
+  var W=cv.width,Hh=cv.height,k=2;
+  if(!PV){
+    PV={sc:new THREE.Scene(),cam:new THREE.PerspectiveCamera(24,1,0.1,30),rts:{},fig:null,key:''};
+    if(scene.environment)PV.sc.environment=scene.environment;
+    var kl=new THREE.DirectionalLight(0xffffff,1.9);kl.color.setRGB(1,0.95,0.88);kl.position.set(-1.6,2.6,-2.4);PV.sc.add(kl);
+    var rl=new THREE.DirectionalLight(0xffffff,1.6);rl.color.setRGB(0.6,0.78,1);rl.position.set(2.2,1.6,2.4);PV.sc.add(rl);
+    var hl=new THREE.HemisphereLight(0xffffff,0xffffff,0.6);hl.color.setRGB(0.7,0.8,1);hl.groundColor.setRGB(0.3,0.26,0.22);PV.sc.add(hl);
+    var bc=cvs(64,256),bg=bc.getContext('2d'),gr=bg.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#3b5d78');gr.addColorStop(0.6,'#1d3246');gr.addColorStop(1,'#0c1620');bg.fillStyle=gr;bg.fillRect(0,0,64,256);
+    var bt=new THREE.CanvasTexture(bc);bt.encoding=THREE.sRGBEncoding;var bm=new THREE.Mesh(new THREE.PlaneGeometry(8,6),new THREE.MeshBasicMaterial({map:bt,toneMapped:false,fog:false}));bm.position.set(0,1.5,2.4);bm.rotation.y=Math.PI;PV.sc.add(bm);
+    PV.tmp=cvs(8,8);
+  }
+  var key=JSON.stringify(F);
+  if(PV.key!==key){if(PV.fig)PV.sc.remove(PV.fig.g);PV.fig=makePlayer('me',' ',F);scene.remove(PV.fig.g);PV.fig.g.remove(PV.fig.sp);PV.sc.add(PV.fig.g);PV.key=key;}
+  PV.fig.g.rotation.set(0,yaw,0);
+  var rk=W+'x'+Hh,rt=PV.rts[rk];if(!rt){rt=PV.rts[rk]=new THREE.WebGLRenderTarget(W*k,Hh*k,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat});rt.texture.encoding=THREE.sRGBEncoding;rt.buf=new Uint8Array(W*k*Hh*k*4);}
+  PV.cam.aspect=W/Hh;PV.cam.fov=close?17:24;PV.cam.position.set(0,close?1.69:1.6,-2.15);PV.cam.lookAt(0,close?1.68:1.56,0);PV.cam.updateProjectionMatrix();
+  var fog=scene.fog;
+  try{
+    renderer.setRenderTarget(rt);renderer.setClearColor(0x0c1620,1);renderer.clear();renderer.render(PV.sc,PV.cam);renderer.readRenderTargetPixels(rt,0,0,W*k,Hh*k,rt.buf);renderer.setRenderTarget(null);
+    var t=PV.tmp;if(t.width!==W*k||t.height!==Hh*k){t.width=W*k;t.height=Hh*k;}
+    var tg=t.getContext('2d'),im=tg.createImageData(W*k,Hh*k),row=W*k*4,y;
+    for(y=0;y<Hh*k;y++)im.data.set(rt.buf.subarray((Hh*k-1-y)*row,(Hh*k-y)*row),y*row);
+    tg.putImageData(im,0,0);var g2=cv.getContext('2d');g2.setTransform(1,0,0,1,0,0);g2.imageSmoothingEnabled=true;g2.imageSmoothingQuality='high';g2.drawImage(t,0,0,W,Hh);
+  }catch(e){renderer.setRenderTarget(null);portrait(cv,F);}
+}
+function pvStart(cv,getF){
+  if(!cv.pvBound){cv.pvBound=true;cv.style.touchAction='none';cv.style.cursor='grab';
+    cv.addEventListener('pointerdown',function(e){pvDrag={x:e.clientX,yaw:pvYaw};pvHold=1e9;try{cv.setPointerCapture(e.pointerId);}catch(_){}});
+    cv.addEventListener('pointermove',function(e){if(pvDrag){pvYaw=pvDrag.yaw+(e.clientX-pvDrag.x)*0.012;}});
+    var up=function(){if(pvDrag){pvDrag=null;pvHold=performance.now()+4000;}};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+  clearInterval(pvTimer);var t0=performance.now();
+  pvTimer=setInterval(function(){var tn=performance.now();if(tn>pvHold&&!pvDrag)pvYaw+=(Math.sin((tn-t0)/1000*0.55)*0.6-pvYaw)*0.06;preview3d(cv,getF(),pvYaw);},66);
+}
+function pvStop(){clearInterval(pvTimer);pvTimer=0;}
+
 
 /* ---------- network: solo, or co-op rooms that are listed in a lobby and entered with a 4-digit code ---------- */
 netState='solo';
@@ -2885,7 +3027,7 @@ function faceTex(F){ // wraps the head: the face on the side the figure looks to
   var c=cvs(512,256),g=c.getContext('2d'),hc=hairHex(F),st=F[1],i,Hs=HAIRS[st];
   g.fillStyle=skinHex(F);g.fillRect(0,0,512,256);
   var gr=g.createLinearGradient(0,150,0,256);gr.addColorStop(0,'rgba(70,35,22,0)');gr.addColorStop(1,'rgba(70,35,22,0.35)');g.fillStyle=gr;g.fillRect(0,150,512,106);
-  features(g,384,136,116,F);
+  features(g,384,134,142,F);
   [-1,1].forEach(function(d){var ex=384+d*128;g.fillStyle='rgba(120,60,40,0.28)';g.beginPath();g.ellipse(ex,132,7,15,0,0,6.283);g.fill();g.fillStyle=skinHex(F);g.beginPath();g.ellipse(ex+d*1.5,132,4.5,11,0,0,6.283);g.fill();});   // ears, painted
   if(Hs){
     function shape(off){ // back of the head from x=0 to 256, then round the face from one ear to the other
@@ -3042,11 +3184,11 @@ var elLoot,elInv,elAr,elScope,bSwap,bNade,bFull;
   '#avBtn{height:44px;padding:0 14px;font:700 14px var(--body);color:var(--ink);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4);border-radius:4px;display:flex;align-items:center;gap:10px}',
   '#avBtn canvas{width:34px;height:38px;border-radius:3px}',
   '#avatar{position:fixed;inset:0;z-index:15;background:rgba(8,18,27,.96);display:flex;align-items:flex-start;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch}',
-  '#avBox{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:640px;width:100%;margin:auto}','@media (max-height:700px),(max-width:520px){#avBox canvas{width:112px;height:132px}#avNote{max-width:none}#avSide{flex-direction:row;flex-wrap:wrap;justify-content:center}.avr button,.avb{height:32px}}','#avBox canvas{width:170px;height:200px;border-radius:6px;border:1px solid rgba(255,255,255,.3)}',
+  '#avBox{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:640px;width:100%;margin:auto}','@media (max-height:700px),(max-width:520px){#avBox canvas{width:153px;height:180px}#avNote{max-width:none}#avSide{flex-direction:row;flex-wrap:wrap;justify-content:center}.avr button,.avb{height:32px}}','#avBox canvas{width:238px;height:280px;border-radius:6px;border:1px solid rgba(255,255,255,.3)}',
   '#avSide{display:flex;flex-direction:column;gap:8px;align-items:center}','#avRows{display:flex;flex-direction:column;gap:5px;flex:1;min-width:250px}',
   '.avr{display:flex;align-items:center;gap:6px;font-size:13px}','.avr span{width:74px;color:var(--dim)}','.avr b{flex:1;text-align:center;font-weight:700}',
   '.avr button,.avb{height:34px;min-width:38px;padding:0 10px;font:700 14px var(--body);color:var(--ink);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4);border-radius:4px}',
-  '.avb.go{background:var(--signal);color:#1a1200;border:0}','#avNote{font-size:11px;color:var(--dim);line-height:1.5;max-width:170px;text-align:center}',
+  '.avb.go{background:var(--signal);color:#1a1200;border:0}','#avNote{font-size:11px;color:var(--dim);line-height:1.5;max-width:238px;text-align:center}',
   '.sw{display:inline-block;width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.6);vertical-align:middle}',
   /* phones held sideways: everything smaller and pulled to the corners, clear of the notch */
   '@media (orientation:landscape) and (max-height:540px){',
@@ -3083,12 +3225,12 @@ var elLoot,elInv,elAr,elScope,bSwap,bNade,bFull;
   var shot=document.createElement('canvas');shot.width=shot.height=128;shot.style.cssText='width:64px;height:64px;display:none;border-radius:6px';side.appendChild(shot);
   var note=el('div','avNote','','写真はこの端末の中だけで読み取り、送信も保存もしません。肌と髪の色を写真からそのまま取り、髪の長さ・ひげ・メガネ・輪郭を推定します。',side);
   var rows=el('div','avRows','',null,box),vals=[];
-  function show(){portrait(big,myFace);portrait(pv,myFace);vals.forEach(function(v,i){var o=FOPT[i];v.textContent='';if(o[2])v.textContent=o[2][myFace[i]];else{var s=document.createElement('i');s.className='sw';s.style.background=i===0?skinHex(myFace):(i===2?hairHex(myFace):FPAL[i][myFace[i]]);v.appendChild(s);}});
+  function show(){preview3d(big,myFace,pvYaw);preview3d(pv,myFace,0.3,true);vals.forEach(function(v,i){var o=FOPT[i];v.textContent='';if(o[2])v.textContent=o[2][myFace[i]];else{var s=document.createElement('i');s.className='sw';s.style.background=i===0?skinHex(myFace):(i===2?hairHex(myFace):FPAL[i][myFace[i]]);v.appendChild(s);}});
     try{localStorage.setItem('ic_face',JSON.stringify(myFace));}catch(e){}}
   FOPT.forEach(function(o,i){if(o[3])return;var r=el('div','','avr',null,rows);el('span','','',o[0],r);var a=el('button','avL'+i,'','◀',r);a.type='button';vals[i]=el('b','','',null,r);var b=el('button','avR'+i,'','▶',r);b.type='button';
     a.addEventListener('click',function(){stepFace(i,-1);show();});b.addEventListener('click',function(){stepFace(i,1);show();});});
   var done=el('button','avDone','avb go','これで決定',rows);done.type='button';
-  ab.addEventListener('click',function(){ov.classList.remove('off');show();});done.addEventListener('click',function(){ov.classList.add('off');});
+  ab.addEventListener('click',function(){ov.classList.remove('off');show();pvStart(big,function(){return myFace;});});done.addEventListener('click',function(){ov.classList.add('off');pvStop();preview3d(pv,myFace,0.3,true);});
   br.addEventListener('click',function(){myFace=FOPT.map(function(o){return o[3]?0:Math.floor(Math.random()*o[1]);});if(!outfitOk(myFace[9]))myFace[9]=Math.floor(Math.random()*6);show();});
   bp.addEventListener('click',function(){fi.click();});
   fi.addEventListener('change',function(){
@@ -3340,7 +3482,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','キャラモード：相棒のガーディアンがついてきて一緒に戦う（トップ画面かポーズメニューで切り替え）'],
+  [['2026年11月15日','アバターを作り直し：鼻・目のくぼみ・あご・耳のある立体の頭、なめらかな体と手足。アバター画面は実際の3Dモデルを表示（ドラッグで回せる）'],
+   ['2026年11月15日','キャラモード：相棒のガーディアンがついてきて一緒に戦う（トップ画面かポーズメニューで切り替え）'],
    ['2026年11月14日','光の表現（明るい所のにじみ、色調）／アバターの髪を作り直し（生え際・もみあげ・後ろ髪）／立体駐車場の入口を手前の辺の左側に／毒ガスのダメージを5分の1に'],
    ['2026年11月14日','協力プレイ：味方のいる方向に印（画面の外なら端に矢印と距離）／地図の敵・味方・自分のアイコンを大きく'],
    ['2026年11月14日','次の安全エリアが先に分かる（地図の白い点線、場所は毎回ランダム）／プラクティス（ロボットなし）'],
