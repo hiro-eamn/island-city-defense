@@ -3324,7 +3324,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月14日','次の安全エリアが先に分かる（地図の白い点線、場所は毎回ランダム）／プラクティス（ロボットなし）'],
+  [['2026年11月14日','協力プレイ：味方のいる方向に印（画面の外なら端に矢印と距離）／地図の敵・味方・自分のアイコンを大きく'],
+   ['2026年11月14日','次の安全エリアが先に分かる（地図の白い点線、場所は毎回ランダム）／プラクティス（ロボットなし）'],
    ['2026年11月14日','ライフ3つ（ダウンしても2回まではその場で復活）／アイテムを拾い終えてもボタンが残る不具合を修正'],
    ['2026年11月14日','スタジアムシティにジップライン（高いビルの屋上からスタジアム上空を渡る）'],
    ['2026年11月14日','アバターを描き直し（顔・髪型・輪郭、髪型2種を追加）／写真から作ると肌と髪の色が写真どおりになる'],
@@ -3720,6 +3721,55 @@ var ZIP=(function(){
   return Z;
 })();
 
+/* ---------- where the others are: a marker over each team-mate on screen, an arrow at the screen edge when they are out of view; bigger dots on the maps ---------- */
+var mateEls=[],matesBox,FAKE=[];
+function matesNow(){return FAKE.length?others.concat(FAKE):others;}
+function mateMarks(){
+  var L=matesNow(),W=window.innerWidth,H=window.innerHeight,i,myZ=zoneOf(me.x,me.z);
+  for(i=0;i<L.length||i<mateEls.length;i++){
+    var e=mateEls[i];
+    if(i>=L.length){if(e)e.style.display='none';continue;}
+    if(!e){e=mateEls[i]=document.createElement('div');e.className='mate';e.appendChild(document.createElement('i'));e.appendChild(document.createElement('b'));matesBox.appendChild(e);}
+    var o=L[i],d=Math.hypot(o.x-me.x,o.z-me.z),far=zoneOf(o.x,o.z)!==myZ;
+    tmpV.set(o.x,2.45,o.z).project(camera);
+    var behind=tmpV.z>1,x=behind?-tmpV.x:tmpV.x,y=behind?-tmpV.y:tmpV.y,on=!behind&&Math.abs(x)<0.9&&y<0.78&&y>-0.8;
+    if(behind)y=-Math.abs(y)-1;                                          // someone behind you goes to the bottom edge, never the top
+    if(on&&d<9&&o.hp>0){e.style.display='none';continue;}                 // close and in view: the name over their head is enough
+    if(!on){var m=Math.max(Math.abs(x)/0.9,Math.abs(y)/0.78);if(!(m>1e-4)){x=0;y=-0.78;}else{x/=m;y/=m;}}
+    e.style.display='block';e.className='mate'+(on?' on':'')+(o.hp>0?'':' dn');
+    e.style.transform='translate('+Math.round((x*0.5+0.5)*W)+'px,'+Math.round((-y*0.5+0.5)*H)+'px)';
+    e.firstChild.style.transform='rotate('+(on?3.1416:Math.atan2(x,y)).toFixed(2)+'rad)';
+    var t=(o.n||'なかま')+(o.hp>0?'':'（ダウン）')+' '+(far?'別エリア':Math.round(d)+'m');if(e.lastChild.textContent!==t)e.lastChild.textContent=t;
+  }
+}
+function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as ringed blue discs with their initial; team-mates off the minimap sit on its edge
+  var r=big?9:6,myZ=zoneOf(me.x,me.z);
+  views.forEach(function(v){
+    var x=X(v.x),y=Z(v.z),q=v.t===2?r*1.5:r;if(x<-q||y<-q||x>W+q||y>H+q)return;
+    g.fillStyle='#000';g.beginPath();g.moveTo(x,y-q-2.5);g.lineTo(x+q+2.5,y);g.lineTo(x,y+q+2.5);g.lineTo(x-q-2.5,y);g.closePath();g.fill();
+    g.fillStyle=v.t===1?'#ff9a2a':'#ff3b2b';g.beginPath();g.moveTo(x,y-q);g.lineTo(x+q,y);g.lineTo(x,y+q);g.lineTo(x-q,y);g.closePath();g.fill();
+  });
+  matesNow().forEach(function(o){
+    if(zoneOf(o.x,o.z)!==myZ)return;
+    var R=big?13:9,x=X(o.x),y=Z(o.z);if(big&&(x<-R||y<-R||x>W+R||y>H+R))return;x=clamp(x,R+3,W-R-3);y=clamp(y,R+3,H-R-3);
+    g.fillStyle='#fff';g.beginPath();g.arc(x,y,R+2.5,0,7);g.fill();g.fillStyle=o.hp>0?'#1487f0':'#8a8f96';g.beginPath();g.arc(x,y,R,0,7);g.fill();
+    g.fillStyle='#fff';g.font='bold '+(big?17:12)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText((o.n||'?').charAt(0),x,y+1);
+    if(big){g.font='bold 20px sans-serif';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.75)';g.strokeText(o.n,x,y-26);g.fillStyle='#bfeaff';g.fillText(o.n,x,y-26);}
+  });
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent='#matesBox{position:fixed;left:0;top:0;width:0;height:0;z-index:3;pointer-events:none}'+
+    '.mate{position:absolute;left:0;top:0;width:0;height:0;display:none}'+
+    '.mate i{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:rgba(20,135,240,.92);border:2px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.6)}'+
+    '.mate i:after{content:"";position:absolute;left:50%;top:5px;margin-left:-7px;border:7px solid transparent;border-top:0;border-bottom:13px solid #fff}'+
+    '.mate b{position:absolute;left:-80px;width:160px;top:20px;text-align:center;font:700 13px/1.2 var(--body);color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000;white-space:nowrap}'+
+    '.mate.on i{left:-11px;top:-11px;width:22px;height:22px;background:rgba(20,135,240,.85)}.mate.on i:after{top:3px;margin-left:-5px;border-width:5px;border-top:0;border-bottom-width:9px}.mate.on b{top:-30px;font-size:12px}'+
+    '.mate.dn i{background:rgba(226,60,45,.95)}.mate.dn b{color:#ffb3aa}';
+  document.head.appendChild(st);
+  matesBox=document.createElement('div');matesBox.id='matesBox';document.body.appendChild(matesBox);
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){
   if(myVeh)leaveVeh();
@@ -3975,12 +4025,11 @@ function drawBig(){
     if(V.type==='heli'){g.fillStyle='#ffd24a';g.fillRect(px-9,py-9,18,18);g.fillStyle='#222';g.fillRect(px-5,py-5,3,10);g.fillRect(px+2,py-5,3,10);g.fillRect(px-5,py-1.5,10,3);if(bigZ>1.5)tag(V.x,V.z,'ヘリ','#ffe9a0');}
     else{g.fillStyle='#000';g.beginPath();g.arc(px,py,V.type==='car'?8:6.5,0,7);g.fill();g.fillStyle=V.type==='car'?'#f4f4f4':'#8fd0ff';g.beginPath();g.arc(px,py,V.type==='car'?6:4.5,0,7);g.fill();}});
   gasMap(g,SX,SZ,MS*k,BW,BH);
-  g.fillStyle='#ff4d3d';views.forEach(function(v){g.fillRect(SX(v.x)-4,SZ(v.z)-4,8,8);});
-  others.forEach(function(o){g.fillStyle='#39c0ff';g.beginPath();g.arc(SX(o.x),SZ(o.z),8,0,7);g.fill();tag(o.x,o.z,o.n,'#bfeaff');});
+  mapDots(g,SX,SZ,true,BW,BH);g.font='bold 20px sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=4;
   g.save();g.translate(SX(me.x),SZ(me.z));g.rotate(-me.yaw);g.fillStyle='#000';g.beginPath();g.moveTo(0,-20);g.lineTo(14,14);g.lineTo(-14,14);g.closePath();g.fill();
   g.fillStyle='#ffb000';g.beginPath();g.moveTo(0,-15);g.lineTo(10,10);g.lineTo(-10,10);g.closePath();g.fill();g.restore();
   g.textAlign='left';g.font='bold 20px sans-serif';g.strokeStyle='rgba(0,0,0,.8)';
-  [[zoneOf(me.x,me.z).n,'#ffffff'],['▲ 自分　■ コンビニ　緑■ 補給箱','#ffd27a'],['● 白＝車　水色＝バイク　H ヘリ','#f4f4f4'],['● 青＝ワープ　橙＝のるーと','#bfeaff'],['ドラッグで移動・ピンチ／ホイールで拡大','#ffffff']].forEach(function(l,q){
+  [[zoneOf(me.x,me.z).n,'#ffffff'],['■ コンビニ　緑■ 補給箱','#ffd27a'],['▲ 自分　● 青＝味方　◆ 赤＝敵','#ffffff'],['● 白＝車　水色＝バイク　H ヘリ','#f4f4f4'],['● 青＝ワープ　橙＝のるーと','#bfeaff'],['ドラッグで移動・ピンチ／ホイールで拡大','#ffffff']].forEach(function(l,q){
     g.strokeText(l[0],20,BH-22-q*26);g.fillStyle=l[1];g.fillText(l[0],20,BH-22-q*26);});
 }
 $('mini').addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();toggleMap();});
@@ -4106,9 +4155,8 @@ function drawHud(dt){
     else{mctx.fillStyle=V.type==='car'?'#f4f4f4':'#8fd0ff';mctx.beginPath();mctx.arc(px,py,V.type==='car'?3.5:2.6,0,7);mctx.fill();}});
   STORES.forEach(function(S){var px=clamp(mx(S.x),8,232),py=clamp(mz(S.z),8,182);mctx.fillStyle='#fff';mctx.fillRect(px-6,py-6,12,12);mctx.fillStyle='#17335c';mctx.fillRect(px-4,py-4,8,8);mctx.fillStyle='#f0a81c';mctx.fillRect(px-4,py+1,8,2);});
   gasMap(mctx,mx,mz,MZM,240,190);
-  mctx.fillStyle='#ff4d3d';views.forEach(function(v){mctx.fillRect(mx(v.x)-2,mz(v.z)-2,4,4);});
-  mctx.fillStyle='#39c0ff';others.forEach(function(o){mctx.beginPath();mctx.arc(mx(o.x),mz(o.z),4,0,7);mctx.fill();});
-  mctx.save();mctx.translate(mx(me.x),mz(me.z));mctx.rotate(-me.yaw);mctx.fillStyle='#ffb000';mctx.beginPath();mctx.moveTo(0,-7);mctx.lineTo(5,5);mctx.lineTo(-5,5);mctx.closePath();mctx.fill();mctx.restore();
+  mapDots(mctx,mx,mz,false,240,190);
+  mctx.save();mctx.translate(mx(me.x),mz(me.z));mctx.rotate(-me.yaw);mctx.fillStyle='#000';mctx.beginPath();mctx.moveTo(0,-14);mctx.lineTo(10,9);mctx.lineTo(-10,9);mctx.closePath();mctx.fill();mctx.fillStyle='#ffb000';mctx.beginPath();mctx.moveTo(0,-10);mctx.lineTo(7,7);mctx.lineTo(-7,7);mctx.closePath();mctx.fill();mctx.restore();
 }
 
 /* ---------- start screen: name, solo or co-op, and three pop-ups (avatar, how to play, what's new) ---------- */
@@ -4334,7 +4382,7 @@ function frame(tms,manual){
   if(Math.abs(fov-camera.fov)>0.01){camera.fov=fov;camera.updateProjectionMatrix();}
   if(myVeh)vehCamera(dt);
   tpsCamera();updBody(dt);
-  camera.updateMatrixWorld();
+  camera.updateMatrixWorld();mateMarks();
   var wantR=(myVeh&&myVeh.type==='heli')?clamp(170+myVeh.y*5,170,1100):(LOW?95:170);
   if(Math.abs(wantR-shR)>shR*0.08)setShadow(wantR,Math.max(600,wantR*3));
   aimShadow(me.x,me.z);
