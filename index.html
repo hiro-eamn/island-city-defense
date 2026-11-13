@@ -3324,7 +3324,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月14日','スタジアムシティにジップライン（高いビルの屋上からスタジアム上空を渡る）'],
+  [['2026年11月14日','ライフ3つ（ダウンしても2回まではその場で復活）／アイテムを拾い終えてもボタンが残る不具合を修正'],
+   ['2026年11月14日','スタジアムシティにジップライン（高いビルの屋上からスタジアム上空を渡る）'],
    ['2026年11月14日','アバターを描き直し（顔・髪型・輪郭、髪型2種を追加）／写真から作ると肌と髪の色が写真どおりになる'],
    ['2026年11月13日','約3分ごとの毒ガスで安全エリアが狭まる／ソロは3回しのぐと最終決戦（30台殲滅）、勝つとクリアで「のるーと利用券」'],
    ['2026年11月13日','一人称／三人称の切り替え／停まっている車に全部乗れる／立体駐車場の入口を入口から見て左手前に、歩きなら鍵なしで入れる／ポーズ、リュック、銃とグレネードのアイコン'],
@@ -3561,7 +3562,22 @@ function showFinalClear(){
   elClear.classList.remove('off');clearTimeout(showClear.t);showClear.t=setTimeout(function(){elClear.classList.add('off');},9000);
   [523,659,784,1047,1319].forEach(function(f,i){tone({f:f,dur:i===4?0.9:0.2,v:0.08,type:'triangle',t0:i*0.17,rv:0.4});tone({f:f/2,dur:i===4?0.9:0.2,v:0.05,type:'square',t0:i*0.17});});
 }
+var LIVES=3,lives=LIVES,lifePend=false,wasDown=false,elLives;
+function livesTick(){ // three lives a game: going down costs one and you are back on your feet in a moment; on the last one the old rules apply
+  if(me.down&&!wasDown){
+    if(lives>1){lives--;lifePend=true;me.downT=2.4;tone({f:440,f1:220,dur:0.4,v:0.06,type:'triangle'});}
+    else{lives=0;lifePend=false;}
+  }
+  if(!me.down&&wasDown&&lifePend){
+    lifePend=false;me.hp=100;me.inv=3.5;
+    var G=hs&&hs.g;if(G&&gasActive()&&!zoneOf(me.x,me.z).i){var tx=G[5]===1?G[6]:G[0],tz=G[5]===1?G[7]:G[1],tr=G[5]===1?G[8]:G[2];if(Math.hypot(me.x-tx,me.z-tz)>tr-8){me.x=tx+rnd(-6,6);me.z=tz+rnd(-6,6);resolve(me,0.6);clampIsland(me,2.5);}}   // never stand someone up inside the gas
+    banner('復活','残りライフ '+lives,2);tone({f:523,dur:0.15,v:0.06,type:'triangle'});tone({f:784,dur:0.3,v:0.06,type:'triangle',t0:0.14});
+  }
+  wasDown=me.down;
+  var t='ライフ ',q;for(q=0;q<LIVES;q++)t+=q<lives?'♥':'♡';if(elLives.textContent!==t)elLives.textContent=t;
+}
 function gasTick(dt){
+  livesTick();
   if(amHost)gasHost(dt);
   var G=hs.g,F=hs.f||[0,0,0],act=gasActive(),isl=!zoneOf(me.x,me.z).i,gk=hs.gen+'_'+(G?G[3]:0),q;
   if(G){
@@ -3589,7 +3605,7 @@ function gasTick(dt){
   elFin.classList.toggle('off',!on);elFinV.classList.toggle('off',!on);
   if(on){var rem=clamp(FIN_N-(hs.k-F[1]),0,FIN_N),tx='最終決戦　残り '+rem+' / '+FIN_N+'台';if(elFinT.textContent!==tx)elFinT.textContent=tx;elFinB.style.width=((FIN_N-rem)/FIN_N*100)+'%';}
   if(finGen!==hs.gen){finGen=hs.gen;finSeen=F[2];}
-  else if(F[2]>finSeen){finSeen=F[2];tickets++;saveMeta();showFinalClear();}
+  else if(F[2]>finSeen){finSeen=F[2];tickets++;lives=LIVES;saveMeta();showFinalClear();}
 }
 function gasHud(){
   var G=hs&&hs.g,t='',warn=false;
@@ -3613,7 +3629,7 @@ function gasMap(g,X,Z,k,W,H){ // the safe circle on the minimap and the full map
   function el(tag,id,cls,txt,parent){var e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(txt)e.textContent=txt;(parent||document.body).appendChild(e);return e;}
   var st=document.createElement('style');
   st.textContent=[
-  '#gasl{font-size:12px;font-weight:700;color:#c4ff5e;text-shadow:0 1px 2px #000;line-height:1.45}','#gasl.w{color:#ff6a4d}',
+  '#gasl{font-size:12px;font-weight:700;color:#c4ff5e;text-shadow:0 1px 2px #000;line-height:1.45}','#gasl.w{color:#ff6a4d}','#lives{font:700 14px/1.2 var(--body);color:#ff6a6a;text-shadow:0 1px 2px #000;letter-spacing:.06em}',
   '#gaso{inset:0;z-index:2;opacity:0;transition:opacity .5s;background:radial-gradient(ellipse at center,rgba(120,200,40,.28) 20%,rgba(70,150,20,.72) 100%)}',
   '#fin{left:50%;top:calc(56px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(300px,62vw);padding:6px 10px 8px;background:rgba(60,6,6,.82);border:1px solid #ff5a47;border-radius:6px;text-align:center;z-index:5}',
   '#fin .t{font:700 15px/1.3 var(--body);color:#fff;text-shadow:0 1px 2px #000}','#fin .b{height:6px;margin-top:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden}','#fin .b i{display:block;height:100%;width:0;background:#ff5a47;transition:width .3s}',
@@ -3628,6 +3644,7 @@ function gasMap(g,X,Z,k,W,H){ // the safe circle on the minimap and the full map
   '@media (orientation:landscape) and (max-height:540px){','#fin{top:44px;padding:3px 8px 5px}','#fin .t{font-size:13px}','#finale h2{font-size:44px}','#finale p{font-size:17px}','}'].join('\n');
   document.head.appendChild(st);
   elGasL=el('div','gasl','',null,$('tl'));$('tl').insertBefore(elGasL,$('mates'));
+  elLives=el('div','lives','',null,$('tl'));$('tl').insertBefore(elLives,elGoal);
   elGasO=el('div','gaso','hud');elFinV=el('div','finv','hud off');
   elFin=el('div','fin','hud off');elFinT=el('div','','t','',elFin);elFinB=el('i','','',null,el('div','','b',null,elFin));
   elFinale=el('div','finale','hud off');el('small','','','FINAL BATTLE',elFinale);el('h2','','','最終決戦',elFinale);el('p','','','ロボット '+FIN_N+'台を殲滅せよ',elFinale);
@@ -3694,7 +3711,7 @@ var ZIP=(function(){
 /* ---------- per-client logic ---------- */
 function resetSelf(){
   if(myVeh)leaveVeh();
-  lv=0;carry=0;myStock={};awarded={};defT=0;resetKit();
+  lv=0;carry=0;myStock={};awarded={};defT=0;resetKit();lives=LIVES;lifePend=false;wasDown=false;
   me.hp=100;me.down=false;me.inv=2;me.ammo=MAG;me.reload=0;me.x=SPAWN.x+rnd(-3,3);me.z=SPAWN.z+rnd(-2,2);me.vx=me.vz=0;
   for(var k in myDmg){delete myDmg[k];delete dmgTime[k];}
   views.forEach(function(v){scene.remove(v.g);});views.clear();
@@ -4123,7 +4140,7 @@ var FOGD=0.00021;
     sec('動く・見る',[['画面左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面右をドラッグ','向きを変える'],['右上のスティック','首だけ振って周りや後ろを見る']]);
     sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['銃のアイコン','押すたびに持ち替え（数字は持っている丁数）'],['グレネードのアイコン','押すと投げる（数字は残り個数）'],['リュック','持ち物を見る。包帯や応急処置セットはここから使う'],['AUTO','照準が敵に合うと自動で撃つ']]);
     sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の3つのボタン','視点（一人称 / 三人称）・ポーズ・全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
-    sec('毒ガスとクリア',[['約3分ごと','毒ガスが出て安全エリア（地図の緑の円）が狭まる。外にいると体力が減り続ける'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
+    sec('毒ガスとクリア',[['ライフ','3つ。ダウンすると1つ減ってすぐ復活。最後の1つでダウンすると全滅（ソロ）'],['約3分ごと','毒ガスが出て安全エリア（地図の緑の円）が狭まる。外にいると体力が減り続ける'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
   }else{
     sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（クリックで固定）']]);
     sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ'],['V','一人称 / 三人称の切り替え']]);
@@ -4261,7 +4278,7 @@ function frame(tms,manual){
   if(me.down){
     var near=false;for(i=0;i<others.length;i++)if(others[i].hp>0&&Math.hypot(others[i].x-me.x,others[i].z-me.z)<4.5)near=true;
     me.downT-=dt*(near?3.5:1);me.vx=me.vz=0;me.amp=0;me.sprint=0;
-    banner('ダウン',near?'仲間が蘇生中…':('復活まで '+Math.ceil(Math.max(0,me.downT))+'秒（仲間が近くに来ると早い）'),0.3);
+    banner('ダウン',near?'仲間が蘇生中…':((lifePend?'ライフを1つ使って復活します（残り '+lives+'）':'復活まで '+Math.ceil(Math.max(0,me.downT))+'秒（仲間が近くに来ると早い）')),0.3);
     if(me.downT<=0){me.down=false;me.hp=60;me.inv=2;me.ammo=MAG;me.reload=0;}
   }else if(myVeh){
     jx=joy.x+((keys.KeyD||keys.ArrowRight)?1:0)-((keys.KeyA||keys.ArrowLeft)?1:0);jy=joy.y+((keys.KeyW||keys.ArrowUp)?1:0)-((keys.KeyS||keys.ArrowDown)?1:0);
