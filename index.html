@@ -816,38 +816,53 @@ function buildZones(W,roofM,AOP,ROADS,cars){
   MALL={x:mxc,z:mzc-MD/2+10.6,inside:function(x,z){return Math.abs(x-mxc)<MW/2-0.3&&Math.abs(z-mzc)<MD/2-0.3;}};
   road([[SHOP[0]-170,SHOP[1]+95],[SHOP[0]+170,SHOP[1]+95]],6);
   for(i=0;i<9;i++){cap(zl,rect(SHOP[0]-60+i*15,SHOP[1]+62,0.14,9),0,[0.9,0.9,0.88],0.2);tree(SHOP[0]-150+i*38,SHOP[1]+112,11);}
-  for(i=0;i<5;i++){var px3=SHOP[0]-52+i*30,pz3=SHOP[1]+62,ca=i%2?0:Math.PI;cars.push([px3,pz3,ca,i%2,i*2%7]);var cc2=addCol(rectP(px3,pz3,2.2,0.86,ca),1.5);cc2.nn=true;}
+  for(i=0;i<5;i++){var px3=SHOP[0]-52+i*30,pz3=SHOP[1]+62,ca=i%2?0:Math.PI;cars.push([px3,pz3,ca,i%2,i*2%7]);var cc2=addCol(rectP(px3,pz3,2.2,0.86,ca),1.5);cc2.nn=true;cars[cars.length-1].c=cc2;}
   gate(SHOP[0]+24,SHOP[1]+84,0,'のるーと のりば','アイランドシティへ（無料）',[sx+8,sz-6,0],null,'bus');
   // ---- meshes
   zg.mesh(mPave());zq.mesh(mConc());zgr.mesh(lvl(mGrass(),1),0.03);zr.mesh(lvl(mAsph(),5),0.10);zl.mesh(lvl(stdMat({roughness:0.7}),6),0.12);
 }
-function buildPark(p,h,W,roofM,AOP,roadDist,cars){ // multi-storey car park: open decks, and a chained entrance that only the automatic key opens
+function fpGateInfo(ROADS){ // where the Forest Place entrance stands: just inside the street nearest the towers, looking in
+  if(!FPC)return null;
+  var best=1e18,px=FPC[0],pz=FPC[1]+40,e,s;
+  for(s=0;s<ROADS.length;s++){var rp=ROADS[s];for(e=1;e<rp.length;e++){var ax=rp[e-1][0],az=rp[e-1][1],ex=rp[e][0]-ax,ez=rp[e][1]-az,l2=ex*ex+ez*ez,t=l2>0?clamp(((FPC[0]-ax)*ex+(FPC[1]-az)*ez)/l2,0,1):0,qx=ax+ex*t,qz=az+ez*t,d=(FPC[0]-qx)*(FPC[0]-qx)+(FPC[1]-qz)*(FPC[1]-qz);if(d<best){best=d;px=qx;pz=qz;}}}
+  var nx=FPC[0]-px,nz=FPC[1]-pz,nl=Math.hypot(nx,nz)||1;nx/=nl;nz/=nl;
+  return {x:px+nx*13,z:pz+nz*13,nx:nx,nz:nz};
+}
+function buildPark(p,h,W,roofM,AOP,roadDist,cars,FG){ // multi-storey car park: open decks; the chained gateway (cars need the automatic key, people walk in) sits front-left as seen from the Forest Place entrance
   var le=0,ux=1,uz=0,a0=1e9,a1=-1e9,n0=1e9,n1=-1e9,q,j=p.length-1,i,k;
   for(q=0;q<p.length;j=q++){var el=Math.hypot(p[q][0]-p[j][0],p[q][1]-p[j][1]);if(el>le){le=el;ux=(p[q][0]-p[j][0])/el;uz=(p[q][1]-p[j][1])/el;}}
   for(q=0;q<p.length;q++){var pa=p[q][0]*ux+p[q][1]*uz,pn=-p[q][0]*uz+p[q][1]*ux;a0=Math.min(a0,pa);a1=Math.max(a1,pa);n0=Math.min(n0,pn);n1=Math.max(n1,pn);}
-  var L=Math.min(a1-a0,70),Dp=Math.min(n1-n0,44),ac=(a0+a1)/2,nc=(n0+n1)/2,cx=ux*ac-uz*nc,cz=uz*ac+ux*nc;
-  var d1=roadDist(cx-uz*(Dp/2+8),cz+ux*(Dp/2+8)),d0=roadDist(cx+uz*(Dp/2+8),cz-ux*(Dp/2+8)),sg=d1<=d0?1:-1,nx=-uz*sg,nz=ux*sg,ang=Math.atan2(ux,uz);
-  function P(a,b){return [cx+ux*a+nx*b,cz+uz*a+nz*b];}                 // a along the long side, b toward the street
+  var L0=Math.min(a1-a0,70),D0=Math.min(n1-n0,44),ac=(a0+a1)/2,nc=(n0+n1)/2,cx=ux*ac-uz*nc,cz=uz*ac+ux*nc,L,Dp,nx,nz;
+  var fx=FG?FG.x-cx:-uz,fz=FG?FG.z-cz:ux,da=fx*ux+fz*uz,db=-fx*uz+fz*ux;
+  if(Math.abs(db)/D0>=Math.abs(da)/L0){L=L0;Dp=D0;var sg=db>=0?1:-1;nx=-uz*sg;nz=ux*sg;}      // a long side faces the entrance
+  else{var s2=da>=0?1:-1,ou=ux;nx=ux*s2;nz=uz*s2;ux=-uz;uz=ou;L=D0;Dp=L0;}                      // a short side does: turn the frame
+  var ang=Math.atan2(ux,uz),GW=6.5,ga=0;
+  if(FG){var tx=FG.x+FG.nx*12+FG.nz*30,tz=FG.z+FG.nz*12-FG.nx*30;ga=clamp((tx-cx)*ux+(tz-cz)*uz,-L/2+GW/2+1.5,L/2-GW/2-1.5);}
+  function P(a,b){return [cx+ux*a+nx*b,cz+uz*a+nz*b];}                 // a along the gateway side, b toward it
   function bx2(mb,a,b,y0,w,hh,d,col){var c=P(a,b);return mbBox(mb,c[0],y0,c[1],d,hh,w,ang,col);} // w along, d across
-  var CN=rgb(0xb9b6ae),DKc=[0.5,0.5,0.5],YL=rgb(0xd9a21a),GW=6.5,FL=[0,3.2,6.4];
-  cap(roofM,[P(-L/2,-Dp/2),P(L/2,-Dp/2),P(L/2,Dp/2),P(-L/2,Dp/2)],0.14,[0.55,0.55,0.56],0.25);
-  [3.2,6.4,9.6].forEach(function(y){bx2(W.plain,0,0,y-0.3,L,0.3,Dp,CN);cap(roofM,[P(-L/2,-Dp/2),P(L/2,-Dp/2),P(L/2,Dp/2),P(-L/2,Dp/2)],y-0.31,[0.75,0.75,0.75],0.25);});
-  FL.concat([9.6]).forEach(function(y,fi){ // waist-high parapets round every deck; the street side of the ground floor has the gateway
+  var CN=rgb(0xb9b6ae),YL=rgb(0xd9a21a),R4=[P(-L/2,-Dp/2),P(L/2,-Dp/2),P(L/2,Dp/2),P(-L/2,Dp/2)];
+  cap(roofM,R4,0.14,[0.55,0.55,0.56],0.25);
+  [3.2,6.4,9.6].forEach(function(y){bx2(W.plain,0,0,y-0.3,L,0.3,Dp,CN);cap(roofM,R4,y-0.31,[0.75,0.75,0.75],0.25);});
+  var c1=(-L/2+ga-GW/2)/2,l1=ga-GW/2+L/2,c2=(ga+GW/2+L/2)/2,l2=L/2-ga-GW/2;
+  [0,3.2,6.4,9.6].forEach(function(y,fi){
     bx2(W.plain,0,-Dp/2,y,L,1.1,0.25,CN);bx2(W.plain,-L/2,0,y,0.25,1.1,Dp,CN);bx2(W.plain,L/2,0,y,0.25,1.1,Dp,CN);
-    if(fi){bx2(W.plain,0,Dp/2,y,L,1.1,0.25,CN);}else{bx2(W.plain,-(L/2+GW/2)/2,Dp/2,y,L/2-GW/2,1.1,0.25,CN);bx2(W.plain,(L/2+GW/2)/2,Dp/2,y,L/2-GW/2,1.1,0.25,CN);}
+    if(fi)bx2(W.plain,0,Dp/2,y,L,1.1,0.25,CN);else{bx2(W.plain,c1,Dp/2,y,l1,1.1,0.25,CN);bx2(W.plain,c2,Dp/2,y,l2,1.1,0.25,CN);}
   });
-  for(i=-Math.floor(L/15);i<=Math.floor(L/15);i++)for(k=-1;k<=1;k++){if(!i&&!k)continue;var pc=bx2(W.plain,i*7.5,k*(Dp/2-0.5),0,0.55,9.6,0.55,CN);if(k)continue;var cc=addCol(pc,9.6);cc.nn=true;}
+  for(i=-Math.floor(L/15);i<=Math.floor(L/15);i++)for(k=-1;k<=1;k++){
+    if(Math.abs(i*7.5-ga)<3.6)continue;                                // keep the lane behind the gateway clear
+    var pc=bx2(W.plain,i*7.5,k*(Dp/2-0.5),0,0.55,9.6,0.55,CN);if(k)continue;var cc=addCol(pc,9.6);cc.nn=true;}
   addCol(rectP(P(0,-Dp/2)[0],P(0,-Dp/2)[1],L/2+0.3,0.3,ang),1.2);addCol(rectP(P(-L/2,0)[0],P(-L/2,0)[1],0.3,Dp/2,ang),1.2);addCol(rectP(P(L/2,0)[0],P(L/2,0)[1],0.3,Dp/2,ang),1.2);
-  [-1,1].forEach(function(sd){var c=P(sd*(L/2+GW/2)/2,Dp/2);addCol(rectP(c[0],c[1],(L/2-GW/2)/2,0.3,ang),1.2);bx2(W.plain,sd*(GW/2+0.2),Dp/2,0,0.35,1.6,0.35,YL);});
-  bx2(W.plain,0,Dp/2+0.05,3.4,GW+3,0.9,0.2,rgb(0x1f4f9a));
-  var gc=P(0,Dp/2),chain=addCol(rectP(gc[0],gc[1],GW/2,0.25,ang),1.0),cg=new GB();
+  addCol(rectP(P(c1,Dp/2)[0],P(c1,Dp/2)[1],l1/2,0.3,ang),1.2);addCol(rectP(P(c2,Dp/2)[0],P(c2,Dp/2)[1],l2/2,0.3,ang),1.2);
+  [-1,1].forEach(function(sd){bx2(W.plain,ga+sd*(GW/2+0.2),Dp/2,0,0.35,1.6,0.35,YL);});
+  bx2(W.plain,ga,Dp/2+0.05,3.4,GW+3,0.9,0.2,rgb(0x1f4f9a));
+  var gc=P(ga,Dp/2),chain=addCol(rectP(gc[0],gc[1],GW/2,0.25,ang),1.0),cg=new GB();chain.veh=true;chain.nn=true;      // stops vehicles only
   for(i=0;i<14;i++)cg.box(0.42,0.07,0.07,-GW/2+0.25+i*(GW-0.5)/13,0.75-Math.sin(i/13*3.1416)*0.18,0,i%2?[0.5,0.5,0.52]:[0.2,0.2,0.21],0,0,0.3);
   var cm=new THREE.Mesh(cg.geo(),stdMat({roughness:0.5,metalness:0.6}));cm.position.set(gc[0],0.13,gc[1]);cm.rotation.y=Math.atan2(-uz,ux);cm.castShadow=true;scene.add(cm);
   var an2=Math.atan2(nx,nz);
-  for(i=-3;i<=3;i++){if(!i)continue;var cp=P(i*8.5,-Dp/2+4.2),cq=addCol(rectP(cp[0],cp[1],2.2,0.86,an2),1.5);cq.nn=true;cars.push([cp[0],cp[1],an2,(i+3)%2,(i+7)%7]);}
-  AOP.push([[P(-L/2,-Dp/2),P(L/2,-Dp/2),P(L/2,Dp/2),P(-L/2,Dp/2)],9.6]);
-  var sp=P(0,-Dp/2+5.5);
-  PARK={gx:gc[0],gz:gc[1],chain:chain,mesh:cm,sx:sp[0],sz:sp[1],ang:Math.atan2(nx,nz),open:0};
+  for(i=-3;i<=3;i++){if(Math.abs(i*8.5-ga)<4.5||Math.abs(i*8.5)>L/2-3)continue;var cp=P(i*8.5,-Dp/2+4.2),cq=addCol(rectP(cp[0],cp[1],2.2,0.86,an2),1.5);cq.nn=true;cars.push([cp[0],cp[1],an2,(i+3)%2,(i+7)%7]);cars[cars.length-1].c=cq;}
+  AOP.push([R4,9.6]);
+  var sp=P(ga,-Dp/2+5.5);
+  PARK={gx:gc[0],gz:gc[1],chain:chain,mesh:cm,sx:sp[0],sz:sp[1],ang:an2,open:0};
 }
 
 /* ---------- world (built from OpenStreetMap data, 1 unit = 1 m, north = -z) ---------- */
@@ -1152,7 +1167,7 @@ function carGeo(mdl,paint,noW){
       if(!inP(cx,cz,ISL)||nearP(cx,cz,ISL)<6)continue;
       var ang=Math.atan2(a.dx,a.dz)+(sd>0?Math.PI:0)+(c===3?(r1c-0.5)*0.06:(r2c-0.5)*0.9),mdl=r2c<0.42?1:0;
       cars.push([cx,cz,ang,mdl,Math.floor(r3c*7)]);
-      var cc=addCol(rectP(cx,cz,mdl?1.75:2.2,0.86,ang),mdl?1.7:1.42);cc.nn=true;
+      var cc=addCol(rectP(cx,cz,mdl?1.75:2.2,0.86,ang),mdl?1.7:1.42);cc.nn=true;cars[cars.length-1].c=cc;
     }
   });
   rSide.mesh(lvl(mPave(),4),0.08);rFoot.mesh(lvl(mPave(),4),0.08);rAs.mesh(lvl(mAsph(),5),0.10);
@@ -1185,7 +1200,7 @@ function carGeo(mdl,paint,noW){
   if(FPC)D.b.forEach(function(f,bi){var pp=P2(f,1),pa=Math.abs(sarea(pp)),px=0,pz=0;pp.forEach(function(v){px+=v[0];pz+=v[1];});px/=pp.length;pz/=pp.length;
     if(f[0]/10<12&&pa>2500&&pa<6000&&Math.hypot(px-FPC[0],pz-FPC[1])<130&&pa>parkA){parkA=pa;parkBi=bi;}});
   D.b.forEach(function(f,bi){
-    if(bi===parkBi){buildPark(P2(f,1),f[0]/10,W,roofM,AOP,roadDist,cars);return;}
+    if(bi===parkBi){buildPark(P2(f,1),f[0]/10,W,roofM,AOP,roadDist,cars,fpGateInfo(ROADS));return;}
     if(special[bi]===1){ // rebuild as a walk-in shop, fronting the nearest street
       var sp=P2(f,1),sh=f[0]/10,le=0,ux=1,uz=0,a0=1e9,a1=-1e9,n0=1e9,n1=-1e9,q,j2=sp.length-1;
       for(q=0;q<sp.length;j2=q++){var el=Math.hypot(sp[q][0]-sp[j2][0],sp[q][1]-sp[j2][1]);if(el>le){le=el;ux=(sp[q][0]-sp[j2][0])/el;uz=(sp[q][1]-sp[j2][1])/el;}}
@@ -1346,7 +1361,7 @@ function carGeo(mdl,paint,noW){
   cars.forEach(function(c){var key=c[3]*10+c[4];(byKind[key]||(byKind[key]=[])).push(c);});
   Object.keys(byKind).forEach(function(key){
     var mdl=Math.floor(key/10),ci=key%10;
-    inst(carGeo(mdl,paint[ci]),carMat,byKind[key],function(c){P.set(c[0],0.14,c[1]);Q.setFromAxisAngle(YA,c[2]);M.compose(P,Q,S);C.r=-1;});
+    var im=inst(carGeo(mdl,paint[ci]),carMat,byKind[key],function(c){P.set(c[0],0.14,c[1]);Q.setFromAxisAngle(YA,c[2]);M.compose(P,Q,S);C.r=-1;});byKind[key].forEach(function(c,q){c.im=im;c.iq=q;});
   });
   C.setRGB(1,1,1);
 
@@ -1396,12 +1411,12 @@ function clampIsland(o,m){
     o.x=qx+(o.x-qx)*s;o.z=qz+(o.z-qz)*s;
   }
 }
-function resolve(o,r){
+function resolve(o,r,veh){
   for(var it=0;it<2;it++){
     var g=grid[gkey(Math.floor(o.x/CELL),Math.floor(o.z/CELL))];if(!g)return;
     var moved=false;
     for(var i=0;i<g.length;i++){
-      var c=g[i];if(c.off)continue;
+      var c=g[i];if(c.off||(c.veh&&!veh))continue;
       if(o.x<c.x0-r||o.x>c.x1+r||o.z<c.z0-r||o.z>c.z1+r)continue;
       var d=nearP(o.x,o.z,c.p),qx=NP.x,qz=NP.z;
       if(d<1e-6)continue;
@@ -2301,14 +2316,14 @@ function riderGeo(){ // someone astride the bike, hands on the bars
   });
   return b.geo();
 }
-function makeVeh(type,x,z,yaw,ci){
+function makeVeh(type,x,z,yaw,ci,mdl,col){
   var g=new THREE.Group(),V={id:VEH.length,type:type,x:x,z:z,y:0,yaw:yaw,s:0,st:0,vx:0,vz:0,vy:0,rot:0,spool:0,g:g,wheels:[],steer:[],occ:false,remote:false,tilt:0,roll:0,gnd:0,rider:null},H=Math.PI/2,b,m;
   g.rotation.order='YXZ';
   function part(geo,mat,parent){var q=new THREE.Mesh(geo,mat);q.castShadow=true;q.receiveShadow=true;(parent||g).add(q);return q;}
-  var PAINT=[0xa3261e,0x1f5fa8,0xd9a21a,0xeceef0,0x2f7d4f,0x2a2d31].map(function(h){return rgb(h);}),paint=PAINT[ci%PAINT.length];
+  var PAINT=[0xa3261e,0x1f5fa8,0xd9a21a,0xeceef0,0x2f7d4f,0x2a2d31].map(function(h){return rgb(h);}),paint=col||PAINT[ci%PAINT.length];
   if(type==='car'){
-    part(carGeo(0,paint,true),vehMat);
-    [[0.74,1.32],[-0.74,1.32],[0.74,-1.32],[-0.74,-1.32]].forEach(function(w){
+    var wz=mdl?1.12:1.32;part(carGeo(mdl?1:0,paint,true),vehMat);
+    [[0.74,wz],[-0.74,wz],[0.74,-wz],[-0.74,-wz]].forEach(function(w){
       var sg=new THREE.Group();sg.position.set(w[0],0.33,w[1]);g.add(sg);V.wheels.push(part(wheelGeo,vehMat,sg));if(w[1]>0)V.steer.push(sg);});
   }else if(type==='bike'){
     var DK=[0.03,0.032,0.036],LT=[0.4,0.41,0.43],fk=new THREE.Group(),fb=new GB();
@@ -2384,16 +2399,24 @@ function makeVeh(type,x,z,yaw,ci){
   for(i=0;i<D.poi.length;i+=2)put(i%4?'bike':'car',kerb(D.poi[i][1]/10,D.poi[i][2]/10));
   if(PARK){var sv=makeVeh('car',PARK.sx,PARK.sz,PARK.ang,0);sv.boost=1.6;}                  // the fast one, kept behind the chain
 })();
+var CARP=[0xe9eaec,0xd2d5d8,0x1b1d20,0x8d9399,0x7e1d1d,0x243e63,0xb9b2a2],ZM=new THREE.Matrix4().makeScale(0,0,0);
+function wakeCar(i){ // a parked car turns into a real vehicle the first time anyone gets in; the same number on every player's side
+  var c=CARS[i];if(!c||c.fix)return null;if(c.V)return c.V;
+  if(c.im){c.im.setMatrixAt(c.iq,ZM);c.im.instanceMatrix.needsUpdate=true;}
+  if(c.c)c.c.off=true;
+  var V=makeVeh('car',c[0],c[1],c[2],0,c[3],rgb(CARP[c[4]%7]));V.id=1000+i;c.V=V;return V;
+}
+function vehById(id){return id>=1000?wakeCar(id-1000):VEH[id];}
 function vehOut(){var V=myVeh;return V?[V.id,r1(V.x),r1(V.z),r2(V.yaw),r1(V.y),r1(V.s)]:null;}
 function groundAt(x,z){ // height of whatever stands under a point: the ground, or a roof to land on
   var g=grid[gkey(Math.floor(x/CELL),Math.floor(z/CELL))],h=0;
-  if(g)for(var i=0;i<g.length;i++){var c=g[i];if(c.h>h&&x>=c.x0&&x<=c.x1&&z>=c.z0&&z<=c.z1&&inP(x,z,c.p))h=c.h;}
+  if(g)for(var i=0;i<g.length;i++){var c=g[i];if(!c.off&&c.h>h&&x>=c.x0&&x<=c.x1&&z>=c.z0&&z<=c.z1&&inP(x,z,c.p))h=c.h;}
   return h;
 }
 function resolveAlt(o,r,alt){ // like resolve(), but only against things taller than the aircraft is high
   var g=grid[gkey(Math.floor(o.x/CELL),Math.floor(o.z/CELL))],hit=false;if(!g)return false;
   for(var i=0;i<g.length;i++){
-    var c=g[i];if(c.h<=alt+0.3||o.x<c.x0-r||o.x>c.x1+r||o.z<c.z0-r||o.z>c.z1+r)continue;
+    var c=g[i];if(c.off||c.h<=alt+0.3||o.x<c.x0-r||o.x>c.x1+r||o.z<c.z0-r||o.z>c.z1+r)continue;
     var d=nearP(o.x,o.z,c.p),qx=NP.x,qz=NP.z;if(d<1e-6)continue;
     if(inP(o.x,o.z,c.p)){o.x=qx+(qx-o.x)/d*r;o.z=qz+(qz-o.z)/d*r;hit=true;}
     else if(d<r){o.x=qx+(o.x-qx)/d*r;o.z=qz+(o.z-qz)/d*r;hit=true;}
@@ -2436,7 +2459,7 @@ function driveGround(V,dt,jx,jy){
   V.x+=sn*s*dt;V.z+=cs*s*dt;
   var hit=0,k;
   for(k=-1;k<=1;k+=2){ // a probe at each end keeps the body out of walls
-    var px=V.x+sn*T.len*k,pz=V.z+cs*T.len*k;PRB.x=px;PRB.z=pz;resolve(PRB,T.r);clampIsland(PRB,2.5);
+    var px=V.x+sn*T.len*k,pz=V.z+cs*T.len*k;PRB.x=px;PRB.z=pz;resolve(PRB,T.r,true);clampIsland(PRB,2.5);
     var dx=PRB.x-px,dz=PRB.z-pz;if(dx||dz){V.x+=dx;V.z+=dz;hit=Math.max(hit,Math.hypot(dx,dz));}
   }
   if(hit>0.015){
@@ -2475,13 +2498,15 @@ function flyHeli(V,dt,jx,jy,up){
 function vehPrompt(){ // nearest vehicle within reach, or null
   var best=null,bd=1e9;
   for(var i=0;i<VEH.length;i++){var V=VEH[i];if(V.remote||V.y>0.5)continue;var d=Math.hypot(V.x-me.x,V.z-me.z);if(d<VT[V.type].reach&&d<bd){bd=d;best=V;}}
+  for(i=0;i<CARS.length;i++){var c=CARS[i];if(c.V||c.fix||!c.c||Math.abs(c[0]-me.x)>5||Math.abs(c[1]-me.z)>5)continue;
+    var nd=inP(me.x,me.z,c.c.p)?0:nearP(me.x,me.z,c.c.p);if(nd<1.9&&nd+1<bd){bd=nd+1;best={car:i,type:'car',x:c[0],z:c[1],nd:nd};}}
   return best;
 }
 function updVehicles(dt,jx,jy,use){
   var i,V,o;
   for(i=0;i<VEH.length;i++)VEH[i].remote=false;
   for(i=0;i<others.length;i++){ // vehicles driven by other players follow their reports
-    o=others[i].v;if(!o||!fin(o[0])||!fin(o[1])||!fin(o[2])||!fin(o[3]))continue;V=VEH[o[0]|0];if(!V||V===myVeh)continue;
+    o=others[i].v;if(!o||!fin(o[0])||!fin(o[1])||!fin(o[2])||!fin(o[3]))continue;V=vehById(o[0]|0);if(!V||V===myVeh)continue;
     V.remote=true;var k=Math.min(1,dt*10),dy=o[3]-V.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));
     V.x+=(clamp(o[1],-2500,2500)-V.x)*k;V.z+=(clamp(o[2],-2500,2500)-V.z)*k;V.yaw+=dy*k;V.y+=((fin(o[4])?clamp(o[4],0,300):0)-V.y)*k;V.s=fin(o[5])?o[5]:0;
     V.gnd=groundAt(V.x,V.z);
@@ -2506,7 +2531,7 @@ function updVehicles(dt,jx,jy,use){
     if(V){
       promptTxt=(V.boost?'スポーツカー':VT[V.type].name)+'に乗る';promptAct=true;
       var tdx=V.x-me.x,tdz=V.z-me.z,td=Math.hypot(tdx,tdz)||1;                       // walking into it also gets you in
-      if(use||(now>noEnterT&&td<VT[V.type].touch&&(me.vx*tdx+me.vz*tdz)/td>1.2))enterVeh(V);
+      if(use||(now>noEnterT&&(V.car!==undefined?V.nd<0.75:td<VT[V.type].touch)&&(me.vx*tdx+me.vz*tdz)/td>1.2)){if(V.car!==undefined)V=wakeCar(V.car);if(V)enterVeh(V);}
     }else if(!promptTxt){
       var nb=null,nd=14;for(i=0;i<VEH.length;i++){var W2=VEH[i];if(W2.remote||W2.y>0.5)continue;var d2=Math.hypot(W2.x-me.x,W2.z-me.z);if(d2<nd){nd=d2;nb=W2;}}
       if(nb)promptTxt=VT[nb.type].name+'が近くにあります。そのまま歩いて触れると乗れます';
@@ -2721,7 +2746,7 @@ function itemGeo(k){
   KEYSPOTS.forEach(function(k){spot(k[0],k[1],0.13,k[2],'crate',2);LOOT[LOOT.length-1].key=true;});
   D.poi.forEach(function(q){var k=kerb(q[1]/10,q[2]/10);if(k)spot(k[0],k[1],0.13,k[2],'crate',2);});
   STORES.forEach(function(S){spot(S.x+5.75*S.cs-0.9*S.sn,S.z-5.75*S.sn-0.9*S.cs,1.2,S.ang,'counter',2);});
-  CARS.forEach(function(c,q){if(c[3]===0&&q%9===4&&LOOT.length<70)spot(c[0]+Math.sin(c[2])*1.5,c[1]+Math.cos(c[2])*1.5,1.0,c[2],'hood',1);});
+  CARS.forEach(function(c,q){if(c[3]===0&&q%9===4&&LOOT.length<70){c.fix=true;spot(c[0]+Math.sin(c[2])*1.5,c[1]+Math.cos(c[2])*1.5,1.0,c[2],'hood',1);}});
 })();
 function fillLoot(){ // contents change with each new game and every third wave; every player rolls the same dice
   var ep=Math.floor(hs.w/3);lootKey=(hs.gen|0)+'_'+ep;myLoot={};lootSig='';
@@ -3228,7 +3253,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月13日','ドームエリア・長崎スタジアムシティ・ショッピングモールへのワープ／WAVE 5ごとのクリアと「のるーと利用券」／包帯・応急処置セット／フォレストプレイスの外観と門、鍵つき立体駐車場／全体マップのズーム／更新履歴'],
+  [['2026年11月13日','一人称／三人称の切り替え／停まっている車に全部乗れる／立体駐車場の入口を入口から見て左手前に、歩きなら鍵なしで入れる／ポーズ、リュック、銃とグレネードのアイコン'],
+   ['2026年11月13日','ドームエリア・長崎スタジアムシティ・ショッピングモールへのワープ／WAVE 5ごとのクリアと「のるーと利用券」／包帯・応急処置セット／フォレストプレイスの外観と門、鍵つき立体駐車場／全体マップのズーム／更新履歴'],
    ['2026年11月13日','クルーズ船と船内ロビー／バーベキューのミニゲーム／陰影つきの顔と服装6種／銃4種、補給箱のアイテム、グレネード、防弾チョッキ／横画面、全画面ボタン／草むら、信号機、自販機、建物の足元の影'],
    ['2026年11月12日','全体マップ、右上の視点スティック（首振り）、走り続ける操作／地図を最新のOpenStreetMapに更新、セブンの場所にコンビニ、対岸を実際の街並みに／車・バイク・ヘリコプター／入れるコンビニと品出しミッション'],
    ['2026年11月12日','描画を全面作り直し：影、空と雲、海、建物の外壁、道路、木、ロボット、銃、効果音']].forEach(function(r){el('b','','',r[0],h);h.appendChild(document.createTextNode(r[1]));});
@@ -3275,7 +3301,7 @@ function updMeta(dt,use){
   if(PARK){
     var pd=Math.hypot(PARK.gx-me.x,PARK.gz-me.z),want=hasKey&&pd<16;
     PARK.open+=((want?1:0)-PARK.open)*Math.min(1,dt*4);PARK.chain.off=PARK.open>0.5;PARK.mesh.position.y=0.13-PARK.open*0.8;
-    if(!hasKey&&pd<5.5&&!promptTxt)promptTxt='チェーンがかかっている（駐車場の自動キーが必要）';
+    if(!hasKey&&pd<5.5&&!promptTxt)promptTxt='歩いてなら入れます（車で入るには駐車場の自動キーが必要）';
   }
   if(me.down||myVeh||carry)return;
   // the mall's clothes counter
@@ -3384,6 +3410,41 @@ function drawPack(){
   };
 })();
 var hud2Tick;
+
+/* ---------- view: first person, or third person over the shoulder with your own avatar on screen ---------- */
+var tps=false,myBody=null,myBodyKey='',bView;
+try{tps=localStorage.getItem('ic_tps')==='1';}catch(e){}
+function scopedNow(){return useScope()&&me.ads>0.86;}
+function setTps(v){tps=v;try{localStorage.setItem('ic_tps',v?'1':'0');}catch(e){}bView.classList.toggle('on',v);if(me.inGame)banner(v?'三人称視点':'一人称視点','',1.2);}
+function updBody(dt){
+  var show=tps&&me.inGame&&!myVeh&&!scopedNow(),key=JSON.stringify(myFace);
+  if(show&&(!myBody||myBodyKey!==key)){if(myBody)scene.remove(myBody.g);myBody=makePlayer('me',' ',myFace);myBody.g.remove(myBody.sp);myBodyKey=key;}
+  if(myBody&&!show&&myBody.g.visible){myBody.g.visible=false;return;}
+  if(!myBody)return;
+  myBody.g.visible=show;if(!show)return;
+  var s=Math.sin(me.bob),c=Math.cos(me.bob),a=Math.min(1.3,me.amp);
+  myBody.lL.th.rotation.x=s*0.6*a;myBody.lR.th.rotation.x=-s*0.6*a;myBody.lL.sh.rotation.x=-(0.15+0.75*Math.max(0,c))*a;myBody.lR.sh.rotation.x=-(0.15+0.75*Math.max(0,-c))*a;
+  myBody.hips.position.y=0.95-0.03*a+Math.abs(c)*0.03*a;
+  myBody.g.position.set(me.x,meGy,me.z);myBody.g.rotation.set(0,me.yaw,0);
+  if(me.down){myBody.g.rotation.x=-Math.PI/2;myBody.g.position.y=meGy+0.25;}
+}
+function tpsCamera(){ // pull the camera back over the right shoulder; come in close when a wall is behind
+  if(!tps||myVeh||scopedNow())return;
+  camera.updateMatrixWorld();camera.getWorldDirection(dirV);
+  var e=camera.matrixWorld.elements,d=3.3-1.6*me.ads,sx=0.6,ox=-dirV.x*d+e[0]*sx,oy=-dirV.y*d+0.3,oz=-dirV.z*d+e[2]*sx,L=Math.hypot(ox,oy,oz);
+  var px=camera.position.x,py=camera.position.y,pz=camera.position.z,t=wallDist(px,py,pz,ox/L,oy/L,oz/L,L),k=clamp((t-0.3)/L,0.1,1);
+  camera.position.set(px+ox*k,Math.max(meGy+0.3,py+oy*k),pz+oz*k);
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent='#bView{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:calc(50% - 92px);width:40px;height:40px;border-radius:8px;z-index:12;padding:0}#bView svg{width:58%;height:58%}#bView.on{border-color:var(--signal);color:var(--signal)}'+
+    '@media (orientation:landscape) and (max-height:540px){#bView{width:34px;height:34px;top:6px;left:calc(50% - 76px)}}';
+  document.head.appendChild(st);
+  bView=document.createElement('button');bView.id='bView';bView.type='button';bView.className='btn off'+(tps?' on':'');bView.setAttribute('aria-label','視点の切り替え');
+  bView.innerHTML='<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 5c5 0 9 4.5 10 7-1 2.500-5 7-10 7S3 14.500 2 12c1-2.500 5-7 10-7zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>';
+  document.body.appendChild(bView);
+  bView.addEventListener('pointerdown',function(e){e.preventDefault();setTps(!tps);});
+})();
 
 /* ---------- per-client logic ---------- */
 function resetSelf(){
@@ -3498,7 +3559,7 @@ function fire(){
       if(p===0&&ray.t<70)sImpact(1-ray.t/70,panOf(ex,ez));
     }
   }
-  muzzleWorld(tmpV,1.3);
+  muzzleWorld(tmpV,1.3);if(tps&&!scopedNow())tmpV.set(me.x-Math.sin(me.yaw)*0.8,meGy+1.3,me.z-Math.cos(me.yaw)*0.8);
   if(W.pel>1||W.scope||me.shots%2===0)tracer(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez,false);
   flashLight(tmpV.x,tmpV.y,tmpV.z,W.rec>0.03?7:4.5,16,1,0.72,0.4);
   if(Math.random()<0.5||W.rec>0.03)smoke.emit(tmpV.x,tmpV.y,tmpV.z,ray.dx*1.5,0.3,ray.dz*1.5,0.5,0.08,0.5,0.5,0.5,0.5,0.16,0,2);
@@ -3534,7 +3595,7 @@ function updGun(dt){
   if(boltT>0)boltT-=dt;gunBolt.position.z=-0.006+(boltT>0?0.03:0);
   if(flashT>0)flashT-=dt;muzzle.visible=muzzle2.visible=flashT>0;
   var scp=useScope()&&a>0.86;
-  gunDot.visible=a>0.75&&!!curW().dot&&!hasScope;gun.visible=!me.down&&!carry&&!myVeh&&!scp;elScope.style.opacity=scp&&!me.down?1:0;
+  gunDot.visible=a>0.75&&!!curW().dot&&!hasScope;gun.visible=!me.down&&!carry&&!myVeh&&!scp&&!tps;elScope.style.opacity=scp&&!me.down?1:0;
   crateV.visible=!!carry&&!me.down;crateV.position.set(bx*2,-0.3+by*2.5,-0.66);crateV.scale.setScalar(0.62);crateV.rotation.set(0.12,0,Math.sin(me.bob)*0.02*me.amp);
   gunSun.intensity+=(3.1*sunVis-gunSun.intensity)*Math.min(1,dt*6);
   gunCam.quaternion.copy(camera.quaternion);
@@ -3662,7 +3723,7 @@ bigEl.addEventListener('wheel',function(e){e.preventDefault();bigZ=clamp(bigZ*(e
 function hold(b,fn){b.addEventListener('pointerdown',function(e){e.preventDefault();fn(true);try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',function(){fn(false);});b.addEventListener('pointercancel',function(){fn(false);});}
 hold(bUp,function(v){heliUp=v;});hold(bDn,function(v){heliDn=v;});
-window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyP')setPause(!paused);if(e.code==='KeyB')setPack(!packOpen);if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
+window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyP')setPause(!paused);if(e.code==='KeyV')setTps(!tps);if(e.code==='KeyB')setPack(!packOpen);if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
 window.addEventListener('keyup',function(e){keys[e.code]=false;});
 window.addEventListener('blur',function(){keys={};mouseDown=false;adsHeld=false;});
 
@@ -3727,7 +3788,7 @@ function drawHud(dt){
   var low=1-me.hp/100;
   el.hurt.style.opacity=me.down?0.55:Math.max(hurtA,low*low*0.6);
   if(hitT>0){hitT-=dt;el.cross.classList.add('hit');}else el.cross.classList.remove('hit');
-  el.cross.style.opacity=(me.ads>0.5||me.sprint>0.5||me.down||myVeh)?0:1;
+  el.cross.style.opacity=((me.ads>0.5&&!tps)||me.sprint>0.5||me.down||myVeh)?0:1;
   el.cross.style.transform='scale('+(1+me.spread*0.9+me.amp*0.35).toFixed(2)+')';
   hudT-=dt;if(hudT>0)return;hudT=0.12;
   if(bigOpen)drawBig();
@@ -3814,10 +3875,10 @@ var FOGD=0.00021;
   if(isTouch){
     sec('動く・見る',[['画面左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面右をドラッグ','向きを変える'],['右上のスティック','首だけ振って周りや後ろを見る']]);
     sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['銃のアイコン','押すたびに持ち替え（数字は持っている丁数）'],['グレネードのアイコン','押すと投げる（数字は残り個数）'],['リュック','持ち物を見る。包帯や応急処置セットはここから使う'],['AUTO','照準が敵に合うと自動で撃つ']]);
-    sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の ⏸ と ⛶','ポーズ / 全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
+    sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の3つのボタン','視点（一人称 / 三人称）・ポーズ・全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
   }else{
     sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（クリックで固定）']]);
-    sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ']]);
+    sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ'],['V','一人称 / 三人称の切り替え']]);
     sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出しなど'],['1 2 3','補給箱の中身を選んで拾う'],['M','全体マップ（ホイールで拡大、ドラッグで移動）'],['右下の ⛶','全画面']]);
   }
   sec('遊び方',[['目標','WAVE 5 ごとに STAGE CLEAR。のるーと利用券がもらえる'],['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ','中で品出しを終えると武器が強くなる'],['乗り物','車・バイク・ヘリは歩いて触れると乗れる'],['ワープ','スタート地点そばのゲートからドーム、そこから長崎へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える'],['回復','包帯、応急処置セット、バーベキュー']]);
@@ -3832,7 +3893,7 @@ var FOGD=0.00021;
     NET.mode=mode;NET.created=!!created;NET.rid=created?Math.random().toString(36).slice(2,10):(rid||'');roomCode=mode==='coop'?String(code):'';netState=mode==='coop'?'wait':'solo';netFails=0;
     initAudio();me.inGame=true;nm.blur();tryJoin();
     $('start').classList.add('off');cp.root.classList.add('off');
-    ['tl','tr','cross','ammo','prompt','bPause','bPack'].forEach(function(id){$(id).classList.remove('off');});
+    ['tl','tr','cross','ammo','prompt','bPause','bPack','bView'].forEach(function(id){$(id).classList.remove('off');});
     if(isTouch)['bFire','bReload','bAuto','bAds','look','bSwap','bNade'].forEach(function(id){$(id).classList.remove('off');});
     showAuto();gun.visible=true;scene.fog.density=FOGD;seaU.uFog.value=FOGD;camera.near=0.25;resize();
     setShadow(LOW?95:170,600);
@@ -3993,6 +4054,7 @@ function frame(tms,manual){
   var fov=baseFov*(1-(1-zoomNow())*me.ads)+me.sprint*4;
   if(Math.abs(fov-camera.fov)>0.01){camera.fov=fov;camera.updateProjectionMatrix();}
   if(myVeh)vehCamera(dt);
+  tpsCamera();updBody(dt);
   camera.updateMatrixWorld();
   var wantR=(myVeh&&myVeh.type==='heli')?clamp(170+myVeh.y*5,170,1100):(LOW?95:170);
   if(Math.abs(wantR-shR)>shR*0.08)setShadow(wantR,Math.max(600,wantR*3));
