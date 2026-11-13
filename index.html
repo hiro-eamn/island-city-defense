@@ -3324,7 +3324,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月14日','アバターを描き直し（顔・髪型・輪郭、髪型2種を追加）／写真から作ると肌と髪の色が写真どおりになる'],
+  [['2026年11月14日','スタジアムシティにジップライン（高いビルの屋上からスタジアム上空を渡る）'],
+   ['2026年11月14日','アバターを描き直し（顔・髪型・輪郭、髪型2種を追加）／写真から作ると肌と髪の色が写真どおりになる'],
    ['2026年11月13日','約3分ごとの毒ガスで安全エリアが狭まる／ソロは3回しのぐと最終決戦（30台殲滅）、勝つとクリアで「のるーと利用券」'],
    ['2026年11月13日','一人称／三人称の切り替え／停まっている車に全部乗れる／立体駐車場の入口を入口から見て左手前に、歩きなら鍵なしで入れる／ポーズ、リュック、銃とグレネードのアイコン'],
    ['2026年11月13日','ドームエリア・長崎スタジアムシティ・ショッピングモールへのワープ／WAVE 5ごとのクリアと「のるーと利用券」／包帯・応急処置セット／フォレストプレイスの外観と門、鍵つき立体駐車場／全体マップのズーム／更新履歴'],
@@ -3362,7 +3363,7 @@ function openWear(){
 function updMeta(dt,use){
   if(!hs)return;
   // clear every fifth wave
-  gasTick(dt);
+  gasTick(dt);ZIP.update(dt,use);
   var key=hs.gen+'_'+hs.w;
   if(!soloRun()&&hs.st==='break'&&hs.w>0&&hs.w%5===0&&!cleared[key]){cleared[key]=1;tickets++;saveMeta();showClear(hs.w);}
   saveT-=dt;if(saveT<=0){saveT=12;saveMeta();}
@@ -3640,6 +3641,56 @@ function gasMap(g,X,Z,k,W,H){ // the safe circle on the minimap and the full map
   gasMesh.renderOrder=3;gasMesh.frustumCulled=false;gasMesh.visible=false;scene.add(gasMesh);
 })();
 
+/* ---------- zip line at Stadium City: from the roof of the tall block, over both stand roofs and the pitch, down to a tower on the far side ---------- */
+var ZIP=(function(){
+  var cx=-9000,cz=-5200,A=[cx-55,66.2,cz-92],B=[cx+62,28,cz+104],SAG=4,LEN=Math.hypot(B[0]-A[0],B[1]-A[1],B[2]-A[2]),H=Math.PI/2,i;
+  var Z={on:false,t:0,v:0,y:0,sx:cx-55,sz:cz-79,ex:B[0]+3.5,ez:B[2]+4,wind:0};
+  function at(t,o){o[0]=A[0]+(B[0]-A[0])*t;o[1]=A[1]+(B[1]-A[1])*t-SAG*4*t*(1-t);o[2]=A[2]+(B[2]-A[2])*t;return o;}
+  var g=new GB(),ST=[0.32,0.33,0.35],YL=rgb(0xd9a21a),DK=[0.05,0.055,0.06],WD=rgb(0x8a6a48),p0=[0,0,0],p1=[0,0,0],yaw=Math.atan2(B[0]-A[0],B[2]-A[2]);
+  for(i=0;i<24;i++){at(i/24,p0);at((i+1)/24,p1);g.tube(p0.slice(),p1.slice(),0.035,0.035,[0.12,0.12,0.13],5);}                 // the cable
+  // launch frame on the roof
+  [-1,1].forEach(function(d){var ox=Math.cos(yaw)*d*1.6,oz=-Math.sin(yaw)*d*1.6;g.tube([A[0]+ox,62,A[2]+oz],[A[0]+ox,67,A[2]+oz],0.12,0.12,YL,8);g.tube([A[0]+ox,67,A[2]+oz],[A[0]+ox-Math.sin(yaw)*3,62,A[2]+oz-Math.cos(yaw)*3],0.07,0.07,ST,6);});
+  g.tube([A[0]+Math.cos(yaw)*1.7,67,A[2]-Math.sin(yaw)*1.7],[A[0]-Math.cos(yaw)*1.7,67,A[2]+Math.sin(yaw)*1.7],0.12,0.12,YL,8);
+  g.box(4.6,0.2,3.4,A[0],62.9,A[2],WD,0,yaw);
+  // landing tower: four legs, cross braces, a deck and rails
+  var TH=B[1]-2.6,q;
+  [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(c,k){
+    g.tube([B[0]+c[0]*2.6,0,B[2]+c[1]*2.6],[B[0]+c[0]*1.7,TH,B[2]+c[1]*1.7],0.14,0.11,ST,8);
+    var n=[[1,-1],[1,1],[-1,1],[-1,-1]][k];
+    for(q=0;q<4;q++){var y0=q*TH/4,y1=(q+1)*TH/4,f0=2.6-0.9*q/4,f1=2.6-0.9*(q+1)/4;g.tube([B[0]+c[0]*f0,y0,B[2]+c[1]*f0],[B[0]+n[0]*f1,y1,B[2]+n[1]*f1],0.045,0.045,ST,5);}
+  });
+  g.box(4.4,0.22,4.4,B[0],TH,B[2],WD);[-1,1].forEach(function(d){g.box(4.4,0.08,0.08,B[0],TH+1.1,B[2]+d*2.15,YL);g.box(0.08,0.08,4.4,B[0]+d*2.15,TH+1.1,B[2],YL);});
+  g.tube([B[0],TH,B[2]],[B[0],B[1]+0.6,B[2]],0.1,0.1,YL,8);
+  // ground station by the foot of the tall block
+  g.box(0.3,3.6,0.3,Z.sx-1.6,1.8,Z.sz,DK);g.box(0.3,3.6,0.3,Z.sx+1.6,1.8,Z.sz,DK);g.box(3.8,0.3,0.36,Z.sx,3.6,Z.sz,DK);g.box(3.6,0.1,1.6,Z.sx,0.18,Z.sz,ST);
+  g.box(0.08,3.3,0.08,Z.sx-1.4,1.8,Z.sz,YL);g.box(0.08,3.3,0.08,Z.sx+1.4,1.8,Z.sz,YL);
+  var m=new THREE.Mesh(g.geo(),stdMat({roughness:0.5,metalness:0.45}));m.castShadow=true;m.receiveShadow=true;m.frustumCulled=false;scene.add(m);
+  var sm=new THREE.MeshBasicMaterial({map:signTex(512,128,'ZIP LINE','ジップライン　スタジアム上空へ','#17335c','#f0a81c'),side:THREE.DoubleSide});sm.color.setRGB(0.9,0.9,0.9);
+  var sg=new THREE.Mesh(new THREE.PlaneGeometry(1,1),sm);sg.scale.set(3.6,0.9,1);sg.position.set(Z.sx,4.4,Z.sz);scene.add(sg);
+  var c1=addCol(rectP(B[0],B[2],2.8,2.8,0),TH);c1.nn=true;
+  // the trolley the rider hangs from
+  var tb=new GB();tb.box(0.16,0.2,0.5,0,0,0,YL);tb.cyl(0.07,0.07,0.06,10,0,0.12,0.15,DK,0,0,H);tb.cyl(0.07,0.07,0.06,10,0,0.12,-0.15,DK,0,0,H);tb.tube([0,-0.1,0],[0,-0.75,0],0.02,0.02,DK,5);tb.tube([-0.28,-0.75,0],[0.28,-0.75,0],0.025,0.025,DK,6);
+  var tr=new THREE.Mesh(tb.geo(),stdMat({roughness:0.5,metalness:0.5}));tr.visible=false;tr.rotation.y=yaw;scene.add(tr);
+  Z.update=function(dt,use){
+    if(Z.on){
+      if(me.down){Z.on=false;tr.visible=false;return;}
+      Z.v=Math.min(21,Z.v+3.2*dt);if(Z.t>0.9)Z.v=Math.max(7,Z.v-16*dt);Z.t+=Z.v*dt/LEN;
+      if(Z.t>=1){Z.on=false;tr.visible=false;me.x=Z.ex;me.z=Z.ez;me.vx=me.vz=0;warpT=0.35;sClick(0,900,0.3);burst({dur:0.2,type:'lowpass',f:300,v:0.3});banner('到着','スタジアムの反対側に降りた',2);return;}
+      at(Z.t,p0);me.x=p0[0];me.z=p0[2];me.vx=me.vz=0;me.amp=0;Z.y=p0[1]-0.95-EYE;tr.position.set(p0[0],p0[1],p0[2]);
+      Z.wind-=dt;if(Z.wind<=0){Z.wind=0.45;burst({dur:0.7,type:'bandpass',f:500+Z.v*25,q:0.5,v:0.05+Z.v*0.006});tone({f:180+Z.v*14,dur:0.5,v:0.012,type:'sawtooth'});}
+      if(!promptAct)promptTxt='ジップライン滑空中　高さ '+Math.round(p0[1]-2.6)+'m';
+      return;
+    }
+    if(me.down||myVeh||carry||promptAct)return;
+    if(Math.hypot(me.x-Z.sx,me.z-Z.sz)<3.2){
+      promptTxt='ジップラインに乗る（屋上からスタジアム上空へ）';promptAct=true;
+      if(use){Z.on=true;Z.t=0;Z.v=4;Z.wind=0;at(0,p0);me.x=p0[0];me.z=p0[2];Z.y=p0[1]-0.95-EYE;me.yaw=yaw+Math.PI;me.pitch=-0.25;warpT=0.5;autoRun=false;joy.x=joy.y=0;tr.visible=true;
+        banner('ジップライン','スタジアムの上を渡る',2.4);tone({f:300,f1:900,dur:0.5,v:0.05,type:'sawtooth'});sClick(0,1500,0.3);}
+    }
+  };
+  return Z;
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){
   if(myVeh)leaveVeh();
@@ -3888,7 +3939,7 @@ function drawBig(){
   STORES.forEach(function(S){var px=SX(S.x),py=SZ(S.z);g.fillStyle='#fff';g.fillRect(px-11,py-11,22,22);g.fillStyle='#17335c';g.fillRect(px-8,py-8,16,16);g.fillStyle='#f0a81c';g.fillRect(px-8,py+2,16,4);tag(S.x,S.z,'コンビニ','#ffd27a');});
   if(SHIP)tag(SHIP.x,SHIP.z,'クルーズ船','#ffffff');if(BBQ){g.fillStyle='#e0703a';g.beginPath();g.arc(SX(BBQ.x),SZ(BBQ.z),7,0,7);g.fill();tag(BBQ.x,BBQ.z,'バーベキュー','#ffb27a');}
   if(PARK){g.fillStyle='#9fb6ff';g.fillRect(SX(PARK.gx)-6,SZ(PARK.gz)-6,12,12);tag(PARK.gx,PARK.gz,'立体駐車場（キー）','#c9d6ff');}
-  if(MALL)tag(MALL.x,MALL.z,'服売り場','#ffb0d0');
+  if(MALL)tag(MALL.x,MALL.z,'服売り場','#ffb0d0');tag(ZIP.sx,ZIP.sz,'ジップライン','#ffe9a0');
   WARPS.forEach(function(W){var px=SX(W.x),py=SZ(W.z);g.fillStyle='#000';g.beginPath();g.arc(px,py,10,0,7);g.fill();g.fillStyle=W.need?'#f0a81c':'#4fd0ff';g.beginPath();g.arc(px,py,7.5,0,7);g.fill();tag(W.x,W.z,W.peace?'ピースワープ':(W.need||W.label.indexOf('のるーと')>=0?'のるーと':'ワープ'),'#bfeaff');});
   LOOT.forEach(function(S){if(!S.left||S.kind!=='crate')return;g.fillStyle='#10240f';g.fillRect(SX(S.x)-6,SZ(S.z)-6,12,12);g.fillStyle='#7ee06a';g.fillRect(SX(S.x)-4.5,SZ(S.z)-4.5,9,9);});
   VEH.forEach(function(V){var px=SX(V.x),py=SZ(V.z);
@@ -4245,7 +4296,7 @@ function frame(tms,manual){
   me.spread=Math.max(0,me.spread-dt*2.2);
   recP*=Math.exp(-dt*6.5);recY*=Math.exp(-dt*6.5);shake=Math.max(0,shake-dt*2.6);
   var bobY=Math.cos(me.bob*2)*0.022*me.amp*(1-0.6*me.ads),sk=shake*shake;
-  var gyT=SHIP&&!myVeh?SHIP.h(me.x,me.z):0;meGy+=(gyT-meGy)*Math.min(1,dt*12);if(!myVeh)meAlt=meGy;
+  var gyT=SHIP&&!myVeh?SHIP.h(me.x,me.z):0;meGy+=(gyT-meGy)*Math.min(1,dt*12);if(ZIP.on)meGy=ZIP.y;if(!myVeh)meAlt=meGy;
   camera.position.set(me.x,(me.down?0.45:EYE+bobY)+meGy,me.z);
   camera.rotation.set(clamp(me.pitch+headPitch,-1.4,1.4)+recP+Math.sin(now*47)*0.012*sk,me.yaw+headYaw+recY+Math.sin(now*39+1)*0.012*sk,(me.down?0.5:-jx*0.008*me.amp)+Math.sin(now*31)*0.01*sk+Math.sin(me.bob)*0.0035*me.amp);
   var fov=baseFov*(1-(1-zoomNow())*me.ads)+me.sprint*4;
