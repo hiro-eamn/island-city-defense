@@ -3340,7 +3340,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月14日','光の表現（明るい所のにじみ、色調）／アバターの髪を作り直し（生え際・もみあげ・後ろ髪）／立体駐車場の入口を手前の辺の左側に／毒ガスのダメージを5分の1に'],
+  [['2026年11月15日','キャラモード：相棒のガーディアンがついてきて一緒に戦う（トップ画面かポーズメニューで切り替え）'],
+   ['2026年11月14日','光の表現（明るい所のにじみ、色調）／アバターの髪を作り直し（生え際・もみあげ・後ろ髪）／立体駐車場の入口を手前の辺の左側に／毒ガスのダメージを5分の1に'],
    ['2026年11月14日','協力プレイ：味方のいる方向に印（画面の外なら端に矢印と距離）／地図の敵・味方・自分のアイコンを大きく'],
    ['2026年11月14日','次の安全エリアが先に分かる（地図の白い点線、場所は毎回ランダム）／プラクティス（ロボットなし）'],
    ['2026年11月14日','ライフ3つ（ダウンしても2回まではその場で復活）／アイテムを拾い終えてもボタンが残る不具合を修正'],
@@ -3435,7 +3436,7 @@ function fsTip(){ // shown where the browser cannot go full screen
 }
 function setPause(v){
   if(!me.inGame)return;
-  paused=v;elPause.classList.toggle('off',!v);firing=false;mouseDown=false;adsHeld=false;keys={};
+  paused=v;elPause.classList.toggle('off',!v);var hb=document.getElementById('pzHero');if(hb)hb.textContent='キャラモード：'+(HERO.on?'ON':'OFF');firing=false;mouseDown=false;adsHeld=false;keys={};
   elPause.querySelector('.n').textContent=NET.mode==='coop'?'協力プレイ中は、ほかの人のためにゲームは止まりません。':'ゲームを止めています。';
   try{if(ac&&NET.mode!=='coop'){if(v)ac.suspend();else ac.resume();}}catch(e){}
   if(v){try{if(document.exitPointerLock)document.exitPointerLock();}catch(e){}}
@@ -3496,7 +3497,7 @@ function drawPack(){
   bFull.innerHTML=I.full;
   elPack=el('div','pack','off');var ph=el('h2','','','リュック',elPack),px=el('button','','','✕ 閉じる',ph);px.type='button';px.addEventListener('pointerdown',function(e){e.preventDefault();setPack(false);});el('div','','g',null,elPack);
   elPause=el('div','pause','off');var pb=el('div','','box',null,elPause);el('h2','','','PAUSE',pb);el('div','','n','',pb);
-  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','操作説明',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';
+  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','操作説明',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
   r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});r3b.addEventListener('click',function(){try{location.reload();}catch(e){}});
   elTip=el('div','tip','off');var tb=el('div','','box',null,elTip);tipT=el('div','','t','',tb);var tk=el('button','','','OK',tb);tk.type='button';tk.addEventListener('click',function(){elTip.classList.add('off');});
   hud2Tick=function(){
@@ -3785,6 +3786,81 @@ function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as 
     '.mate.dn i{background:rgba(226,60,45,.95)}.mate.dn b{color:#ffb3aa}';
   document.head.appendChild(st);
   matesBox=document.createElement('div');matesBox.id='matesBox';document.body.appendChild(matesBox);
+})();
+
+/* ---------- character mode: an armoured partner of our own design (navy, white and gold, green light) who stays close and fights beside you ---------- */
+var HERO=(function(){
+  var on=false;try{on=localStorage.getItem('ic_hero')==='1';}catch(e){}
+  var H={on:on,made:false,x:0,z:0,y:0,yaw:0,ph:0,amp:0,shotT:0,punchT:0,armT:0,aim:0,hidden:true,kills:0},G=null,P=null,beam=null,beamT=0,tgt=new THREE.Vector3();
+  function build(){
+    var NV=rgb(0x1c2f6b),WH=rgb(0xe9edf2),GD=rgb(0xd9a520),DK=[0.03,0.035,0.05],HP=Math.PI/2;
+    var mat=stdMat({roughness:0.38,metalness:0.55}),glow=new THREE.MeshBasicMaterial({color:new THREE.Color(0.35,1.6,0.9)});
+    function mesh(gb,parent,m){var q=new THREE.Mesh(gb.geo(),m||mat);q.castShadow=true;parent.add(q);return q;}
+    var g=new THREE.Group(),hips=new THREE.Group(),b=new GB(),e=new GB();g.rotation.order='YXZ';hips.position.y=1.12;g.add(hips);
+    b.oct(0.44,0.22,0.27,0,0.02,0,NV);b.oct(0.36,0.2,0.22,0,0.22,0,WH);b.oct(0.6,0.38,0.32,0,0.5,0,NV);b.box(0.42,0.24,0.05,0,0.53,-0.165,WH);b.box(0.5,0.05,0.34,0,0.7,0,GD);
+    [-1,1].forEach(function(d){b.sph(0.14,d*0.37,0.63,0,GD);b.box(0.05,0.3,0.24,d*0.23,0.26,0,NV);b.box(0.1,0.035,0.02,d*0.13,0.4,-0.168,GD);});
+    b.cyl(0.07,0.08,0.1,10,0,0.75,0,DK);b.add(SPH,WH,0,0.92,0,0,0,0,0.135,0.165,0.155);b.add(SPH,NV,0,0.955,0.02,0,0,0,0.142,0.14,0.16);          // smooth helmet over a white face plate
+    [-1,1].forEach(function(d){b.cyl(0.05,0.05,0.03,12,d*0.138,0.92,0.01,GD,0,0,HP);});
+    mesh(b,hips);
+    e.box(0.21,0.04,0.02,0,0.905,-0.148,[1,1,1]);e.cyl(0.075,0.075,0.02,6,0,0.55,-0.195,[1,1,1],HP);                                             // visor and chest core
+    mesh(e,hips,glow).castShadow=false;
+    function arm(d){
+      var sh=new THREE.Group(),q=new GB();sh.position.set(d*0.37,0.6,0);
+      q.tube([0,0,0],[d*0.03,-0.36,0],0.085,0.07,NV,8);q.tube([d*0.03,-0.36,0],[d*0.03,-0.72,-0.03],0.08,0.07,WH,8);q.box(0.17,0.1,0.17,d*0.03,-0.5,-0.02,GD);q.sph(0.085,d*0.03,-0.8,-0.03,NV);
+      mesh(q,sh);hips.add(sh);return sh;
+    }
+    function leg(d){
+      var th=new THREE.Group(),sn=new THREE.Group(),q=new GB();th.position.set(d*0.13,0,0);sn.position.set(0,-0.54,0);
+      q.tube([0,0,0],[0,-0.54,0],0.115,0.09,NV,9);q.sph(0.095,0,-0.54,0,GD);mesh(q,th);
+      q=new GB();q.tube([0,0,0],[0,-0.46,0],0.09,0.075,WH,9);q.box(0.15,0.12,0.32,0,-0.52,-0.06,NV);q.box(0.16,0.03,0.33,0,-0.565,-0.06,DK);mesh(q,sn);
+      th.add(sn);hips.add(th);return {th:th,sn:sn};
+    }
+    var lab=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('ガーディアン'),depthTest:false,transparent:true}));lab.scale.set(1.5,0.375,1);lab.position.y=2.5;g.add(lab);
+    P={hips:hips,aL:arm(-1),aR:arm(1),lL:leg(-1),lR:leg(1)};
+    var bg=new THREE.CylinderGeometry(0.045,0.045,1,6);bg.rotateX(HP);beam=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:new THREE.Color(0.4,1.8,1.0),transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false}));beam.visible=false;beam.frustumCulled=false;scene.add(beam);
+    g.visible=false;scene.add(g);G=g;H.made=true;
+  }
+  function place(){var s=Math.sin(me.yaw),c=Math.cos(me.yaw);H.x=me.x-s*1.0+c*2.4;H.z=me.z-c*1.0-s*2.4;resolve(H,0.5);H.yaw=me.yaw;}
+  H.set=function(v){H.on=!!v;try{localStorage.setItem('ic_hero',v?'1':'0');}catch(e){}if(!v&&G){G.visible=false;beam.visible=false;H.hidden=true;}};
+  H.update=function(dt){
+    if(!H.on||!me.inGame)return;
+    if(!H.made)build();
+    if(beamT>0){beamT-=dt;if(beamT<=0)beam.visible=false;}
+    var away=!!myVeh||ZIP.on||me.down;
+    if(away){G.visible=false;H.hidden=true;return;}
+    if(H.hidden||Math.hypot(H.x-me.x,H.z-me.z)>45||zoneOf(H.x,H.z)!==zoneOf(me.x,me.z)){place();H.hidden=false;}
+    G.visible=true;
+    // who to fight: the nearest machine that is close to either of us
+    var best=null,bd=30;
+    views.forEach(function(v){var d=Math.hypot(v.x-H.x,v.z-H.z);if(d<bd&&Math.hypot(v.x-me.x,v.z-me.z)<42){bd=d;best=v;}});
+    var s=Math.sin(me.yaw),c=Math.cos(me.yaw),gx=me.x-s*1.0+c*2.4,gz=me.z-c*1.0-s*2.4,want=0;            // otherwise: at your right side, a step ahead, clear of the over-the-shoulder camera
+    if(best){var T=TYPES[best.t],reach=T.r+1.5;
+      if(bd<16&&Math.hypot(best.x-me.x,best.z-me.z)<20){gx=best.x-(best.x-H.x)/bd*(reach-0.3);gz=best.z-(best.z-H.z)/bd*(reach-0.3);}   // close enough: go and hit it
+      want=Math.atan2(-(best.x-H.x),-(best.z-H.z));
+      H.shotT-=dt;H.punchT-=dt;
+      if(bd<reach&&H.punchT<=0){H.punchT=0.8;H.armT=0.3;H.aim=1;hit(best,30,T);fxSparks(best.x,T.h*0.6,best.z,10,(best.x-H.x)/bd,0.4,(best.z-H.z)/bd,1);sMetal(1.2,false);burst({dur:0.12,type:'lowpass',f:260,v:0.5});}
+      else if(bd>=reach&&H.shotT<=0&&los(H.x,H.z,best.x,best.z)){H.shotT=1.3;H.armT=0.35;H.aim=1;
+        var hx=H.x-Math.sin(H.yaw)*0.5,hz=H.z-Math.cos(H.yaw)*0.5,hy=H.y+1.75;tgt.set(best.x,T.h*0.6,best.z);
+        beam.position.set((hx+tgt.x)/2,(hy+tgt.y)/2,(hz+tgt.z)/2);beam.lookAt(tgt);beam.scale.set(1,1,Math.hypot(tgt.x-hx,tgt.y-hy,tgt.z-hz));beam.visible=true;beamT=0.12;
+        hit(best,18,T);fxSparks(tgt.x,tgt.y,tgt.z,8,-(best.x-H.x)/bd,0.3,-(best.z-H.z)/bd,0.8);flashLight(hx,hy,hz,5,14,0.3,1,0.7);
+        var dd=Math.hypot(H.x-me.x,H.z-me.z),vol=clamp(1-dd/40,0.15,1);tone({f:1400,f1:500,dur:0.18,v:0.05*vol,type:'sawtooth'});tone({f:700,f1:250,dur:0.2,v:0.04*vol,type:'square'});}
+    }
+    var dx=gx-H.x,dz=gz-H.z,dl=Math.hypot(dx,dz),ox=H.x,oz=H.z;
+    if(dl>0.35){var sp=Math.min(dl*3.2,dl>9?10.5:7.5);H.x+=dx/dl*sp*dt;H.z+=dz/dl*sp*dt;if(!best)want=Math.atan2(-dx,-dz);}
+    else if(!best)want=me.yaw;
+    resolve(H,0.5);if(!SHIP||!SHIP.h(H.x,H.z))clampIsland(H,2.5);
+    var mv=Math.hypot(H.x-ox,H.z-oz),dy=want-H.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));H.yaw+=dy*Math.min(1,dt*9);
+    H.amp+=(clamp(mv/dt/6,0,1.3)-H.amp)*Math.min(1,dt*9);H.ph+=mv*2.4;
+    var gy=SHIP?SHIP.h(H.x,H.z):0;H.y+=(gy-H.y)*Math.min(1,dt*12);
+    var sw=Math.sin(H.ph),cw=Math.cos(H.ph),a=H.amp;
+    P.lL.th.rotation.x=sw*0.7*a;P.lR.th.rotation.x=-sw*0.7*a;P.lL.sn.rotation.x=-(0.1+0.8*Math.max(0,cw))*a;P.lR.sn.rotation.x=-(0.1+0.8*Math.max(0,-cw))*a;
+    P.hips.position.y=1.12+Math.abs(cw)*0.04*a;
+    if(H.armT>0)H.armT-=dt;else H.aim+=(0-H.aim)*Math.min(1,dt*6);
+    P.aR.rotation.x=-1.5*H.aim+sw*0.5*a*(1-H.aim);P.aL.rotation.x=-sw*0.5*a-0.5*H.aim;
+    G.position.set(H.x,H.y,H.z);G.rotation.set(-0.08*a,H.yaw,0);
+  };
+  function hit(v,dm,T){var key='e'+v.id;myDmg[key]=(myDmg[key]||0)+dm;dmgTime[key]=now;v.flinch=1;}
+  return H;
 })();
 
 /* ---------- finishing pass: light spills softly from the brightest things (sky, sunlit walls, water glints, muzzle flash), then a gentle film-like grade. Skipped on low-power devices and where it fails ---------- */
@@ -4243,6 +4319,7 @@ var FOGD=0.00021;
   var helpB=el('button','helpBtn','sbtn','操作説明',a2);helpB.type='button';var histB=el('button','histBtn','sbtn','更新履歴',a2);histB.type='button';
   var a3=el('div','','acts');card.insertBefore(a3,a2);var prB=el('button','pracBtn','sbtn','プラクティス（ロボットなしで練習）',a3);prB.type='button';prB.style.height='44px';prB.style.fontSize='14px';
   prB.addEventListener('click',function(){practice=true;start('solo');banner('プラクティス','ロボットも毒ガスも来ません。自由に練習できます',5);});
+  var hrB=el('button','heroBtn','sbtn','',a3);hrB.type='button';hrB.style.height='44px';hrB.style.fontSize='14px';function hrT(){hrB.textContent='キャラモード：'+(HERO.on?'ON（相棒がついてくる）':'OFF');hrB.style.borderColor=HERO.on?'var(--signal)':'';hrB.style.color=HERO.on?'var(--signal)':'';}hrT();hrB.addEventListener('click',function(){HERO.set(!HERO.on);hrT();});
   function pop(id,title){
     var root=el('div',id,'pop off',null,document.body),box=el('div','','box',null,root),h=el('h2','','',null,box);h.appendChild(document.createTextNode(title));
     var x=el('button','','x','✕ 閉じる',h);x.type='button';var body=el('div','','',null,box);body.style.display='flex';body.style.flexDirection='column';body.style.gap='10px';
@@ -4256,7 +4333,7 @@ var FOGD=0.00021;
     sec('動く・見る',[['画面左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面右をドラッグ','向きを変える'],['右上のスティック','首だけ振って周りや後ろを見る']]);
     sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['銃のアイコン','押すたびに持ち替え（数字は持っている丁数）'],['グレネードのアイコン','押すと投げる（数字は残り個数）'],['リュック','持ち物を見る。包帯や応急処置セットはここから使う'],['AUTO','照準が敵に合うと自動で撃つ']]);
     sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の3つのボタン','視点（一人称 / 三人称）・ポーズ・全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
-    sec('毒ガスとクリア',[['ライフ','3つ。ダウンすると1つ減ってすぐ復活。最後の1つでダウンすると全滅（ソロ）'],['約3分ごと','毒ガスが出て安全エリアが狭まる。次の安全エリアは先に地図の白い点線の円で分かる（場所は毎回変わる）。外にいると体力が減り続ける'],['プラクティス','トップのボタンから。ロボットも毒ガスも来ない練習用'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
+    sec('毒ガスとクリア',[['ライフ','3つ。ダウンすると1つ減ってすぐ復活。最後の1つでダウンすると全滅（ソロ）'],['約3分ごと','毒ガスが出て安全エリアが狭まる。次の安全エリアは先に地図の白い点線の円で分かる（場所は毎回変わる）。外にいると体力が減り続ける'],['プラクティス','トップのボタンから。ロボットも毒ガスも来ない練習用'],['キャラモード','トップかポーズメニューでON。相棒のガーディアンがそばについてきて、ビームとパンチで一緒に戦う'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
   }else{
     sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（クリックで固定）']]);
     sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ'],['V','一人称 / 三人称の切り替え']]);
@@ -4445,7 +4522,7 @@ function frame(tms,manual){
   if(insideS||(SHIP&&meGy>1&&SHIP.inHall(me.x,me.z))||(MALL&&MALL.inside(me.x,me.z)))sunVis=0;
   glareA+=(sunVis-glareA)*Math.min(1,dt*7);
   if(hs){syncViews(dt);enemyAttacks(dt);}
-  updWrecks(dt);GRASS.update();birds(dt);updNades(dt);updLoot(dt);
+  updWrecks(dt);GRASS.update();birds(dt);updNades(dt);updLoot(dt);HERO.update(dt);
   // shooting
   if(!me.down){
     if(carry||myVeh)wantFire=false;
