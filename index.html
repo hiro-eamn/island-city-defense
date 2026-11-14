@@ -513,11 +513,11 @@ TX.prod=(function(){ // eight shelf rows of packaged goods, each with its price-
     g.fillStyle='#1c2023';g.fillRect(0,Y,512,128);
     x=4;
     while(x<500){
-      var w,h,col=hue(26+r()*30,30+r()*24);
+      var w,h,col=hue(26+r()*30,30+r()*24);if(row===2)col='hsl('+Math.round(8+r()*16)+',60%,'+Math.round(9+r()*9)+'%)';if(row===3)col=hue(70,26+r()*30);   // rows 2 and 3 are the colas: dark bottles and bright cans
       if(row<2){w=36+r()*14;h=68+r()*26;if(x+w>508)break;
         rr(x,B-h,w,h,5,col);label(x+4,B-h*0.64,w-8,h*0.26);g.fillStyle='rgba(255,255,255,0.22)';g.fillRect(x+2,B-h+4,3,h-9);g.fillStyle='rgba(0,0,0,0.28)';g.fillRect(x,B-h,w,5);}
       else if(row===2){w=20+r()*5;h=82+r()*14;if(x+w>508)break;
-        g.fillStyle='#f1f1ef';g.fillRect(x+w/2-4,B-h-6,8,8);rr(x,B-h,w,h,6,col);label(x,B-h*0.62,w,h*0.3);g.fillStyle='rgba(255,255,255,0.3)';g.fillRect(x+2,B-h+5,2,h-12);}
+        g.fillStyle=hue(75,46);g.fillRect(x+w/2-4,B-h-6,8,8);rr(x,B-h,w,h,6,col);label(x,B-h*0.62,w,h*0.3);g.fillStyle='rgba(255,255,255,0.3)';g.fillRect(x+2,B-h+5,2,h-12);}
       else if(row===3){w=18;h=50;if(x+w>508)break;
         for(k=0;k<2;k++){var cy=B-h-k*(h+2);rr(x,cy,w,h,3,col);g.fillStyle='#c9cccf';g.fillRect(x,cy,w,4);label(x+1,cy+h*0.3,w-2,h*0.36);}}
       else if(row===4){w=40;h=46;if(x+w>508)break;
@@ -547,6 +547,32 @@ function signTex(w,h,title,sub,bg,stripe){
   if(sub){g.font='700 '+Math.round(h*0.17)+'px "Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif';g.fillStyle=stripe;g.fillText(sub,w/2,h*0.66,w*0.9);}
   var t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=ANISO;return t;
 }
+function cLogo(g,x,y,h,withMart){ // the C Mart mark: a blue C crossed by a rising red stroke with three bubbles, then "Mart" with a red underline
+  g.save();g.textBaseline='alphabetic';g.textAlign='left';
+  g.fillStyle='#0046BB';g.font='italic 900 '+Math.round(h*1.15)+'px "Arial Black","Helvetica Neue",Arial,sans-serif';g.fillText('C',x,y+h*0.42);
+  var cw=g.measureText('C').width,mx=x+cw*1.04;
+  g.fillStyle='#FF3B30';g.beginPath();g.moveTo(x-h*0.06,y+h*0.30);g.quadraticCurveTo(x+cw*0.45,y-h*0.05,x+cw*1.14,y-h*0.52);g.quadraticCurveTo(x+cw*0.5,y+h*0.12,x+h*0.02,y+h*0.44);g.closePath();g.fill();
+  g.fillStyle='#fff';[[0.88,-0.335,0.05],[0.74,-0.24,0.04],[0.62,-0.155,0.03]].forEach(function(b){g.beginPath();g.arc(x+cw*b[0],y+h*b[1],h*b[2],0,6.283);g.fill();});
+  if(withMart){g.fillStyle='#0046BB';g.font='italic 900 '+Math.round(h*0.7)+'px "Arial Black","Helvetica Neue",Arial,sans-serif';g.fillText('Mart',mx,y+h*0.42);var mw=g.measureText('Mart').width;
+    g.strokeStyle='#FF3B30';g.lineWidth=h*0.07;g.lineCap='round';g.beginPath();g.moveTo(mx+mw*0.05,y+h*0.6);g.quadraticCurveTo(mx+mw*0.55,y+h*0.5,mx+mw*1.02,y+h*0.54);g.stroke();mx+=mw;}
+  g.restore();return mx-x;
+}
+function cmartTex(w,h,kind){ // the shop's printed surfaces in its three colours: blue, cola red and clear white
+  var c=cvs(w,h),g=c.getContext('2d'),JP='"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif';g.fillStyle='#F6F8FB';g.fillRect(0,0,w,h);
+  if(kind==='fascia'){var lw=h*3.7,x0=(w-lw)/2;
+    [[0,x0-h*0.3],[x0+lw+h*0.3,w]].forEach(function(s){g.fillStyle='#0046BB';g.fillRect(s[0],h*0.2,s[1]-s[0],h*0.22);g.fillStyle='#FF3B30';g.fillRect(s[0],h*0.58,s[1]-s[0],h*0.22);});
+    cLogo(g,x0+h*0.2,h*0.5,h*0.8,true);}
+  else if(kind==='pole'){cLogo(g,w*0.08,h*0.36,h*0.4,true);g.fillStyle='#0046BB';g.fillRect(0,h*0.7,w,h*0.2);g.fillStyle='#FF3B30';g.fillRect(0,h*0.9,w,h*0.1);
+    g.fillStyle='#fff';g.font='900 '+Math.round(h*0.12)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('24H  WORLD COLA',w/2,h*0.8,w*0.92);}
+  else if(kind==='cola'){g.fillStyle='#0b2a6b';g.fillRect(0,0,w,h);g.fillStyle='#FF3B30';g.beginPath();g.moveTo(w*0.7,0);g.lineTo(w,0);g.lineTo(w,h);g.lineTo(w*0.67,h);g.closePath();g.fill();
+    g.fillStyle='#fff';g.textBaseline='middle';g.textAlign='left';g.font='italic 900 '+Math.round(h*0.5)+'px "Arial Black",Arial,sans-serif';g.fillText('World Cola Collection',w*0.03,h*0.36,w*0.6);
+    g.font='700 '+Math.round(h*0.24)+'px '+JP;g.fillText('ワールドコーラ・コレクション',w*0.03,h*0.78,w*0.6);
+    g.textAlign='center';g.font='900 '+Math.round(h*0.3)+'px '+JP;g.fillText('世界のコーラ、',w*0.845,h*0.3,w*0.28);g.fillText('常時200種類以上。',w*0.845,h*0.7,w*0.28);}
+  else if(kind==='peace'){g.fillStyle='#0046BB';g.fillRect(0,h*0.86,w,h*0.07);g.fillStyle='#FF3B30';g.fillRect(0,h*0.93,w,h*0.07);
+    g.fillStyle='#0b2a6b';g.textBaseline='middle';g.textAlign='center';g.font='italic 900 '+Math.round(h*0.4)+'px '+JP;g.fillText('コーラで、ちょっとだけ世界は平和になる。',w*0.56,h*0.43,w*0.82);cLogo(g,w*0.02,h*0.4,h*0.5,false);}
+  else{g.fillStyle='#FF3B30';g.fillRect(0,0,w,h);g.fillStyle='#fff';g.textBaseline='middle';g.textAlign='center';g.font='900 '+Math.round(h*0.58)+'px '+JP;g.fillText('おつまみイカフライ',w/2,h/2,w*0.94);}
+  var t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=ANISO;return t;
+}
 var SHOP={};
 function shopMats(){
   if(SHOP.ext)return SHOP;
@@ -555,8 +581,7 @@ function shopMats(){
   SHOP.glass=new THREE.MeshStandardMaterial({color:new THREE.Color(0.55,0.72,0.78),transparent:true,opacity:0.2,roughness:0.04,metalness:0,depthWrite:false});
   SHOP.light=new THREE.MeshBasicMaterial();SHOP.light.color.setRGB(2.4,2.4,2.3);
   SHOP.mark=new THREE.MeshBasicMaterial({transparent:true,opacity:0.4,depthWrite:false});SHOP.mark.color.setRGB(2.4,1.5,0.2);
-  SHOP.sign=new THREE.MeshBasicMaterial({map:signTex(1024,128,'アイランドマート','CONVENIENCE STORE　24H OPEN','#17335c','#f0a81c')});SHOP.sign.color.setRGB(0.9,0.9,0.9);
-  SHOP.pole=new THREE.MeshBasicMaterial({map:signTex(256,256,'IM','24H','#17335c','#f0a81c')});SHOP.pole.color.setRGB(0.9,0.9,0.9);
+  ['sign','pole','cola','peace','ika'].forEach(function(k){var d={sign:[2048,128,'fascia'],pole:[512,512,'pole'],cola:[2048,96,'cola'],peace:[1024,96,'peace'],ika:[512,112,'ika']}[k];SHOP[k]=new THREE.MeshBasicMaterial({map:cmartTex(d[0],d[1],d[2])});SHOP[k].color.setRGB(0.92,0.92,0.92);});
   return SHOP;
 }
 function prow(row,rep,off){return [off||0,1-(row+1)/8,rep||1,0.125];}
@@ -568,7 +593,7 @@ function buildStore(cx,cz,ang){
   function add(gb,mat,cast){if(!gb.p.length)return null;var m=new THREE.Mesh(gb.geo(),mat);m.castShadow=!!cast;m.receiveShadow=true;G.add(m);return m;}
   var ex=new GB(),inn=new GB(),pr=new GB(),gl=new GB(),lt=new GB(),fl=new GB(),PL=new THREE.PlaneGeometry(1,1);
   var CW=rgb(0xe9e6de),IW=[0.62,0.62,0.6],KICK=[0.05,0.055,0.06],ALU=[0.42,0.43,0.45],CEIL=[0.6,0.6,0.59],ROOF=[0.3,0.31,0.32],UNIT=rgb(0xb4b8bb),SHF=[0.6,0.6,0.58],
-      WOOD=rgb(0x8a6a48),NAVY=rgb(0x17335c),AMB=rgb(0xf0a81c),ASPH=[0.05,0.052,0.056],PAVE=[0.42,0.42,0.4],WHT=rgb(0xe6e6df),STL=[0.3,0.31,0.33],BLU=rgb(0x2a4d86),ONE=[1,1,1],BR=[1.35,1.35,1.3];
+      WOOD=rgb(0x8a6a48),NAVY=rgb(0x0046bb),AMB=rgb(0xff3b30),ASPH=[0.05,0.052,0.056],PAVE=[0.42,0.42,0.4],WHT=rgb(0xe6e6df),STL=[0.3,0.31,0.33],BLU=rgb(0x2a4d86),ONE=[1,1,1],BR=[1.35,1.35,1.3];
   // shell: outer skin, inner lining, ceiling, roof with plant
   ex.box(W,H+1,0.14,0,(H+1)/2,-hd+0.07,CW);ex.box(0.14,H+1,Dp,-hw+0.07,(H+1)/2,0,CW);ex.box(0.14,H+1,Dp,hw-0.07,(H+1)/2,0,CW);
   ex.box(W,0.3,0.16,0,0.3,-hd+0.06,NAVY);ex.box(0.16,0.3,Dp,-hw+0.06,0.3,0,NAVY);ex.box(0.16,0.3,Dp,hw-0.06,0.3,0,NAVY);
@@ -576,6 +601,7 @@ function buildStore(cx,cz,ang){
   inn.box(W-0.28,0.08,Dp-0.28,0,H+F+0.04,0,CEIL);
   ex.box(W+0.5,0.3,Dp+0.5,0,4.15,0,ROOF);ex.box(2.2,0.9,1.4,-3,4.75,-1,UNIT);ex.box(1.6,0.7,1.2,2,4.65,1.5,UNIT);
   ex.box(W,1.3,0.2,0,H+0.35,hd-0.1,CW);
+  [[3.62,NAVY],[3.28,AMB]].forEach(function(b){ex.box(0.16,0.22,Dp,-hw+0.06,b[0],0,b[1]);ex.box(0.16,0.22,Dp,hw-0.06,b[0],0,b[1]);ex.box(W,0.22,0.16,0,b[0],-hd+0.06,b[1]);});   // the blue and red bands run round the building
   [[-hw,DOOR0],[DOOR1,hw]].forEach(function(s){ // glazed front either side of the doors
     var x0=s[0],x1=s[1],xc=(x0+x1)/2,wd=x1-x0,n=Math.max(1,Math.round(wd/2.1));
     ex.box(wd,0.4,0.16,xc,0.2+F,hd-0.08,KICK);ex.box(wd,0.08,0.14,xc,2.66,hd-0.08,ALU);
@@ -638,10 +664,13 @@ function buildStore(cx,cz,ang){
   for(i=0;i<=8;i++){var lx=-(W+8)/2+1.2+i*2.7;ex.box(0.1,0.012,5,lx,0.166,hd+6.6,WHT);if(i<8)ex.box(1.7,0.12,0.16,lx+1.35,0.22,hd+4.4,[0.5,0.5,0.48]);}
   [-6.5,-4,-1.5,1].forEach(function(x){ex.cyl(0.06,0.06,0.8,8,x,0.55,hd+1.45,STL);ex.cyl(0.065,0.065,0.1,8,x,0.8,hd+1.45,AMB);});
   [6.4,6.95,7.5].forEach(function(x,q){ex.box(0.48,0.95,0.48,x,0.65,hd+0.42,q===1?[0.2,0.3,0.45]:[0.36,0.37,0.38]);ex.box(0.3,0.1,0.02,x,0.95,hd+0.67,KICK);});
-  ex.cyl(0.09,0.12,6,10,-hw-2.5,3.1,hd+8.6,STL);ex.box(2.3,2.3,0.34,-hw-2.5,6.6,hd+8.6,NAVY);
+  ex.cyl(0.09,0.12,6,10,-hw-2.5,3.1,hd+8.6,STL);ex.box(2.3,2.3,0.34,-hw-2.5,6.6,hd+8.6,CW);
   add(ex,M.ext,true);add(inn,M.int,false);add(pr,M.prod,false);add(fl,M.floor,false);add(lt,M.light,false);
   var gm=add(gl,M.glass,false);if(gm)gm.renderOrder=5;
   var sg2=new THREE.Mesh(PL,M.sign);sg2.scale.set(W-0.4,1.05,1);sg2.position.set(0,H+0.36,hd+0.012);G.add(sg2);
+  var cb=new THREE.Mesh(PL,M.cola);cb.scale.set(11.9,0.56,1);cb.position.set(-1,F+2.66,-3.7);G.add(cb);                                // over the drinks wall
+  var pp=new THREE.Mesh(PL,M.peace);pp.scale.set(6.8,0.64,1);pp.position.set(-hw+0.26,F+2.5,0);pp.rotation.y=Hq;G.add(pp);              // the slogan, above the chiller
+  var ip=new THREE.Mesh(PL,M.ika);ip.scale.set(0.9,0.2,1);ip.position.set(5.39,F+1.64,-3.0);ip.rotation.y=-Hq;G.add(ip);               // on the hot case
   [1,-1].forEach(function(d){var ps=new THREE.Mesh(PL,M.pole);ps.scale.set(2.1,2.1,1);ps.position.set(-hw-2.5,6.6,hd+8.6+d*0.18);if(d<0)ps.rotation.y=Math.PI;G.add(ps);});
   // automatic sliding doors
   var doors=[-1,1].map(function(sd){
@@ -2404,7 +2433,7 @@ function hostUpdate(dt){
 STORES.forEach(function(S){ // open the navigation grid through the doorway and along the aisles
   S.nav.forEach(function(p){var a=Math.floor((p[0]-NAV.x0)/NAV.c),b=Math.floor((p[1]-NAV.z0)/NAV.c);if(a>=0&&b>=0&&a<NAV.w&&b<NAV.h)NAV.blk[b*NAV.w+a]=0;});
 });
-var carryCat=0,CATN=['おかし','カップめん','日用品'],CATC=['黄色','赤','青'],CATH=[0xffd23a,0xff5a47,0x4fb0ff],CATM=null,konOpen=null,elKon=null;
+var carryCat=0,CATN=['イカフライ','コーラ','おかし'],CATC=['黄色','赤','青'],CATH=[0xffd23a,0xff5a47,0x4fb0ff],CATM=null,konOpen=null,elKon=null;
 var lv=0,carry=0,useReq=false,myStock={},awarded={},promptTxt='',promptAct=false,nearS=null,nearD=1e9,insideS=false;
 function applyLv(){var W=WPN[slots[cur].k];MAG=W.mag+Math.max(1,Math.round(W.mag/6))*lv;RELOAD=W.rel-0.12*lv;}
 function stockOut(){var a=[];for(var k in myStock){var s=myStock[k];a.push([+k,s.w,s.g,s.m]);}return a;}
@@ -2489,8 +2518,9 @@ function openKon(S){ // the till: spend coins on what you need
   konOpen=S;
   if(!elKon){elKon=document.createElement('div');elKon.id='kon';elKon.className='hud off';elKon.style.cssText='left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,92vw);max-height:86vh;overflow:auto;padding:12px;background:rgba(8,18,27,.95);border:1px solid rgba(255,255,255,.4);border-radius:8px;pointer-events:auto;z-index:8;display:flex;flex-direction:column;gap:7px;touch-action:pan-y';document.body.appendChild(elKon);}
   elKon.textContent='';elKon.classList.remove('off');elLoot.style.visibility='hidden';   // the pick-up list would sit under the till menu
-  var t=document.createElement('div');t.style.cssText='font:700 15px/1.4 var(--body);text-align:center';t.textContent='レジ　所持コイン '+Math.floor(coins);elKon.appendChild(t);
-  [['ホットスナック','体力 +40',20,function(){me.hp=Math.min(100,me.hp+40);},function(){return me.hp<100;}],
+  var t=document.createElement('div');t.style.cssText='font:700 15px/1.4 var(--body);text-align:center';t.textContent='Cマート レジ　所持コイン '+Math.floor(coins);elKon.appendChild(t);
+  [['コーラ','体力 +15',10,function(){me.hp=Math.min(100,me.hp+15);},function(){return me.hp<100;}],
+   ['おつまみイカフライ','体力 +40',20,function(){me.hp=Math.min(100,me.hp+40);},function(){return me.hp<100;}],
    ['弾薬','いまの銃を満タンに',15,function(){me.ammo=MAG;me.reload=0;},function(){return me.ammo<MAG;}],
    ['包帯','×1',30,function(){bands++;},function(){return bands<8;}],
    ['グレネード','×1',50,function(){nades++;},function(){return nades<6;}],
@@ -2659,9 +2689,9 @@ function engine(on,kind){ // one running-engine voice, retuned every frame
   }catch(_){eng=null;}
 }
 function enterVeh(V){
-  myVeh=V;V.occ=true;camYaw=V.yaw;firing=false;adsTog=false;me.reload=0;
+  myVeh=V;V.occ=true;camYaw=V.yaw;vLookYaw=0;vLookPitch=0;vSetYaw=me.yaw;me.pitch=0;firing=false;adsTog=false;me.reload=0;
   sClick(0,700,0.3);burst({dur:0.12,type:'lowpass',f:300,v:0.3,t0:0.05});engine(true,V.type);
-  banner((V.boost?'スポーツカー':VT[V.type].name)+'に乗った','乗ったまま撃てます（'+(V.type==='heli'?'周りと下':'前方')+'の敵を自動でねらう）',2.6);
+  banner((V.boost?'スポーツカー':VT[V.type].name)+'に乗った','乗ったまま、見ている方向へ撃てます（視点を回せば横や後ろも）',2.6);
   if(V.type!=='heli'){burst({dur:0.5,type:'lowpass',f:700,f1:200,v:0.25,t0:0.12});}
 }
 function leaveVeh(){
@@ -2784,19 +2814,22 @@ function updVehicles(dt,jx,jy,use){
       eng.g.gain.setTargetAtTime((bk?0.06:0.045)+Math.abs(jy)*0.05,t,0.08);eng.ng.gain.setTargetAtTime(Math.min(0.08,sp*0.003),t,0.1);eng.lg.gain.setTargetAtTime(0,t,0.1);}
   }
 }
-var VAO={x:0,y:0,z:0,t:null};
-function vehAim(d){ // shooting while riding: pick the machine nearest the way you are facing (a helicopter also looks down and around), else fire straight ahead
+var VAO={x:0,y:0,z:0,t:null},vLookYaw=0,vLookPitch=0,vSetYaw=0,vLookT=-9;
+function vehAim(d){ // shooting while riding goes where you are looking: turn the view (drag, mouse or the head stick) and you can fire to the side or behind. A machine close to the line of sight is taken as the target
   var V=myVeh,o=VAO,heli=V.type==='heli';o.x=V.x;o.y=V.y+(heli?0.9:1.3);o.z=V.z;o.t=null;
-  var fx=d.x,fz=d.z,fl=Math.hypot(fx,fz)||1,best=null,bs=-1e9,bx=0,by=0,bz=0;fx/=fl;fz/=fl;
-  views.forEach(function(v){
-    var T=TYPES[v.t],ex=v.x-o.x,ey=T.h*0.6-o.y,ez=v.z-o.z,dd=Math.hypot(ex,ez),L=Math.hypot(ex,ey,ez);if(L<2.5||L>(heli?140:90))return;
-    var c=dd>0.5?(ex*fx+ez*fz)/dd:1;if(c<(heli?0.25:0.86))return;
-    var sc=c*60-L;if(sc<=bs)return;
-    if(wallDist(o.x,o.y,o.z,ex/L,ey/L,ez/L,L)<L-0.6)return;
-    bs=sc;best=v;bx=ex/L;by=ey/L;bz=ez/L;
-  });
-  if(best){d.set(bx,by,bz);o.t=best;}else d.set(fx,heli?-0.3:0,fz).normalize();
-  return o;
+  var sx,sy,sz,qx,qy,qz,skip=0;
+  if(heli){qx=camera.position.x;qy=camera.position.y;qz=camera.position.z;sx=d.x;sy=d.y;sz=d.z;skip=Math.hypot(V.x-qx,V.y+1-qy,V.z-qz)+2;}   // from the air: whatever the middle of the view rests on
+  else{var fl=Math.hypot(d.x,d.z)||1,el=clamp(vLookPitch*0.9,-0.35,0.6),ce=Math.cos(el);qx=o.x;qy=o.y;qz=o.z;sx=d.x/fl*ce;sy=Math.sin(el);sz=d.z/fl*ce;}   // on the ground: level along the view, raised or lowered as you look up or down
+  var t=wallDist(qx,qy,qz,sx,sy,sz,400),best=null,bt=t,ba=heli?0.95:0.965,px,py,pz;
+  views.forEach(function(v){var T=TYPES[v.t],te=rayCyl(qx,qy,qz,sx,sy,sz,v.x,v.z,T.r+0.4,T.h);if(te>skip&&te<bt){bt=te;best=v;}});
+  if(best){px=qx+sx*bt;py=qy+sy*bt;pz=qz+sz*bt;}
+  else{
+    views.forEach(function(v){var T=TYPES[v.t],ex=v.x-qx,ey=T.h*0.6-qy,ez=v.z-qz,L=Math.hypot(ex,ey,ez);if(L<skip+1||L>150)return;var c=(ex*sx+ey*sy+ez*sz)/L;if(c<=ba)return;
+      var ox2=v.x-o.x,oy2=T.h*0.6-o.y,oz2=v.z-o.z,L3=Math.hypot(ox2,oy2,oz2)||1;if(wallDist(o.x,o.y,o.z,ox2/L3,oy2/L3,oz2/L3,L3)<L3-0.6)return;ba=c;best=v;});
+    if(best){px=best.x;py=TYPES[best.t].h*0.6;pz=best.z;}
+    else{var tt=t<skip+3?150:t;px=qx+sx*tt;py=qy+sy*tt;pz=qz+sz*tt;}
+  }
+  var ex2=px-o.x,ey2=py-o.y,ez2=pz-o.z,L2=Math.hypot(ex2,ey2,ez2)||1;d.set(ex2/L2,ey2/L2,ez2/L2);o.t=best;return o;
 }
 function pushFromVehicles(o,r){ // people on foot cannot walk through parked vehicles
   for(var i=0;i<VEH.length;i++){
@@ -2805,14 +2838,18 @@ function pushFromVehicles(o,r){ // people on foot cannot walk through parked veh
     for(var k=-1;k<=1;k++){var cx=V.x+sn*len*k,cz=V.z+cs*len*k,dx=o.x-cx,dz=o.z-cz,d=Math.hypot(dx,dz);if(d<rad&&d>1e-4){o.x=cx+dx/d*rad;o.z=cz+dz/d*rad;}}
   }
 }
-function vehCamera(dt){ // chase view; pulls in when a wall is in the way
+function vehCamera(dt){ // chase view that you can turn freely; it drifts back behind the vehicle when left alone. Pulls in when a wall is in the way
   var V=myVeh,C=V.type==='heli'?[18,6,2.2]:(V.type==='car'?[7.4,2.9,1.2]:[5.4,2.3,1.2]);
+  var dl=me.yaw-vSetYaw;dl=Math.atan2(Math.sin(dl),Math.cos(dl));
+  if(Math.abs(dl)>1e-4||Math.abs(me.pitch)>1e-4){vLookYaw+=dl;vLookPitch=clamp(vLookPitch+me.pitch,-0.5,0.75);vLookT=now;}
+  if(vLookYaw>Math.PI)vLookYaw-=6.2832;else if(vLookYaw<-Math.PI)vLookYaw+=6.2832;
+  if(now-vLookT>3&&!(firing||mouseDown)){var kq=Math.min(1,dt*2.2);vLookYaw-=vLookYaw*kq;vLookPitch-=vLookPitch*kq;}
   var dy=V.yaw-camYaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));camYaw+=dy*Math.min(1,dt*(V.type==='heli'?2.2:3.6));
-  var tx=V.x,ty=V.y+C[2],tz=V.z,ox=-Math.sin(camYaw+headYaw)*C[0],oy=C[1]-C[2]+headPitch*C[0]*0.5,oz=-Math.cos(camYaw+headYaw)*C[0],L=Math.hypot(ox,oy,oz);
+  var ya=camYaw+headYaw+vLookYaw,tx=V.x,ty=V.y+C[2],tz=V.z,ox=-Math.sin(ya)*C[0],oy=C[1]-C[2]+(headPitch-vLookPitch*1.1)*C[0]*0.5,oz=-Math.cos(ya)*C[0],L=Math.hypot(ox,oy,oz);
   var t=wallDist(tx,ty,tz,ox/L,oy/L,oz/L,L),k=clamp((t-0.5)/L,0.2,1),sk=shake*shake;
   camera.position.set(tx+ox*k,Math.max(0.5,ty+oy*k)+Math.sin(now*43)*0.05*sk,tz+oz*k);
   camera.lookAt(tx+Math.sin(now*37)*0.06*sk,ty+0.3,tz);
-  me.yaw=camYaw+Math.PI;me.pitch=0;
+  me.yaw=camYaw+Math.PI;me.pitch=0;vSetYaw=me.yaw;
 }
 
 /* ---------- grass: real tufts around the player wherever the map says lawn, park or wood ---------- */
@@ -3581,7 +3618,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる（敵を自動でねらう）'],
+  [['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
+   ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
    ['2026年11月15日','ルールと操作の説明を作り直し（ルール／操作／画面の見方の3タブ）。トップとポーズメニューから開ける'],
    ['2026年11月15日','コンビニ：地図に大きな店のアイコン、画面に方向と距離の印／品出しを作り込み（商品3種類を同じ色の棚へ、タイムでランクS・A・B、連続ボーナス、ソロは何度でも）／レジでコインを使って買い物'],
    ['2026年11月15日','音：スマホで鳴らないことがあったのを対策（タップで再開、iPhoneの消音スイッチ中も鳴る）、足音を大きく、ポーズメニューに音のON/OFF'],
@@ -4033,7 +4071,7 @@ function shopMark(){ // which way to the nearest shop, and how far
   shopEl.style.display='block';shopEl.className='mate shop'+(on?' on':'');
   shopEl.style.transform='translate('+Math.round((x*0.5+0.5)*W)+'px,'+Math.round((-y*0.5+0.5)*H)+'px)';
   shopEl.firstChild.style.transform='rotate('+(on?3.1416:Math.atan2(x,y)).toFixed(2)+'rad)';
-  var t='コンビニ '+Math.round(nearD)+'m';if(shopEl.lastChild.textContent!==t)shopEl.lastChild.textContent=t;
+  var t='Cマート '+Math.round(nearD)+'m';if(shopEl.lastChild.textContent!==t)shopEl.lastChild.textContent=t;
 }
 function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as ringed blue discs with their initial; team-mates off the minimap sit on its edge
   var r=big?9:6,myZ=zoneOf(me.x,me.z);
@@ -4422,7 +4460,7 @@ function drawBig(){
   function SX(x){return BW/2+(bx(x)-bx(bigCx))*k;}function SZ(z){return BH/2+(bz(z)-bz(bigCz))*k;}
   g.font='bold 20px sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=4;
   function tag(x,z,t,c){g.strokeStyle='rgba(0,0,0,.75)';g.strokeText(t,SX(x),SZ(z)-20);g.fillStyle=c;g.fillText(t,SX(x),SZ(z)-20);}
-  STORES.forEach(function(S){storeIcon(g,SX(S.x),SZ(S.z),17);g.strokeStyle='rgba(0,0,0,.75)';g.strokeText('コンビニ',SX(S.x),SZ(S.z)-32);g.fillStyle='#ffd27a';g.fillText('コンビニ',SX(S.x),SZ(S.z)-32);});
+  STORES.forEach(function(S){storeIcon(g,SX(S.x),SZ(S.z),17);g.strokeStyle='rgba(0,0,0,.75)';g.strokeText('Cマート',SX(S.x),SZ(S.z)-32);g.fillStyle='#ffd27a';g.fillText('Cマート',SX(S.x),SZ(S.z)-32);});
   if(SHIP)tag(SHIP.x,SHIP.z,'クルーズ船','#ffffff');if(BBQ){g.fillStyle='#e0703a';g.beginPath();g.arc(SX(BBQ.x),SZ(BBQ.z),7,0,7);g.fill();tag(BBQ.x,BBQ.z,'バーベキュー','#ffb27a');}
   if(PARK){g.fillStyle='#9fb6ff';g.fillRect(SX(PARK.gx)-6,SZ(PARK.gz)-6,12,12);tag(PARK.gx,PARK.gz,'立体駐車場（キー）','#c9d6ff');}
   if(MALL)tag(MALL.x,MALL.z,'服売り場','#ffb0d0');tag(ZIP.sx,ZIP.sz,'ジップライン','#ffe9a0');
@@ -4436,7 +4474,7 @@ function drawBig(){
   g.save();g.translate(SX(me.x),SZ(me.z));g.rotate(-me.yaw);g.fillStyle='#000';g.beginPath();g.moveTo(0,-20);g.lineTo(14,14);g.lineTo(-14,14);g.closePath();g.fill();
   g.fillStyle='#ffb000';g.beginPath();g.moveTo(0,-15);g.lineTo(10,10);g.lineTo(-10,10);g.closePath();g.fill();g.restore();
   g.textAlign='left';g.font='bold 20px sans-serif';g.strokeStyle='rgba(0,0,0,.8)';
-  [[zoneOf(me.x,me.z).n,'#ffffff'],['オレンジの店＝コンビニ　緑■ 補給箱','#ffd27a'],['▲ 自分　● 青＝味方　◆ 赤＝敵','#ffffff'],['● 白＝車　水色＝バイク　H ヘリ','#f4f4f4'],['● 青＝ワープ　橙＝のるーと','#bfeaff'],['ドラッグで移動・ピンチ／ホイールで拡大','#ffffff']].forEach(function(l,q){
+  [[zoneOf(me.x,me.z).n,'#ffffff'],['オレンジの店＝Cマート　緑■ 補給箱','#ffd27a'],['▲ 自分　● 青＝味方　◆ 赤＝敵','#ffffff'],['● 白＝車　水色＝バイク　H ヘリ','#f4f4f4'],['● 青＝ワープ　橙＝のるーと','#bfeaff'],['ドラッグで移動・ピンチ／ホイールで拡大','#ffffff']].forEach(function(l,q){
     g.strokeText(l[0],20,BH-22-q*26);g.fillStyle=l[1];g.fillText(l[0],20,BH-22-q*26);});
 }
 $('mini').addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();toggleMap();});
@@ -4472,7 +4510,7 @@ function zoneName(x,z){ // nearest named place from the map data
   var ZN=zoneOf(x,z);if(ZN.i)return ZN.n;
   var best=null,bd=170*170;
   for(var i=0;i<D.poi.length;i++){var q=D.poi[i],d=(q[1]/10-x)*(q[1]/10-x)+(q[2]/10-z)*(q[2]/10-z);if(d<bd){bd=d;best=q[0];}}
-  if(best)return best;
+  if(best)return /ローソン|ファミリーマート|セブン/.test(best)?'Cマート':best;
   if(yardP&&inP(x,z,yardP))return 'コンテナターミナル';
   return '福岡アイランドシティ';
 }
@@ -4612,8 +4650,8 @@ var FOGD=0.00021;
   sec('目的',[['ソロ','毒ガスを3回しのぐと最終決戦。ロボット30台を倒すとクリアで「のるーと利用券」'],['協力プレイ','WAVE 5 ごとにクリアで利用券。4桁のコードで最大4人'],['プラクティス','ロボットも毒ガスも来ない練習用']]);
   sec('ライフ',[['♥ 3つ','ダウンすると1つ減って、その場ですぐ復活'],['最後の1つ','ダウンするとソロは最初から。協力は仲間が近づくと蘇生']]);
   sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
-  sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ品出し','納品ケースを同じ色に光る棚へ6つ。武器強化とコイン。早いほど高ランク'],['レジ','コインで回復・弾・装備を買う'],['回復','包帯、応急処置セット、ホットスナック、バーベキュー']]);
-  sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部。乗ったまま撃てる（前方の敵を自動でねらう。ヘリは下の敵も）'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
+  sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['Cマート','世界のコーラが集まるコンビニ。品出し：納品ケースを同じ色に光る棚へ6つ。武器強化とコイン。早いほど高ランク'],['レジ','コインでコーラ・イカフライ・弾・装備を買う'],['回復','包帯、応急処置セット、コーラ、イカフライ、バーベキュー']]);
+  sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部。乗ったまま、見ている方向へ撃てる（視点を回せば横や後ろも）'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
   sec('そのほか',[['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
   grid=grids[1];
   if(isTouch){
@@ -4627,8 +4665,8 @@ var FOGD=0.00021;
   }
   grid=grids[2];
   sec('左上',[['緑のバー','体力'],['♥','ライフ'],['オレンジの文字','いまの目標'],['緑の文字','毒ガスまでの時間。赤くなったら急いで安全エリアへ']]);
-  sec('地図の印',[['▲ オレンジ','自分'],['◆ 赤','敵'],['● 青','味方'],['オレンジの店','コンビニ'],['■ 緑','補給箱'],['白い点線の円','次の安全エリア'],['緑のもや','毒ガス']]);
-  sec('画面に出る印',[['青い丸と矢印','味方のいる方向と距離'],['オレンジの丸と矢印','いちばん近いコンビニ'],['右下のアイコンの数字','銃の丁数・グレネード・回復アイテムの残り']]);
+  sec('地図の印',[['▲ オレンジ','自分'],['◆ 赤','敵'],['● 青','味方'],['オレンジの店','Cマート（コンビニ）'],['■ 緑','補給箱'],['白い点線の円','次の安全エリア'],['緑のもや','毒ガス']]);
+  sec('画面に出る印',[['青い丸と矢印','味方のいる方向と距離'],['オレンジの丸と矢印','いちばん近いCマート'],['右下のアイコンの数字','銃の丁数・グレネード・回復アイテムの残り']]);
   sec('音が出ないとき',[['まず','画面を一度タップ。本体の音量を上げる'],['ポーズメニュー','「音」がONか確認']]);
   showTab(0);helpB.textContent='ルール・操作';
   helpB.addEventListener('click',function(){showTab(0);hp.open();});
