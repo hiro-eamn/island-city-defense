@@ -3566,7 +3566,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','コンビニ：地図に大きな店のアイコン、画面に方向と距離の印／品出しを作り込み（商品3種類を同じ色の棚へ、タイムでランクS・A・B、連続ボーナス、ソロは何度でも）／レジでコインを使って買い物'],
+  [['2026年11月15日','ルールと操作の説明を作り直し（ルール／操作／画面の見方の3タブ）。トップとポーズメニューから開ける'],
+   ['2026年11月15日','コンビニ：地図に大きな店のアイコン、画面に方向と距離の印／品出しを作り込み（商品3種類を同じ色の棚へ、タイムでランクS・A・B、連続ボーナス、ソロは何度でも）／レジでコインを使って買い物'],
    ['2026年11月15日','音：スマホで鳴らないことがあったのを対策（タップで再開、iPhoneの消音スイッチ中も鳴る）、足音を大きく、ポーズメニューに音のON/OFF'],
    ['2026年11月15日','三人称のキャラ：見ている向きに上半身と銃が向く、撃つと反動と発砲の光、走ると前傾、リロードの動き。リュック・作り込んだ銃を追加／持ち物の文字をやめてアイコン表示に'],
    ['2026年11月15日','アバターを作り直し：鼻・目のくぼみ・あご・耳のある立体の頭、なめらかな体と手足。アバター画面は実際の3Dモデルを表示（ドラッグで回せる）'],
@@ -3727,7 +3728,7 @@ function drawPack(){
   bFull.innerHTML=I.full;
   elPack=el('div','pack','off');var ph=el('h2','','','リュック',elPack),px=el('button','','','✕ 閉じる',ph);px.type='button';px.addEventListener('pointerdown',function(e){e.preventDefault();setPack(false);});el('div','','g',null,elPack);
   elPause=el('div','pause','off');var pb=el('div','','box',null,elPause);el('h2','','','PAUSE',pb);el('div','','n','',pb);
-  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','操作説明',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);var r5b=el('button','pzSnd','','音',pb);r5b.type='button';pb.insertBefore(r5b,r3b);r5b.addEventListener('click',function(){setSound(!soundOn);r5b.textContent='音：'+(soundOn?'ON':'OFF');});r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
+  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','ルール・操作',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);var r5b=el('button','pzSnd','','音',pb);r5b.type='button';pb.insertBefore(r5b,r3b);r5b.addEventListener('click',function(){setSound(!soundOn);r5b.textContent='音：'+(soundOn?'ON':'OFF');});r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
   r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});r3b.addEventListener('click',function(){try{location.reload();}catch(e){}});
   elTip=el('div','tip','off');var tb=el('div','','box',null,elTip);tipT=el('div','','t','',tb);var tk=el('button','','','OK',tb);tk.type='button';tk.addEventListener('click',function(){elTip.classList.add('off');});
   var gunKey='',chipSig='?',GUNS={rifle:I.gun,
@@ -4561,7 +4562,7 @@ var FOGD=0.00021;
   '.pop .box{width:min(720px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid rgba(255,255,255,.3);border-radius:8px;background:rgba(12,26,38,.9);-webkit-overflow-scrolling:touch}',
   '.pop h2{margin:0;font:700 19px/1.2 var(--body);display:flex;justify-content:space-between;align-items:center;gap:10px}',
   '.pop .x{height:36px;padding:0 14px;font:700 13px var(--body);color:var(--ink);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);border-radius:4px}',
-  '#helpGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 20px;font-size:12.5px;line-height:1.6}','#helpGrid h3{margin:0 0 2px;font:700 13px var(--body);color:var(--signal)}','#helpGrid div{margin:0}','#helpGrid b{font-weight:700;color:#bfe6ff}',
+  '#helpGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 20px;font-size:12.5px;line-height:1.6}','#helpGrid h3{margin:0 0 2px;font:700 13px var(--body);color:var(--signal)}','#helpGrid div{margin:0}','#helpGrid b{font-weight:700;color:#bfe6ff}','#helpPop{z-index:18}','#helpTabs{display:flex;gap:6px}','.ht{flex:1;height:40px;font:700 14px var(--body);color:var(--ink);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.35);border-radius:6px}','.ht.on{background:var(--signal);color:#1a1200;border-color:var(--signal)}','.hg{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 22px;font-size:13px;line-height:1.65}','.hg h3{margin:0 0 3px;font:700 14px var(--body);color:var(--signal)}','.hg b{font-weight:700;color:#bfe6ff}',
   '#hist{max-height:none;border:0;background:none;padding:0;font-size:13px}',
   '#coStatus{font-size:13px;color:var(--dim);min-height:18px;line-height:1.5}','#coList{display:flex;flex-direction:column;gap:6px}',
   '.rm{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:6px;font-size:14px}','.rm span{flex:1;min-width:120px}','.rm small{color:var(--dim)}',
@@ -4585,21 +4586,35 @@ var FOGD=0.00021;
     x.addEventListener('click',o.close);return o;
   }
   // how to play, on one screen
-  var hp=pop('helpPop','操作説明'),grid=el('div','helpGrid','',null,hp.body);
+  // rules and controls on three short tabs; the same pop-up opens from the start screen and from the pause menu
+  var hp=pop('helpPop','ルールと操作'),tabs=el('div','helpTabs','',null,hp.body),grids=[],tbs=[],grid=null;
+  ['ルール','操作','画面の見方'].forEach(function(n,i){var tb=el('button','','ht',n,tabs);tb.type='button';tbs.push(tb);grids.push(el('div','','hg',null,hp.body));tb.addEventListener('click',function(){showTab(i);});});
+  function showTab(i){grids.forEach(function(q,k){q.style.display=k===i?'grid':'none';tbs[k].classList.toggle('on',k===i);});}
   function sec(title,rows){var d=el('div','','',null,grid);el('h3','','',title,d);rows.forEach(function(r){var l=el('div','','',null,d);el('b','','',r[0],l);l.appendChild(document.createTextNode('　'+r[1]));});}
+  grid=grids[0];
+  sec('目的',[['ソロ','毒ガスを3回しのぐと最終決戦。ロボット30台を倒すとクリアで「のるーと利用券」'],['協力プレイ','WAVE 5 ごとにクリアで利用券。4桁のコードで最大4人'],['プラクティス','ロボットも毒ガスも来ない練習用']]);
+  sec('ライフ',[['♥ 3つ','ダウンすると1つ減って、その場ですぐ復活'],['最後の1つ','ダウンするとソロは最初から。協力は仲間が近づくと蘇生']]);
+  sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
+  sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ品出し','納品ケースを同じ色に光る棚へ6つ。武器強化とコイン。早いほど高ランク'],['レジ','コインで回復・弾・装備を買う'],['回復','包帯、応急処置セット、ホットスナック、バーベキュー']]);
+  sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
+  sec('そのほか',[['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
+  grid=grids[1];
   if(isTouch){
-    sec('動く・見る',[['画面左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面右をドラッグ','向きを変える'],['右上のスティック','首だけ振って周りや後ろを見る']]);
-    sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['銃のアイコン','押すたびに持ち替え（数字は持っている丁数）'],['グレネードのアイコン','押すと投げる（数字は残り個数）'],['リュック','持ち物を見る。包帯や応急処置セットはここから使う'],['AUTO','照準が敵に合うと自動で撃つ']]);
-    sec('画面',[['右上の地図','タップで全体マップ（＋－とピンチで拡大）'],['上の3つのボタン','視点（一人称 / 三人称）・ポーズ・全画面'],['中央下のボタン','拾う・乗る・降りる・ワープなど、その場でできること']]);
-    sec('毒ガスとクリア',[['ライフ','3つ。ダウンすると1つ減ってすぐ復活。最後の1つでダウンすると全滅（ソロ）'],['約3分ごと','毒ガスが出て安全エリアが狭まる。次の安全エリアは先に地図の白い点線の円で分かる（場所は毎回変わる）。外にいると体力が減り続ける'],['プラクティス','トップのボタンから。ロボットも毒ガスも来ない練習用'],['キャラモード','トップかポーズメニューでON。相棒のガーディアンがそばについてきて、ビームとパンチで一緒に戦う'],['ソロプレイ','3回しのぐと最終決戦。ロボット30台を倒すとクリアで、のるーと利用券がもらえる'],['協力プレイ','毒ガスは続く。WAVE 5 ごとにクリアで利用券']]);
+    sec('動く・見る',[['画面の左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面の右をドラッグ','向きを変える'],['右上の丸いスティック','首だけ振って周りや後ろを見る']]);
+    sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['AUTO','照準が敵に合うと自動で撃つ'],['銃のアイコン','押すたびに持ち替え'],['グレネードのアイコン','投げる']]);
+    sec('そのほか',[['中央下のボタン','拾う・乗る・降りる・ワープ・品出し・買い物'],['リュック','持ち物を見る。包帯と応急処置セットはここから使う'],['右上の地図','タップで全体マップ（ピンチで拡大）'],['上の3つのボタン','視点・ポーズ・全画面']]);
   }else{
-    sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（クリックで固定）']]);
-    sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ'],['V','一人称 / 三人称の切り替え']]);
-    sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出しなど'],['1 2 3','補給箱の中身を選んで拾う'],['M','全体マップ（ホイールで拡大、ドラッグで移動）'],['右下の ⛶','全画面']]);
+    sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（画面をクリックで固定）'],['V','一人称 / 三人称']]);
+    sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','銃の持ち替え'],['G','グレネード'],['T','自動射撃の切り替え']]);
+    sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出し・買い物'],['1 2 3','補給箱の中身を選んで拾う'],['H / J','包帯 / 応急処置セット'],['B','リュック'],['M','全体マップ（ホイールで拡大）'],['P','ポーズ']]);
   }
-  sec('音',[['音が出ないとき','画面を一度タップ。本体の音量を上げる。ポーズメニューの「音」がONか確認'],['iPhone','消音スイッチがオンでも鳴るようにしてあります']]);
-  sec('遊び方',[['目標','WAVE 5 ごとに STAGE CLEAR。のるーと利用券がもらえる'],['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ','地図のオレンジの店。納品ケースを同じ色に光る棚へ6つ。早いほど高ランクで、武器強化・コイン・アイテム。レジではコインで回復や弾・装備が買える'],['乗り物','車・バイク・ヘリは歩いて触れると乗れる'],['ワープ','スタート地点そばのゲートからドーム、そこから長崎へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える'],['回復','包帯、応急処置セット、バーベキュー']]);
-  helpB.addEventListener('click',hp.open);
+  grid=grids[2];
+  sec('左上',[['緑のバー','体力'],['♥','ライフ'],['オレンジの文字','いまの目標'],['緑の文字','毒ガスまでの時間。赤くなったら急いで安全エリアへ']]);
+  sec('地図の印',[['▲ オレンジ','自分'],['◆ 赤','敵'],['● 青','味方'],['オレンジの店','コンビニ'],['■ 緑','補給箱'],['白い点線の円','次の安全エリア'],['緑のもや','毒ガス']]);
+  sec('画面に出る印',[['青い丸と矢印','味方のいる方向と距離'],['オレンジの丸と矢印','いちばん近いコンビニ'],['右下のアイコンの数字','銃の丁数・グレネード・回復アイテムの残り']]);
+  sec('音が出ないとき',[['まず','画面を一度タップ。本体の音量を上げる'],['ポーズメニュー','「音」がONか確認']]);
+  showTab(0);helpB.textContent='ルール・操作';
+  helpB.addEventListener('click',function(){showTab(0);hp.open();});
   var hi=pop('histPop','更新履歴'),hd=$('hist');if(hd)hi.body.appendChild(hd);histB.addEventListener('click',hi.open);
   // co-op: rooms that are open now, enter one with its 4-digit code, or open your own
   var cp=pop('coopPop','協力プレイ'),status=el('div','coStatus','','',cp.body),mk=el('button','coMake','cbtn blue','部屋を作る（4桁のコードが発行されます）',cp.body),list=el('div','coList','',null,cp.body),openId='';
