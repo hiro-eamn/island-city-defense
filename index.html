@@ -1970,17 +1970,18 @@ function makePlayer(peer,name,face){ // the figure others see (and you, in third
   var TC=rgb(PCOL[hsh%PCOL.length]),SK=hx(skinHex(F)),TOP=hx(TOPC[F[10]]),BOT=hx(BOTC[F[11]]),of=F[9],WHT=[0.8,0.8,0.78],GN=[0.03,0.03,0.034],H=Math.PI/2;
   var top=of===0?[0.10,0.12,0.075]:(of===7?[0.03,0.025,0.02]:(of===8?[0.82,0.82,0.8]:TOP)),bot=of===0?[0.085,0.10,0.065]:(of===3||of===4||of===9?[TOP[0]*0.9,TOP[1]*0.9,TOP[2]*0.9]:(of===8?[0.82,0.82,0.8]:BOT)),short=of===1||of===6,sleeve=short?SK:top,hand=of===0?[0.028,0.03,0.026]:SK,
       shoe=of===0||of===5?[0.02,0.02,0.02]:(of===3?[0.015,0.012,0.01]:[0.75,0.75,0.73]),dk=[top[0]*0.72,top[1]*0.72,top[2]*0.72];
-  var g=new THREE.Group(),hips=new THREE.Group(),b=new GB(),skb=new GB(),sp,i,WH1=[1,1,1];
-  g.rotation.order='YXZ';hips.position.y=0.95;g.add(hips);
+  var g=new THREE.Group(),hips=new THREE.Group(),b=new GB(),skb=new GB(),lo=new GB(),up=new THREE.Group(),inner=new THREE.Group(),sp,i,WH1=[1,1,1];
+  g.rotation.order='YXZ';hips.position.y=0.95;g.add(hips);up.position.y=0.12;inner.position.y=-0.12;up.add(inner);hips.add(up);   // everything above the belt turns at the waist
   function L(R,col,into){var q=loftGeo(R,22);(into||b).add(q,col);q.dispose();}
   function M(P,rad,col,into){var q=limbGeo(P,rad,12);(into||b).add(q,col);q.dispose();}
   // trunk: hips, waist, chest, shoulders
-  L([[-0.075,0.12,0.095],[-0.02,0.165,0.115],[0.05,0.172,0.118],[0.115,0.163,0.112]],bot);
-  L([[0.092,0.168,0.116],[0.128,0.166,0.114]],of===3?[0.02,0.02,0.02]:[0.05,0.04,0.03]);
+  L([[-0.075,0.12,0.095],[-0.02,0.165,0.115],[0.05,0.172,0.118],[0.115,0.163,0.112]],bot,lo);
+  L([[0.092,0.168,0.116],[0.128,0.166,0.114]],of===3?[0.02,0.02,0.02]:[0.05,0.04,0.03],lo);
+  if(of===0)[-1,1].forEach(function(d){lo.box(0.075,0.1,0.05,d*0.165,0.045,-0.02,[0.04,0.045,0.032]);lo.box(0.06,0.085,0.045,d*0.11,0.05,0.105,[0.04,0.045,0.032]);});
   L([[0.12,0.163,0.11],[0.2,0.15,0.1,0,-0.002],[0.31,0.162,0.108,0,-0.006],[0.42,0.186,0.12,0,-0.012],[0.5,0.194,0.114,0,-0.008],[0.548,0.168,0.098],[0.578,0.115,0.086],[0.602,0.068,0.066]],top);
   L([[0.565,0.056,0.06],[0.675,0.05,0.055]],SK,skb);
   [-1,1].forEach(function(d){b.add(SPH,top,d*0.198,0.505,0,0,0,0,0.056,0.052,0.06);});
-  if(of===0){b.oct(0.43,0.3,0.27,0,0.4,0,[0.045,0.05,0.035]);b.box(0.3,0.36,0.14,0,0.42,0.2,[0.045,0.05,0.035]);for(i=0;i<3;i++)b.box(0.1,0.12,0.05,-0.12+i*0.12,0.3,-0.15,[0.035,0.04,0.03]);b.box(0.09,0.1,0.02,0.215,0.5,0,TC);b.box(0.09,0.1,0.02,-0.215,0.5,0,TC);}
+  if(of===0){b.oct(0.43,0.3,0.27,0,0.4,0,[0.045,0.05,0.035]);for(i=0;i<3;i++)b.box(0.1,0.12,0.05,-0.12+i*0.12,0.3,-0.15,[0.035,0.04,0.03]);b.box(0.09,0.1,0.02,0.215,0.5,0,TC);b.box(0.09,0.1,0.02,-0.215,0.5,0,TC);}
   if(of===2){b.add(SPH,top,0,0.6,0.08,0,0,0,0.13,0.1,0.11);b.box(0.24,0.1,0.02,0,0.25,-0.112,dk);b.box(0.012,0.2,0.012,0.04,0.5,-0.125,WHT);b.box(0.012,0.2,0.012,-0.04,0.5,-0.125,WHT);}
   if(of===3){b.box(0.12,0.3,0.012,0,0.46,-0.122,WHT);b.box(0.04,0.28,0.014,0,0.44,-0.127,rgb(0x8f2a2a));b.box(0.07,0.26,0.012,0.075,0.48,-0.124,dk,0,0,0.25);b.box(0.07,0.26,0.012,-0.075,0.48,-0.124,dk,0,0,-0.25);}
   if(of===4){b.box(0.012,0.5,0.012,0,0.36,-0.122,WHT);}
@@ -1988,7 +1989,7 @@ function makePlayer(peer,name,face){ // the figure others see (and you, in third
   if(of===6)for(i=0;i<10;i++)b.box(0.05,0.05,0.012,-0.15+(i%5)*0.075,0.3+Math.floor(i/5)*0.2+(i%2)*0.06,-0.122,i%2?[0.85,0.8,0.6]:[0.75,0.3,0.12]);
   if(of===7){b.box(0.012,0.46,0.012,0.03,0.4,-0.124,[0.3,0.3,0.31]);b.box(0.1,0.2,0.012,0.11,0.52,-0.122,[0.06,0.05,0.04],0,0,0.3);b.box(0.1,0.2,0.012,-0.11,0.52,-0.122,[0.06,0.05,0.04],0,0,-0.3);}
   if(of===8){for(i=-3;i<=3;i++)b.box(0.006,0.5,0.006,i*0.055,0.36,-0.122,[0.05,0.08,0.2]);if(!F[8]){b.add(SPH,TC,0,0.8,0,0,0,0,0.106,0.066,0.115);b.box(0.16,0.012,0.09,0,0.785,-0.14,TC);}}
-  if(of===9){L([[-0.5,0.2,0.14],[-0.2,0.185,0.13],[0.1,0.172,0.12]],top);b.oct(0.36,0.1,0.24,0,0.2,0,[0.5,0.08,0.08]);b.box(0.05,0.3,0.012,0.05,0.44,-0.122,dk,0,0,0.45);b.box(0.05,0.3,0.012,-0.05,0.44,-0.122,dk,0,0,-0.45);}
+  if(of===9){L([[-0.5,0.2,0.14],[-0.2,0.185,0.13],[0.1,0.172,0.12]],top,lo);b.oct(0.36,0.1,0.24,0,0.2,0,[0.5,0.08,0.08]);b.box(0.05,0.3,0.012,0.05,0.44,-0.122,dk,0,0,0.45);b.box(0.05,0.3,0.012,-0.05,0.44,-0.122,dk,0,0,-0.45);}
   // arms, in a ready hold on the rifle
   var S1=[0.215,0.52,0],E1=[0.2,0.3,-0.14],W1=[0.06,0.3,-0.36],S2=[-0.215,0.52,0],E2=[-0.2,0.32,-0.2],W2=[0.03,0.3,-0.52];
   [[S1,E1,W1],[S2,E2,W2]].forEach(function(A){
@@ -1998,15 +1999,25 @@ function makePlayer(peer,name,face){ // the figure others see (and you, in third
     (of===0?b:skb).add(SPH,hand,w[0],w[1],w[2]-0.02,0,0,0,0.032,0.028,0.048);
   });
   if(of===4){b.tube([0.275,0.53,0],[0.25,0.3,-0.14],0.012,0.012,WHT,4);b.tube([-0.275,0.53,0],[-0.25,0.32,-0.2],0.012,0.012,WHT,4);}
-  b.box(0.045,0.07,0.62,0.06,0.33,-0.42,GN);b.box(0.03,0.13,0.05,0.06,0.25,-0.42,GN,0.15);b.cyl(0.012,0.012,0.22,6,0.06,0.34,-0.82,GN,H);b.box(0.045,0.1,0.14,0.07,0.34,-0.06,GN);
+  L([[0.583,0.086,0.079],[0.606,0.07,0.067]],dk);                                                   // collar
+  if(of!==3&&of!==9){var PK=of===0?[0.115,0.13,0.085]:[0.17,0.155,0.13],PK2=[PK[0]*0.7,PK[1]*0.7,PK[2]*0.7];               // a pack on the back, with straps over the shoulders
+    L([[0.14,0.12,0.06,0,0.16],[0.2,0.14,0.075,0,0.168],[0.42,0.14,0.075,0,0.168],[0.5,0.115,0.06,0,0.16]],PK);b.box(0.2,0.1,0.03,0,0.26,0.245,PK2);b.box(0.24,0.02,0.1,0,0.5,0.17,PK2);
+    b.cyl(0.04,0.04,0.25,10,0,0.548,0.165,[0.11,0.095,0.07],0,0,H);
+    [-1,1].forEach(function(d){b.box(0.04,0.4,0.014,d*0.105,0.4,-0.124,PK2,0.05);b.box(0.04,0.03,0.25,d*0.105,0.598,0.02,PK2);});}
+  var GX=0.06,GY=0.335,G2=[0.07,0.072,0.078],G3=[0.012,0.012,0.014];                                      // the rifle: receiver, handguard, barrel, rail and sight, magazine, grip, stock
+  b.box(0.05,0.075,0.3,GX,GY,-0.3,GN);b.box(0.046,0.056,0.27,GX,GY+0.004,-0.585,G2);b.cyl(0.011,0.011,0.24,8,GX,GY+0.008,-0.83,G3,H);b.cyl(0.017,0.017,0.06,8,GX,GY+0.008,-0.96,G3,H);
+  b.box(0.02,0.014,0.5,GX,GY+0.045,-0.42,G3);b.box(0.034,0.045,0.075,GX,GY+0.075,-0.33,G3);b.box(0.012,0.03,0.012,GX,GY+0.065,-0.7,G3);
+  b.box(0.034,0.15,0.06,GX,GY-0.1,-0.36,G3,0.2);b.box(0.034,0.1,0.045,GX,GY-0.075,-0.2,G3,-0.3);b.box(0.04,0.06,0.2,GX+0.005,GY-0.005,-0.06,GN);b.box(0.046,0.11,0.03,GX+0.008,GY-0.02,0.05,G3);
+  if(of===0)[[0.2,0.3,-0.14],[-0.2,0.32,-0.2]].forEach(function(e){b.add(SPH,[0.04,0.045,0.032],e[0],e[1],e[2],0,0,0,0.05,0.05,0.05);});
   if(F[8]){sp=new THREE.SphereGeometry(0.125,20,10,0,6.283,0,1.7);b.add(sp,of===0?[0.11,0.13,0.08]:TC,0,0.75,0.005,0,0,0,1,0.98,1.1);sp.dispose();b.box(0.012,0.14,0.012,0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);b.box(0.012,0.14,0.012,-0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);}
-  var hairM=hair3d(F,!!F[8]);if(hairM)hips.add(hairM);
-  var body=new THREE.Mesh(b.geo(),soldierMat);body.castShadow=true;body.receiveShadow=true;hips.add(body);
-  if(skb.p.length){for(i=0;i<skb.c.length;i++)skb.c[i]=1;var skm=new THREE.Mesh(skb.geo(),new THREE.MeshStandardMaterial({color:new THREE.Color(skinHex(F)).convertSRGBToLinear(),roughness:0.58,envMapIntensity:0.5,vertexColors:true}));skm.castShadow=true;hips.add(skm);}
-  var hg=headGeo(F[12]||0),hd=new THREE.Mesh(hg,new THREE.MeshStandardMaterial({map:faceTex(F),roughness:0.58,envMapIntensity:0.5}));hd.position.set(0,0.735,0);hd.castShadow=true;hips.add(hd);
+  var hairM=hair3d(F,!!F[8]);if(hairM)inner.add(hairM);
+  var body=new THREE.Mesh(b.geo(),soldierMat);body.castShadow=true;body.receiveShadow=true;inner.add(body);var lom=new THREE.Mesh(lo.geo(),soldierMat);lom.castShadow=true;hips.add(lom);
+  var fl=new THREE.Mesh(new THREE.SphereGeometry(0.07,8,6),new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,1.6,0.7),transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false}));fl.position.set(GX,GY+0.008,-1.02);fl.scale.set(1,1,2.2);fl.visible=false;inner.add(fl);
+  if(skb.p.length){for(i=0;i<skb.c.length;i++)skb.c[i]=1;var skm=new THREE.Mesh(skb.geo(),new THREE.MeshStandardMaterial({color:new THREE.Color(skinHex(F)).convertSRGBToLinear(),roughness:0.58,envMapIntensity:0.5,vertexColors:true}));skm.castShadow=true;inner.add(skm);}
+  var hg=headGeo(F[12]||0),hd=new THREE.Mesh(hg,new THREE.MeshStandardMaterial({map:faceTex(F),roughness:0.58,envMapIntensity:0.5}));hd.position.set(0,0.735,0);hd.castShadow=true;inner.add(hd);
   function leg(x){
     var th=new THREE.Group(),sh=new THREE.Group(),q=new GB();th.position.set(x,0,0);sh.position.set(0,-0.45,0);
-    M([[0,0.03,0],[0,-0.2,-0.004],[0,-0.45,0]],[0.098,0.089,0.064],bot,q);q.sph(0.064,0,-0.45,0,bot);if(of===4)q.box(0.012,0.44,0.012,x>0?0.092:-0.092,-0.22,0,WHT);
+    M([[0,0.03,0],[0,-0.2,-0.004],[0,-0.45,0]],[0.098,0.089,0.064],bot,q);q.sph(0.064,0,-0.45,0,bot);if(of===0)q.add(SPH,[0.04,0.045,0.032],0,-0.45,-0.03,0,0,0,0.068,0.08,0.055);if(of===4)q.box(0.012,0.44,0.012,x>0?0.092:-0.092,-0.22,0,WHT);
     var m=new THREE.Mesh(q.geo(),soldierMat);m.castShadow=true;th.add(m);
     q=new GB();M([[0,0,0],[0,-0.13,0.012],[0,-0.41,0]],[0.062,0.068,0.044],bot,q);
     q.add(SPH,shoe,0,-0.452,-0.045,0,0,0,0.052,0.045,0.13);q.box(0.098,0.022,0.26,0,-0.492,-0.045,[0.02,0.02,0.02]);if(of===4)q.box(0.012,0.4,0.012,x>0?0.066:-0.066,-0.2,0,WHT);
@@ -2017,7 +2028,7 @@ function makePlayer(peer,name,face){ // the figure others see (and you, in third
   var lab=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex(name),depthTest:false,transparent:true}));
   lab.scale.set(2.4,0.6,1);lab.position.y=2.25;g.add(lab);
   scene.add(g);
-  return {g:g,hips:hips,lL:lL,lR:lR,sp:lab,name:name,x:0,z:0,yaw:0,shots:null,init:false,ph:0,amp:0};
+  return {g:g,hips:hips,up:up,flash:fl,lL:lL,lR:lR,sp:lab,name:name,x:0,z:0,yaw:0,shots:null,init:false,ph:0,amp:0};
 }
 /* the avatar editor shows the real model, lit like a portrait and turning slowly; drag it to look round */
 var PV=null,pvTimer=0,pvYaw=0.35,pvDrag=null,pvHold=0;
@@ -3482,7 +3493,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','アバターを作り直し：鼻・目のくぼみ・あご・耳のある立体の頭、なめらかな体と手足。アバター画面は実際の3Dモデルを表示（ドラッグで回せる）'],
+  [['2026年11月15日','三人称のキャラ：見ている向きに上半身と銃が向く、撃つと反動と発砲の光、走ると前傾、リロードの動き。リュック・作り込んだ銃を追加／持ち物の文字をやめてアイコン表示に'],
+   ['2026年11月15日','アバターを作り直し：鼻・目のくぼみ・あご・耳のある立体の頭、なめらかな体と手足。アバター画面は実際の3Dモデルを表示（ドラッグで回せる）'],
    ['2026年11月15日','キャラモード：相棒のガーディアンがついてきて一緒に戦う（トップ画面かポーズメニューで切り替え）'],
    ['2026年11月14日','光の表現（明るい所のにじみ、色調）／アバターの髪を作り直し（生え際・もみあげ・後ろ髪）／立体駐車場の入口を手前の辺の左側に／毒ガスのダメージを5分の1に'],
    ['2026年11月14日','協力プレイ：味方のいる方向に印（画面の外なら端に矢印と距離）／地図の敵・味方・自分のアイコンを大きく'],
@@ -3567,7 +3579,7 @@ function metaHud(){
   var g=goalNow();
   var solo=soloRun(),GG=hs&&hs.g,FF=hs&&hs.f;
   elGoal.textContent='';var b=document.createElement('b');b.textContent=practice?'プラクティス（ロボットも毒ガスも来ません）':solo?(FF&&FF[0]===1?'最終決戦　ロボット'+FIN_N+'台を殲滅':'目標 毒ガスを3回しのいで最終決戦に勝つ'):'目標 WAVE '+g+' 突破';elGoal.appendChild(b);gasHud();
-  elGoal.appendChild(document.createTextNode((practice?'':solo?'（毒ガス '+Math.min(3,GG?GG[3]:0)+' / 3回）':'（いま WAVE '+(hs?hs.w:0)+'）')+'　利用券 '+tickets+'　コイン '+Math.floor(coins)+(hasKey?'　駐車場キー':'')));
+  elGoal.appendChild(document.createTextNode((practice?'':solo?'（毒ガス '+Math.min(3,GG?GG[3]:0)+' / 3回）':'（いま WAVE '+(hs?hs.w:0)+'）')+'　利用券 '+tickets+'　コイン '+Math.floor(coins)));
   bBand.textContent='包帯 '+bands;bKit.textContent='応急 '+kits;bBand.classList.toggle('none',bands<=0);bKit.classList.toggle('none',kits<=0);
 }
 
@@ -3611,7 +3623,7 @@ function drawPack(){
   st.textContent=[
   '.btn svg{width:60%;height:60%;display:block;margin:0 auto;pointer-events:none}','.btn .bdg{position:absolute;right:-4px;top:-4px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--signal);color:#1a1200;font:700 13px/20px var(--num);text-align:center;pointer-events:none}',
   '.btn .lb{position:absolute;left:0;right:0;bottom:3px;font:700 9px/1 var(--num);letter-spacing:.04em;text-align:center;pointer-events:none}','#bSwap svg{width:74%;height:auto;margin-top:-4px}','#bNade.none .bdg,#bPack.none .bdg{background:rgba(255,255,255,.4)}',
-  '#bSwap,#bNade,#bPack{overflow:visible}','#bPack{right:252px;bottom:66px;width:52px;height:52px}','#bBand,#bKit{display:none!important}',
+  '#bSwap,#bNade,#bPack{overflow:visible}','#bPack{right:252px;bottom:66px;width:52px;height:52px}','#bBand,#bKit{display:none!important}','#inv{display:flex;gap:5px;flex-wrap:wrap}','#inv:empty{display:none}','.chip{display:inline-flex;align-items:center;gap:3px;height:26px;padding:0 6px;border-radius:6px;background:rgba(8,18,27,.7);border:1px solid rgba(255,255,255,.4);color:var(--ink)}','.chip svg{width:16px;height:16px}','.chip b{font:700 12px var(--num)}',
   '#bPause,#bFull{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:auto!important;width:40px!important;height:40px!important;border-radius:8px;z-index:12;padding:0}',
   '#bPause{left:calc(50% - 44px)}','#bFull{left:calc(50% + 4px)!important;font-size:0}','#bPause svg,#bFull svg{width:54%;height:54%}',
   '#pause,#tip{position:fixed;inset:0;z-index:16;background:rgba(8,18,27,.88);display:flex;align-items:center;justify-content:center;padding:14px}',
@@ -3643,7 +3655,18 @@ function drawPack(){
   var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','操作説明',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
   r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});r3b.addEventListener('click',function(){try{location.reload();}catch(e){}});
   elTip=el('div','tip','off');var tb=el('div','','box',null,elTip);tipT=el('div','','t','',tb);var tk=el('button','','','OK',tb);tk.type='button';tk.addEventListener('click',function(){elTip.classList.add('off');});
+  var gunKey='',chipSig='?',GUNS={rifle:I.gun,
+    smg:'<svg viewBox="0 0 48 24"><path fill="currentColor" d="M8 8h22V6h3v2h8v3h-9l-2 3h-5l-1 8h-5l1-8h-6l-2 3h-4l2-6H8z"/></svg>',
+    shot:'<svg viewBox="0 0 48 24"><path fill="currentColor" d="M1 8h46v3H31l-1 2h-9v2h-4l-2 2h-5l-3 5H3l3-11H1z"/></svg>',
+    snip:'<svg viewBox="0 0 48 24"><path fill="currentColor" d="M1 10h46v2H31l-3 3h-7l-2 7h-5l1-7H8l-3 3H1zM15 4h15v4H15z"/></svg>'};
+  function chip(svg,label,num){var c=document.createElement('span');c.className='chip';c.title=label;c.setAttribute('aria-label',label);c.innerHTML=svg;if(num!==undefined){var n2=document.createElement('b');n2.textContent=num;c.appendChild(n2);}elInv.appendChild(c);}
   hud2Tick=function(){
+    var gk=slots[cur].k+(hasScope?'s':'');if(gk!==gunKey){gunKey=gk;var sv=bSwap.querySelector('svg');if(sv)sv.outerHTML=GUNS[slots[cur].k]+'';if(hasScope&&slots[cur].k!=='snip'){var q=bSwap.querySelector('svg');q.insertAdjacentHTML('beforeend','<rect x="17" y="1" width="13" height="4" rx="2" fill="currentColor"/>');}}
+    var cs=(hasScope?'S':'')+(hasKey?'K':'')+(defT>0?'D'+Math.ceil(defT):'');
+    if(cs!==chipSig){chipSig=cs;elInv.textContent='';
+      if(hasScope)chip('<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path stroke="currentColor" stroke-width="2" d="M12 2v6M12 16v6M2 12h6M16 12h6"/></svg>','スコープ');
+      if(hasKey)chip('<svg viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M8 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12zm0 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/><path fill="currentColor" d="M13 10.500h9v3h-2v3h-3v-3h-4z"/></svg>','駐車場の自動キー');
+      if(defT>0)chip('<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.500 9-8 11-4.500-2-8-6-8-11V5z"/></svg>','防御アップ',Math.ceil(defT));}
     var n=slots[1]?2:1;dGun.textContent=n;bSwap.querySelector('.lb').textContent={rifle:'AR',smg:'SMG',shot:'SG',snip:'SR'}[slots[cur].k];
     dNade.textContent=nades;bNade.classList.toggle('none',nades<=0);dPack.textContent=bands+kits;bPack.classList.toggle('none',bands+kits<=0);
     if(packOpen)drawPack();
@@ -3664,8 +3687,11 @@ function updBody(dt){
   myBody.g.visible=show;if(!show)return;
   var s=Math.sin(me.bob),c=Math.cos(me.bob),a=Math.min(1.3,me.amp);
   myBody.lL.th.rotation.x=s*0.6*a;myBody.lR.th.rotation.x=-s*0.6*a;myBody.lL.sh.rotation.x=-(0.15+0.75*Math.max(0,c))*a;myBody.lR.sh.rotation.x=-(0.15+0.75*Math.max(0,-c))*a;
-  myBody.hips.position.y=0.95-0.03*a+Math.abs(c)*0.03*a;
-  myBody.g.position.set(me.x,meGy,me.z);myBody.g.rotation.set(0,me.yaw,0);
+  myBody.hips.position.y=0.95-0.03*a+Math.abs(c)*0.03*a+Math.sin(now*1.7)*0.004;
+  var rl=me.reload>0?Math.sin((1-me.reload/RELOAD)*Math.PI):0,aim=clamp(me.pitch+headPitch,-1.0,1.0)*0.8;
+  myBody.up.rotation.set(aim+kick*0.035-rl*0.32+me.sprint*0.1,clamp(headYaw,-0.9,0.9)*0.55+s*0.07*a,-s*0.03*a);
+  myBody.flash.visible=flashT>0;if(myBody.flash.visible)myBody.flash.rotation.z=Math.random()*6.28;
+  myBody.g.position.set(me.x,meGy,me.z);myBody.g.rotation.set(-0.16*me.sprint-0.04*a,me.yaw,0);
   if(me.down){myBody.g.rotation.x=-Math.PI/2;myBody.g.position.y=meGy+0.25;}
 }
 function tpsCamera(){ // pull the camera back over the right shoulder; come in close when a wall is behind
@@ -4394,7 +4420,6 @@ function drawHud(dt){
   el.hp.style.transform='scaleX('+(hp/100)+')';el.hp.style.background=hp>50?'var(--ok)':(hp>25?'var(--signal)':'var(--danger)');el.hpt.textContent=hp;
   el.ammo.textContent=myVeh?Math.round(Math.abs(myVeh.s)*3.6):(carry?'—':(me.reload>0?'…':me.ammo));
   elMax.textContent=myVeh?(' km/h'+(myVeh.type==='heli'?'　高度 '+Math.round(myVeh.y)+'m':'')):('/ '+MAG+(lv?'　Lv'+(lv+1):''));
-  elInv.textContent=curW().name+(slots[1]?'　／予備 '+WPN[slots[1-cur].k].name:'')+'　グレネード '+nades+(hasScope?'　スコープ付':'')+'　包帯 '+bands+'　応急 '+kits+(defT>0?'　防御アップ '+Math.ceil(defT)+'秒':'');
   elAr.parentNode.classList.toggle('off',armor<=0);elAr.style.width=Math.round(armor)+'%';bNade.classList.toggle('none',nades<=0);
   if(isTouch){var hv=!!(myVeh&&myVeh.type==='heli');bUp.classList.toggle('off',!hv);bDn.classList.toggle('off',!hv);}
   elTask.textContent=nearS?(nearD<60?('コンビニ 品出し '+(6-nearS.left)+'/6'+(nearS.left===0?'（完了・次のウェーブで再入荷）':'')):('コンビニまで '+Math.round(nearD)+'m　品出しで武器強化')):'';
@@ -4495,7 +4520,8 @@ var FOGD=0.00021;
     initAudio();me.inGame=true;nm.blur();tryJoin();
     $('start').classList.add('off');cp.root.classList.add('off');
     ['tl','tr','cross','ammo','prompt','bPause','bPack','bView'].forEach(function(id){$(id).classList.remove('off');});
-    if(isTouch)['bFire','bReload','bAuto','bAds','look','bSwap','bNade'].forEach(function(id){$(id).classList.remove('off');});
+    if(isTouch)['bFire','bReload','bAuto','bAds','look'].forEach(function(id){$(id).classList.remove('off');});
+    ['bSwap','bNade'].forEach(function(id){$(id).classList.remove('off');});   // these two are the display of what you carry, so they show on a keyboard too
     showAuto();gun.visible=true;scene.fog.density=FOGD;seaU.uFog.value=FOGD;camera.near=0.25;resize();
     setShadow(LOW?95:170,600);
     if(created)banner('部屋コード '+roomCode,'このコードを仲間に伝えてください（右上にも出ています）',7);
