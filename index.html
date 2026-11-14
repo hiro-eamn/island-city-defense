@@ -2661,6 +2661,7 @@ function engine(on,kind){ // one running-engine voice, retuned every frame
 function enterVeh(V){
   myVeh=V;V.occ=true;camYaw=V.yaw;firing=false;adsTog=false;me.reload=0;
   sClick(0,700,0.3);burst({dur:0.12,type:'lowpass',f:300,v:0.3,t0:0.05});engine(true,V.type);
+  banner((V.boost?'スポーツカー':VT[V.type].name)+'に乗った','乗ったまま撃てます（'+(V.type==='heli'?'周りと下':'前方')+'の敵を自動でねらう）',2.6);
   if(V.type!=='heli'){burst({dur:0.5,type:'lowpass',f:700,f1:200,v:0.25,t0:0.12});}
 }
 function leaveVeh(){
@@ -2782,6 +2783,20 @@ function updVehicles(dt,jx,jy,use){
       eng.o.frequency.setTargetAtTime(rpm,t,0.05);eng.o2.frequency.setTargetAtTime(rpm*0.5,t,0.05);eng.f.frequency.setTargetAtTime(300+sp*30+Math.abs(jy)*500,t,0.08);
       eng.g.gain.setTargetAtTime((bk?0.06:0.045)+Math.abs(jy)*0.05,t,0.08);eng.ng.gain.setTargetAtTime(Math.min(0.08,sp*0.003),t,0.1);eng.lg.gain.setTargetAtTime(0,t,0.1);}
   }
+}
+var VAO={x:0,y:0,z:0,t:null};
+function vehAim(d){ // shooting while riding: pick the machine nearest the way you are facing (a helicopter also looks down and around), else fire straight ahead
+  var V=myVeh,o=VAO,heli=V.type==='heli';o.x=V.x;o.y=V.y+(heli?0.9:1.3);o.z=V.z;o.t=null;
+  var fx=d.x,fz=d.z,fl=Math.hypot(fx,fz)||1,best=null,bs=-1e9,bx=0,by=0,bz=0;fx/=fl;fz/=fl;
+  views.forEach(function(v){
+    var T=TYPES[v.t],ex=v.x-o.x,ey=T.h*0.6-o.y,ez=v.z-o.z,dd=Math.hypot(ex,ez),L=Math.hypot(ex,ey,ez);if(L<2.5||L>(heli?140:90))return;
+    var c=dd>0.5?(ex*fx+ez*fz)/dd:1;if(c<(heli?0.25:0.86))return;
+    var sc=c*60-L;if(sc<=bs)return;
+    if(wallDist(o.x,o.y,o.z,ex/L,ey/L,ez/L,L)<L-0.6)return;
+    bs=sc;best=v;bx=ex/L;by=ey/L;bz=ez/L;
+  });
+  if(best){d.set(bx,by,bz);o.t=best;}else d.set(fx,heli?-0.3:0,fz).normalize();
+  return o;
 }
 function pushFromVehicles(o,r){ // people on foot cannot walk through parked vehicles
   for(var i=0;i<VEH.length;i++){
@@ -3566,7 +3581,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','ルールと操作の説明を作り直し（ルール／操作／画面の見方の3タブ）。トップとポーズメニューから開ける'],
+  [['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる（敵を自動でねらう）'],
+   ['2026年11月15日','ルールと操作の説明を作り直し（ルール／操作／画面の見方の3タブ）。トップとポーズメニューから開ける'],
    ['2026年11月15日','コンビニ：地図に大きな店のアイコン、画面に方向と距離の印／品出しを作り込み（商品3種類を同じ色の棚へ、タイムでランクS・A・B、連続ボーナス、ソロは何度でも）／レジでコインを使って買い物'],
    ['2026年11月15日','音：スマホで鳴らないことがあったのを対策（タップで再開、iPhoneの消音スイッチ中も鳴る）、足音を大きく、ポーズメニューに音のON/OFF'],
    ['2026年11月15日','三人称のキャラ：見ている向きに上半身と銃が向く、撃つと反動と発砲の光、走ると前傾、リロードの動き。リュック・作り込んだ銃を追加／持ち物の文字をやめてアイコン表示に'],
@@ -4237,11 +4253,12 @@ function enemyAttacks(dt){
 var dirV=new THREE.Vector3(),tmpV=new THREE.Vector3(),tmpV2=new THREE.Vector3();
 function aimRay(spread){
   camera.getWorldDirection(dirV);
+  var VO=myVeh?vehAim(dirV):null;                             // from a vehicle the shot leaves the vehicle, toward whoever it has picked out
   if(spread>0){ // scatter inside a cone around the sight line
     var e=camera.matrixWorld.elements,a=Math.random()*6.283,r=Math.sqrt(Math.random())*spread,ca=Math.cos(a)*r,sa=Math.sin(a)*r;
     dirV.x+=e[0]*ca+e[4]*sa;dirV.y+=e[1]*ca+e[5]*sa;dirV.z+=e[2]*ca+e[6]*sa;dirV.normalize();
   }
-  var ox=camera.position.x,oy=camera.position.y,oz=camera.position.z,dx=dirV.x,dy=dirV.y,dz=dirV.z;
+  var ox=VO?VO.x:camera.position.x,oy=VO?VO.y:camera.position.y,oz=VO?VO.z:camera.position.z,dx=dirV.x,dy=dirV.y,dz=dirV.z;
   var best=wallDist(ox,oy,oz,dx,dy,dz,400),hitV=null,head=false,nx=HN.x,ny=HN.y,nz=HN.z,kind=HN.k;
   if(SHIP&&meGy>1&&dy<-1e-4){var tf=(SHIP.H0+0.02-oy)/dy;if(tf>0&&tf<best&&SHIP.inHall(ox+dx*tf,oz+dz*tf)){best=tf;nx=0;ny=1;nz=0;kind=1;}}   // the lobby deck stops bullets too
   views.forEach(function(v){
@@ -4273,14 +4290,14 @@ function fire(){
       if(p===0&&ray.t<70)sImpact(1-ray.t/70,panOf(ex,ez));
     }
   }
-  muzzleWorld(tmpV,1.3);if(tps&&!scopedNow())tmpV.set(me.x-Math.sin(me.yaw)*0.8,meGy+1.3,me.z-Math.cos(me.yaw)*0.8);
+  muzzleWorld(tmpV,1.3);if(myVeh&&ray)tmpV.set(ray.ox+ray.dx*1.7,ray.oy+ray.dy*1.7,ray.oz+ray.dz*1.7);else if(tps&&!scopedNow())tmpV.set(me.x-Math.sin(me.yaw)*0.8,meGy+1.3,me.z-Math.cos(me.yaw)*0.8);
   if(W.pel>1||W.scope||me.shots%2===0)tracer(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez,false);
   flashLight(tmpV.x,tmpV.y,tmpV.z,W.rec>0.03?7:4.5,16,1,0.72,0.4);
   if(Math.random()<0.5||W.rec>0.03)smoke.emit(tmpV.x,tmpV.y,tmpV.z,ray.dx*1.5,0.3,ray.dz*1.5,0.5,0.08,0.5,0.5,0.5,0.5,0.16,0,2);
   // brass leaves to the right
   var m=camera.matrixWorld.elements,sr=rnd(1.6,2.8),su=rnd(1.0,2.0);
   tmpV2.set(0.16*(1-a)+0.05,-0.13,-0.5);camera.localToWorld(tmpV2);
-  shell(tmpV2.x,tmpV2.y,tmpV2.z,m[0]*sr+m[4]*su+me.vx,m[1]*sr+m[5]*su,m[2]*sr+m[6]*su+me.vz);
+  if(!myVeh)shell(tmpV2.x,tmpV2.y,tmpV2.z,m[0]*sr+m[4]*su+me.vx,m[1]*sr+m[5]*su,m[2]*sr+m[6]*su+me.vz);
   me.shots++;me.hit=[r1(ex),r1(ey),r1(ez)];
   recP+=W.rec*(1-0.35*a)*rnd(0.85,1.2);recY+=rnd(-1,1)*W.rec*0.4*(1-0.4*a);kick=W.rec>0.03?2.2:1;boltT=0.06;flashT=W.rec>0.03?0.06:0.035;
   muzzle.rotation.z=Math.random()*6.283;muzzle.scale.setScalar(rnd(0.7,1.25)*(W.rec>0.03?1.5:1));muzzle2.scale.set(rnd(0.7,1.2),rnd(0.7,1.3),1);
@@ -4596,7 +4613,7 @@ var FOGD=0.00021;
   sec('ライフ',[['♥ 3つ','ダウンすると1つ減って、その場ですぐ復活'],['最後の1つ','ダウンするとソロは最初から。協力は仲間が近づくと蘇生']]);
   sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
   sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ品出し','納品ケースを同じ色に光る棚へ6つ。武器強化とコイン。早いほど高ランク'],['レジ','コインで回復・弾・装備を買う'],['回復','包帯、応急処置セット、ホットスナック、バーベキュー']]);
-  sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
+  sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部。乗ったまま撃てる（前方の敵を自動でねらう。ヘリは下の敵も）'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
   sec('そのほか',[['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
   grid=grids[1];
   if(isTouch){
@@ -4754,6 +4771,7 @@ function frame(tms,manual){
     var jv=Math.hypot(jx,jy);if(jv>1){jx/=jv;jy/=jv;}
     me.vx=me.vz=0;me.amp=0;me.sprint=0;me.ads=0;
     if(now-me.lastHurt>6&&me.hp<100)me.hp=Math.min(100,me.hp+5*dt);
+    wantFire=firing||mouseDown;if(me.reload>0){me.reload-=dt;if(me.reload<=0)me.ammo=MAG;}   // you can shoot from the saddle, the seat or the cabin
   }else{
     wantFire=firing||mouseDown||!!keys.Space;
     jx=joy.x+((keys.KeyD||keys.ArrowRight)?1:0)-((keys.KeyA||keys.ArrowLeft)?1:0);jy=joy.y+((keys.KeyW||keys.ArrowUp)?1:0)-((keys.KeyS||keys.ArrowDown)?1:0);
@@ -4800,7 +4818,7 @@ function frame(tms,manual){
   updWrecks(dt);GRASS.update();birds(dt);updNades(dt);updLoot(dt);HERO.update(dt);
   // shooting
   if(!me.down){
-    if(carry||myVeh)wantFire=false;
+    if(carry)wantFire=false;
     else if(!wantFire&&auto&&me.reload<=0){var ar=aimRay(0);if(ar.v&&ar.t<70)wantFire=true;}
     if(wantFire&&me.sprint<0.6)fire();
   }
