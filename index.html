@@ -1684,7 +1684,7 @@ function initAudio(){
     ac=new (window.AudioContext||window.webkitAudioContext)();
     var sr=ac.sampleRate,k,d;
     aOut=ac.createDynamicsCompressor();aOut.threshold.value=-16;aOut.knee.value=10;aOut.ratio.value=7;aOut.attack.value=0.002;aOut.release.value=0.18;
-    var mg=ac.createGain();mg.gain.value=0.9;aOut.connect(mg);mg.connect(ac.destination);
+    aMaster=ac.createGain();aMaster.gain.value=soundOn?1.25:0;aOut.connect(aMaster);aMaster.connect(ac.destination);
     nbuf=ac.createBuffer(1,sr*2,sr);d=nbuf.getChannelData(0);for(k=0;k<d.length;k++)d[k]=Math.random()*2-1;
     // reverb: open ground with a few hard echoes off the buildings
     var len=Math.floor(sr*2.0),ir=ac.createBuffer(2,len,sr);
@@ -1736,7 +1736,7 @@ function sGun(v,pan,far){ // rifle report: crack, body, low thump, then the echo
   burst({dur:far?0.2:0.11,type:'bandpass',f:(far?700:1700)*d,q:0.7,v:(far?0.7:1.0)*v,pan:pan,rv:far?0.9:0.55});
   burst({dur:0.28,type:'lowpass',f:far?340:520,v:0.75*v,pan:pan,rv:0.45});
 }
-function sStep(v){burst({dur:0.07,type:'lowpass',f:rnd(260,460),v:0.16*v});burst({dur:0.025,type:'bandpass',f:rnd(1800,2800),q:1.5,v:0.035*v});}
+function sStep(v){burst({dur:0.08,type:'lowpass',f:rnd(240,440),v:0.4*v});burst({dur:0.03,type:'bandpass',f:rnd(1700,2700),q:1.5,v:0.1*v});tone({f:rnd(85,110),f1:55,dur:0.06,v:0.12*v});}
 function sClick(t0,f,v){burst({dur:0.035,type:'bandpass',f:f,q:4,v:v||0.3,t0:t0});tone({f:f*0.3,f1:f*0.18,dur:0.03,v:(v||0.3)*0.2,type:'square',t0:t0});}
 function sBrass(){tone({f:rnd(4200,5600),f1:3000,dur:0.07,v:0.012,type:'triangle'});}
 function sMetal(v,head){tone({f:head?rnd(3000,3600):rnd(1700,2500),f1:900,dur:0.07,v:0.08*v,type:'triangle'});burst({dur:0.03,type:'highpass',f:5000,v:0.1*v});}
@@ -2067,6 +2067,31 @@ function pvStart(cv,getF){
   pvTimer=setInterval(function(){var tn=performance.now();if(tn>pvHold&&!pvDrag)pvYaw+=(Math.sin((tn-t0)/1000*0.55)*0.6-pvYaw)*0.06;preview3d(cv,getF(),pvYaw);},66);
 }
 function pvStop(){clearInterval(pvTimer);pvTimer=0;}
+
+/* ---------- making sure the sound is heard: wake the audio on every touch or key, keep it awake after the page was in the background, and get past the iPhone's silent switch ---------- */
+var soundOn=true,aMaster=null,silentEl=null;
+try{soundOn=localStorage.getItem('ic_snd')!=='0';}catch(e){}
+function setSound(v){soundOn=!!v;try{localStorage.setItem('ic_snd',v?'1':'0');}catch(e){}if(aMaster)aMaster.gain.value=v?1.25:0;if(v)audioKick();else if(silentEl){try{silentEl.pause();}catch(e){}}}
+function audioKick(){
+  if(!soundOn||!me.inGame)return;
+  if(!ac)initAudio();
+  if(!ac)return;
+  if(typeof paused!=='undefined'&&paused&&NET.mode!=='coop')return;
+  try{if(ac.state!=='running'&&ac.resume)ac.resume().catch(function(){});}catch(e){}
+  try{var s=ac.createBufferSource();s.buffer=ac.createBuffer(1,1,22050);s.connect(ac.destination);s.start(0);}catch(e){}
+  if(!silentEl){ // a silent clip kept playing as ordinary media: on an iPhone this is what lets game sound through when the ring switch is set to silent
+    try{
+      var n=4000,b=new Uint8Array(44+n),dv=new DataView(b.buffer),i,str='';
+      function w(o,t){for(var q=0;q<t.length;q++)b[o+q]=t.charCodeAt(q);}
+      w(0,'RIFF');dv.setUint32(4,36+n,true);w(8,'WAVEfmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,8000,true);dv.setUint32(28,8000,true);dv.setUint16(32,1,true);dv.setUint16(34,8,true);w(36,'data');dv.setUint32(40,n,true);
+      for(i=44;i<b.length;i++)b[i]=128;for(i=0;i<b.length;i++)str+=String.fromCharCode(b[i]);
+      silentEl=new Audio('data:audio/wav;base64,'+btoa(str));silentEl.loop=true;silentEl.setAttribute('playsinline','');silentEl.preload='auto';
+    }catch(e){silentEl=null;}
+  }
+  if(silentEl&&silentEl.paused){try{var p=silentEl.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+}
+['pointerdown','touchend','keydown','click'].forEach(function(ev){window.addEventListener(ev,audioKick,true);});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)audioKick();});
 
 
 /* ---------- network: solo, or co-op rooms that are listed in a lobby and entered with a 4-digit code ---------- */
@@ -3493,7 +3518,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','三人称のキャラ：見ている向きに上半身と銃が向く、撃つと反動と発砲の光、走ると前傾、リロードの動き。リュック・作り込んだ銃を追加／持ち物の文字をやめてアイコン表示に'],
+  [['2026年11月15日','音：スマホで鳴らないことがあったのを対策（タップで再開、iPhoneの消音スイッチ中も鳴る）、足音を大きく、ポーズメニューに音のON/OFF'],
+   ['2026年11月15日','三人称のキャラ：見ている向きに上半身と銃が向く、撃つと反動と発砲の光、走ると前傾、リロードの動き。リュック・作り込んだ銃を追加／持ち物の文字をやめてアイコン表示に'],
    ['2026年11月15日','アバターを作り直し：鼻・目のくぼみ・あご・耳のある立体の頭、なめらかな体と手足。アバター画面は実際の3Dモデルを表示（ドラッグで回せる）'],
    ['2026年11月15日','キャラモード：相棒のガーディアンがついてきて一緒に戦う（トップ画面かポーズメニューで切り替え）'],
    ['2026年11月14日','光の表現（明るい所のにじみ、色調）／アバターの髪を作り直し（生え際・もみあげ・後ろ髪）／立体駐車場の入口を手前の辺の左側に／毒ガスのダメージを5分の1に'],
@@ -3591,7 +3617,7 @@ function fsTip(){ // shown where the browser cannot go full screen
 }
 function setPause(v){
   if(!me.inGame)return;
-  paused=v;elPause.classList.toggle('off',!v);var hb=document.getElementById('pzHero');if(hb)hb.textContent='キャラモード：'+(HERO.on?'ON':'OFF');firing=false;mouseDown=false;adsHeld=false;keys={};
+  paused=v;elPause.classList.toggle('off',!v);var sb=document.getElementById('pzSnd');if(sb)sb.textContent='音：'+(soundOn?'ON':'OFF');var hb=document.getElementById('pzHero');if(hb)hb.textContent='キャラモード：'+(HERO.on?'ON':'OFF');firing=false;mouseDown=false;adsHeld=false;keys={};
   elPause.querySelector('.n').textContent=NET.mode==='coop'?'協力プレイ中は、ほかの人のためにゲームは止まりません。':'ゲームを止めています。';
   try{if(ac&&NET.mode!=='coop'){if(v)ac.suspend();else ac.resume();}}catch(e){}
   if(v){try{if(document.exitPointerLock)document.exitPointerLock();}catch(e){}}
@@ -3652,7 +3678,7 @@ function drawPack(){
   bFull.innerHTML=I.full;
   elPack=el('div','pack','off');var ph=el('h2','','','リュック',elPack),px=el('button','','','✕ 閉じる',ph);px.type='button';px.addEventListener('pointerdown',function(e){e.preventDefault();setPack(false);});el('div','','g',null,elPack);
   elPause=el('div','pause','off');var pb=el('div','','box',null,elPause);el('h2','','','PAUSE',pb);el('div','','n','',pb);
-  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','操作説明',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
+  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','操作説明',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);var r5b=el('button','pzSnd','','音',pb);r5b.type='button';pb.insertBefore(r5b,r3b);r5b.addEventListener('click',function(){setSound(!soundOn);r5b.textContent='音：'+(soundOn?'ON':'OFF');});r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
   r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});r3b.addEventListener('click',function(){try{location.reload();}catch(e){}});
   elTip=el('div','tip','off');var tb=el('div','','box',null,elTip);tipT=el('div','','t','',tb);var tk=el('button','','','OK',tb);tk.type='button';tk.addEventListener('click',function(){elTip.classList.add('off');});
   var gunKey='',chipSig='?',GUNS={rifle:I.gun,
@@ -4507,6 +4533,7 @@ var FOGD=0.00021;
     sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','武器の持ち替え'],['G','グレネード'],['H / J','包帯 / 応急処置セット'],['T','自動射撃の切り替え'],['B / P','リュック / ポーズ'],['V','一人称 / 三人称の切り替え']]);
     sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出しなど'],['1 2 3','補給箱の中身を選んで拾う'],['M','全体マップ（ホイールで拡大、ドラッグで移動）'],['右下の ⛶','全画面']]);
   }
+  sec('音',[['音が出ないとき','画面を一度タップ。本体の音量を上げる。ポーズメニューの「音」がONか確認'],['iPhone','消音スイッチがオンでも鳴るようにしてあります']]);
   sec('遊び方',[['目標','WAVE 5 ごとに STAGE CLEAR。のるーと利用券がもらえる'],['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ','中で品出しを終えると武器が強くなる'],['乗り物','車・バイク・ヘリは歩いて触れると乗れる'],['ワープ','スタート地点そばのゲートからドーム、そこから長崎へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える'],['回復','包帯、応急処置セット、バーベキュー']]);
   helpB.addEventListener('click',hp.open);
   var hi=pop('histPop','更新履歴'),hd=$('hist');if(hd)hi.body.appendChild(hd);histB.addEventListener('click',hi.open);
@@ -4517,7 +4544,7 @@ var FOGD=0.00021;
     me.name=(nm.value||'').trim().slice(0,10)||'プレイヤー';
     try{localStorage.setItem('ic_name',me.name);}catch(e){}
     NET.mode=mode;NET.created=!!created;NET.rid=created?Math.random().toString(36).slice(2,10):(rid||'');roomCode=mode==='coop'?String(code):'';netState=mode==='coop'?'wait':'solo';netFails=0;
-    initAudio();me.inGame=true;nm.blur();tryJoin();
+    initAudio();me.inGame=true;audioKick();nm.blur();tryJoin();
     $('start').classList.add('off');cp.root.classList.add('off');
     ['tl','tr','cross','ammo','prompt','bPause','bPack','bView'].forEach(function(id){$(id).classList.remove('off');});
     if(isTouch)['bFire','bReload','bAuto','bAds','look'].forEach(function(id){$(id).classList.remove('off');});
