@@ -2404,18 +2404,19 @@ function hostUpdate(dt){
 STORES.forEach(function(S){ // open the navigation grid through the doorway and along the aisles
   S.nav.forEach(function(p){var a=Math.floor((p[0]-NAV.x0)/NAV.c),b=Math.floor((p[1]-NAV.z0)/NAV.c);if(a>=0&&b>=0&&a<NAV.w&&b<NAV.h)NAV.blk[b*NAV.w+a]=0;});
 });
+var carryCat=0,CATN=['おかし','カップめん','日用品'],CATC=['黄色','赤','青'],CATH=[0xffd23a,0xff5a47,0x4fb0ff],CATM=null,konOpen=null,elKon=null;
 var lv=0,carry=0,useReq=false,myStock={},awarded={},promptTxt='',promptAct=false,nearS=null,nearD=1e9,insideS=false;
 function applyLv(){var W=WPN[slots[cur].k];MAG=W.mag+Math.max(1,Math.round(W.mag/6))*lv;RELOAD=W.rel-0.12*lv;}
 function stockOut(){var a=[];for(var k in myStock){var s=myStock[k];a.push([+k,s.w,s.g,s.m]);}return a;}
 function needOf(S){ // six bays stand empty each wave; every player derives the same six
-  var key=hs.gen+'_'+hs.w;if(S.key===key)return;
-  var r=mulberry((hs.gen|0)+S.i*7919+hs.w*104729),idx=[],n=S.slots.length,i;
+  var key=hs.gen+'_'+hs.w+'_'+(S.rd||0);if(S.key===key)return;S.t0=0;S.combo=0;S.lastT=0;
+  var r=mulberry((hs.gen|0)+S.i*7919+hs.w*104729+(S.rd||0)*31337),idx=[],n=S.slots.length,i;
   for(i=0;i<n;i++)idx.push(i);
   for(i=n-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=idx[i];idx[i]=idx[j];idx[j]=t;}
   S.key=key;S.needMask=0;for(i=0;i<6&&i<n;i++)S.needMask|=1<<idx[i];
 }
 function stockMask(S){ // bays filled so far by anyone in the room
-  var m=0,s=myStock[S.i];if(s&&s.w===hs.w&&s.g===hs.gen)m|=s.m;
+  var m=0,s=myStock[S.i];if(s&&s.w===hs.w&&s.g===hs.gen&&(s.r||0)===(S.rd||0))m|=s.m;
   for(var i=0;i<others.length;i++){var k=others[i].k;if(!k)continue;
     for(var j=0;j<k.length&&j<4;j++){var e=k[j];if(Array.isArray(e)&&e[0]===S.i&&e[1]===hs.w&&e[2]===hs.gen&&fin(e[3]))m|=e[3]&4095;}}
   return m&S.needMask;
@@ -2425,6 +2426,8 @@ function updStores(dt){
   promptTxt='';promptAct=false;nearS=null;nearD=1e9;insideS=false;
   if(!hs){useReq=false;return;}
   var i,j,S,d;
+  if(!CATM){CATM=CATH.map(function(h){var m=SHOP.mark.clone();m.color.set(h);return m;});STORES.forEach(function(Q){Q.slots.forEach(function(sl,q){sl.cat=Math.floor(q/4)%3;sl.mark.material=CATM[sl.cat];});});}   // each gondola holds one kind of goods, and glows in its own colour
+  for(i=0;i<3;i++)CATM[i].opacity=carry?(i===carryCat?0.5+0.3*Math.sin(now*7):0.08):0.3+0.2*Math.sin(now*5);
   for(i=0;i<STORES.length;i++){
     S=STORES[i];d=Math.hypot(S.x-me.x,S.z-me.z);if(d<nearD){nearD=d;nearS=S;}
     var near=!me.down&&Math.hypot(S.dx-me.x,S.dz-me.z)<3.4;
@@ -2437,8 +2440,11 @@ function updStores(dt){
     for(j=0;j<S.slots.length;j++){var inM=(S.needMask>>j)&1,f=(S.mask>>j)&1,sl=S.slots[j];sl.mesh.visible=!inM||!!f;sl.mark.visible=!!inM&&!f;}
     if(S.left===0&&!awarded[S.key+'_'+S.i]){
       awarded[S.key+'_'+S.i]=1;
-      if(lv<5){lv++;applyLv();banner('品出し完了','武器強化 Lv'+(lv+1)+'　威力・弾数・装填速度アップ',3.4);}
-      else banner('品出し完了','武器はすでに最大まで強化済み',2.6);
+      var tm=S.t0?now-S.t0:0,rk=!S.t0?'':(tm<=70?'S':(tm<=120?'A':'B')),cn=rk==='S'?200:(rk==='A'?120:(rk==='B'?60:0)),msg=[];   // the faster the job, the better the pay
+      if(lv<5){lv++;applyLv();msg.push('武器 Lv'+(lv+1));}
+      if(cn){coins+=cn;msg.push('+'+cn+'コイン');}
+      if(rk==='S'){kits=Math.min(3,kits+1);nades=Math.min(6,nades+2);msg.push('応急処置セット・グレネード×2');}else if(rk==='A'){bands=Math.min(8,bands+2);msg.push('包帯×2');}
+      banner('品出し完了'+(rk?'　ランク '+rk:''),(rk?Math.floor(tm/60)+':'+('0'+Math.floor(tm%60)).slice(-2)+'　':'')+msg.join('　'),4.5);
       tone({f:660,dur:0.16,v:0.07,type:'triangle'});tone({f:880,dur:0.16,v:0.07,type:'triangle',t0:0.15});tone({f:1320,dur:0.4,v:0.07,type:'triangle',t0:0.3});
     }
   }
@@ -2449,17 +2455,59 @@ function updStores(dt){
   if(S&&nearD<16&&!me.down&&!myVeh){
     insideS=inStore(S,me.x,me.z,0);
     if(!carry){
-      if(S.left>0&&Math.hypot(S.cx-me.x,S.cz-me.z)<2.0){promptTxt='商品ケースを持つ';promptAct=true;if(useReq){carry=S.i+1;sClick(0,900,0.3);burst({dur:0.08,type:'lowpass',f:500,v:0.2});}}
+      var rgx=S.x+4.45*S.cs+0.3*S.sn,rgz=S.z-4.45*S.sn+0.3*S.cs,rd2=Math.hypot(rgx-me.x,rgz-me.z);
+      if(konOpen&&(konOpen!==S||rd2>3.2))closeKon();
+      if(S.left>0&&Math.hypot(S.cx-me.x,S.cz-me.z)<2.0){promptTxt='商品ケースを持つ';promptAct=true;
+        if(useReq){carry=S.i+1;var nd=[];for(j=0;j<S.slots.length;j++)if(((S.needMask>>j)&1)&&!((S.mask>>j)&1))nd.push(S.slots[j].cat);carryCat=nd.length?nd[Math.floor(Math.random()*nd.length)]:0;
+          if(!S.t0){S.t0=now;S.combo=0;S.lastT=0;}var cc=[[1,0.9,0.5],[1,0.62,0.56],[0.62,0.82,1]][carryCat];crateV.material.color.setRGB(cc[0],cc[1],cc[2]);
+          banner(CATN[carryCat],CATC[carryCat]+'に光る棚へ',1.6);sClick(0,900,0.3);burst({dur:0.08,type:'lowpass',f:500,v:0.2});}}
+      else if(S.left===0&&NET.mode!=='coop'&&Math.hypot(S.cx-me.x,S.cz-me.z)<2.0){promptTxt='次の納品を受け取る（もう一度 品出し）';promptAct=true;if(useReq){S.rd=(S.rd||0)+1;delete myStock[S.i];sClick(0,1000,0.3);banner('納品が届いた','空いた棚 6か所に並べよう',2);}}
+      else if(insideS&&rd2<1.7){promptTxt='レジで買い物（コイン '+Math.floor(coins)+'）';promptAct=true;if(useReq)openKon(S);}
       else if(S.left>0&&insideS)promptTxt='納品ケースから商品を取り、光っている空き棚へ（残り '+S.left+'）';
     }else if(carry===S.i+1){
-      var tj=-1,td=1.9;
-      for(j=0;j<S.slots.length;j++){if(!((S.needMask>>j)&1)||((S.mask>>j)&1))continue;d=Math.hypot(S.slots[j].x-me.x,S.slots[j].z-me.z);if(d<td){td=d;tj=j;}}
-      if(tj>=0){promptTxt='棚に並べる';promptAct=true;
-        if(useReq){var s=myStock[S.i];if(!s||s.w!==hs.w||s.g!==hs.gen)s=myStock[S.i]={w:hs.w,g:hs.gen,m:0};s.m|=1<<tj;carry=0;sClick(0,1400,0.3);sClick(0.09,1100,0.22);sClick(0.2,1500,0.2);}}
-      else promptTxt='光っている空き棚へ運ぶ（残り '+S.left+'）';
+      var tj=-1,td=1.9,wj=-1,wd=1.9;
+      for(j=0;j<S.slots.length;j++){if(!((S.needMask>>j)&1)||((S.mask>>j)&1))continue;d=Math.hypot(S.slots[j].x-me.x,S.slots[j].z-me.z);if(S.slots[j].cat===carryCat){if(d<td){td=d;tj=j;}}else if(d<wd){wd=d;wj=j;}}
+      if(tj>=0){promptTxt=CATN[carryCat]+'を棚に並べる';promptAct=true;
+        if(useReq){var s=myStock[S.i];if(!s||s.w!==hs.w||s.g!==hs.gen||(s.r||0)!==(S.rd||0))s=myStock[S.i]={w:hs.w,g:hs.gen,m:0,r:S.rd||0};s.m|=1<<tj;carry=0;
+          S.combo=(now-(S.lastT||0)<14&&S.lastT)?(S.combo||0)+1:1;S.lastT=now;var bn=10*S.combo;coins+=bn;                       // keep the pace up and each case pays more
+          if(S.left>1)banner(S.combo>1?'ナイス！ ×'+S.combo:'並べた','+'+bn+'コイン　残り '+(S.left-1),1.3);
+          sClick(0,1400,0.3);sClick(0.09,1100,0.22);sClick(0.2,1500,0.2);if(S.combo>1)tone({f:660+S.combo*110,dur:0.14,v:0.05,type:'triangle',t0:0.2});}}
+      else if(wj>=0){promptTxt='ここは '+CATN[S.slots[wj].cat]+' の棚。'+CATN[carryCat]+'は'+CATC[carryCat]+'に光る棚へ';if(useReq){tone({f:160,dur:0.18,v:0.06,type:'square'});}}
+      else promptTxt=CATN[carryCat]+'を '+CATC[carryCat]+'に光る棚へ（残り '+S.left+'）';
     }
   }
+  if(konOpen&&(!insideS||carry))closeKon();
   useReq=false;
+}
+function konTask(S){ // one line under the goal while you are at a shop
+  if(S.left===0)return '品出し 完了'+(NET.mode!=='coop'?'（納品ケースでもう一度できる）':'（次のウェーブで再入荷）');
+  var t=S.t0?now-S.t0:0;
+  return '品出し '+(6-S.left)+'/6'+(S.t0?'　タイム '+Math.floor(t/60)+':'+('0'+Math.floor(t%60)).slice(-2)+(t<=70?'（Sランク圏内）':(t<=120?'（Aランク圏内）':'')):'　70秒以内でSランク')+(carry?'　いま：'+CATN[carryCat]:'');
+}
+function closeKon(){konOpen=null;if(elKon)elKon.classList.add('off');elLoot.style.visibility='';}
+function openKon(S){ // the till: spend coins on what you need
+  konOpen=S;
+  if(!elKon){elKon=document.createElement('div');elKon.id='kon';elKon.className='hud off';elKon.style.cssText='left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,92vw);max-height:86vh;overflow:auto;padding:12px;background:rgba(8,18,27,.95);border:1px solid rgba(255,255,255,.4);border-radius:8px;pointer-events:auto;z-index:8;display:flex;flex-direction:column;gap:7px;touch-action:pan-y';document.body.appendChild(elKon);}
+  elKon.textContent='';elKon.classList.remove('off');elLoot.style.visibility='hidden';   // the pick-up list would sit under the till menu
+  var t=document.createElement('div');t.style.cssText='font:700 15px/1.4 var(--body);text-align:center';t.textContent='レジ　所持コイン '+Math.floor(coins);elKon.appendChild(t);
+  [['ホットスナック','体力 +40',20,function(){me.hp=Math.min(100,me.hp+40);},function(){return me.hp<100;}],
+   ['弾薬','いまの銃を満タンに',15,function(){me.ammo=MAG;me.reload=0;},function(){return me.ammo<MAG;}],
+   ['包帯','×1',30,function(){bands++;},function(){return bands<8;}],
+   ['グレネード','×1',50,function(){nades++;},function(){return nades<6;}],
+   ['応急処置セット','×1',110,function(){kits++;},function(){return kits<3;}],
+   ['防弾チョッキ','新品に交換',140,function(){armor=100;},function(){return armor<100;}]].forEach(function(it){
+    var ok=coins>=it[2]&&it[4](),r=document.createElement('div');r.style.cssText='display:flex;align-items:center;gap:8px;font-size:14px';
+    var s=document.createElement('span');s.style.flex='1';s.textContent=it[0]+'　';var sm2=document.createElement('small');sm2.style.color='var(--dim)';sm2.textContent=it[1];s.appendChild(sm2);r.appendChild(s);
+    var b=document.createElement('button');b.type='button';b.textContent=it[4]()?it[2]+' コイン':'いっぱい';b.style.cssText='height:38px;min-width:96px;padding:0 10px;font:700 13px var(--body);border:0;border-radius:6px;touch-action:none;'+(ok?'color:#1a1200;background:var(--signal)':'color:var(--dim);background:rgba(255,255,255,.15)');
+    if(ok)b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();if(coins<it[2]||!it[4]())return;coins-=it[2];it[3]();saveMeta();tone({f:880,dur:0.1,v:0.06,type:'triangle'});tone({f:1320,dur:0.25,v:0.06,type:'triangle',t0:0.1});openKon(S);});
+    r.appendChild(b);elKon.appendChild(r);});
+  var n=document.createElement('div');n.style.cssText='font-size:11px;color:var(--dim);text-align:center;line-height:1.5';n.textContent='コインは品出しとロボットへのダメージでたまります。レジを離れると閉じます。';elKon.appendChild(n);
+}
+function storeIcon(g,x,y,h){ // a shop front, large enough to pick out on either map
+  g.fillStyle='#000';g.fillRect(x-h-3,y-h-3,h*2+6,h*2+6);g.fillStyle='#fff';g.fillRect(x-h-1.5,y-h-1.5,h*2+3,h*2+3);g.fillStyle='#f08a1c';g.fillRect(x-h,y-h,h*2,h*2);
+  g.fillStyle='#fff';g.fillRect(x-h*0.78,y-h*0.62,h*1.56,h*0.36);g.fillRect(x-h*0.78,y-h*0.08,h*1.56,h*0.86);
+  g.fillStyle='#1d6fd0';g.fillRect(x-h*0.78,y-h*0.62,h*0.52,h*0.36);g.fillStyle='#2f9e4f';g.fillRect(x+h*0.26,y-h*0.62,h*0.52,h*0.36);
+  g.fillStyle='#f08a1c';g.fillRect(x-h*0.2,y+h*0.16,h*0.4,h*0.62);
 }
 /* the case being carried, shown in the first-person pass */
 var crateV=(function(){
@@ -3518,7 +3566,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','音：スマホで鳴らないことがあったのを対策（タップで再開、iPhoneの消音スイッチ中も鳴る）、足音を大きく、ポーズメニューに音のON/OFF'],
+  [['2026年11月15日','コンビニ：地図に大きな店のアイコン、画面に方向と距離の印／品出しを作り込み（商品3種類を同じ色の棚へ、タイムでランクS・A・B、連続ボーナス、ソロは何度でも）／レジでコインを使って買い物'],
+   ['2026年11月15日','音：スマホで鳴らないことがあったのを対策（タップで再開、iPhoneの消音スイッチ中も鳴る）、足音を大きく、ポーズメニューに音のON/OFF'],
    ['2026年11月15日','三人称のキャラ：見ている向きに上半身と銃が向く、撃つと反動と発砲の光、走ると前傾、リロードの動き。リュック・作り込んだ銃を追加／持ち物の文字をやめてアイコン表示に'],
    ['2026年11月15日','アバターを作り直し：鼻・目のくぼみ・あご・耳のある立体の頭、なめらかな体と手足。アバター画面は実際の3Dモデルを表示（ドラッグで回せる）'],
    ['2026年11月15日','キャラモード：相棒のガーディアンがついてきて一緒に戦う（トップ画面かポーズメニューで切り替え）'],
@@ -3938,6 +3987,7 @@ var ZIP=(function(){
 var mateEls=[],matesBox,FAKE=[];
 function matesNow(){return FAKE.length?others.concat(FAKE):others;}
 function mateMarks(){
+  shopMark();
   var L=matesNow(),W=window.innerWidth,H=window.innerHeight,i,myZ=zoneOf(me.x,me.z);
   for(i=0;i<L.length||i<mateEls.length;i++){
     var e=mateEls[i];
@@ -3954,6 +4004,19 @@ function mateMarks(){
     e.firstChild.style.transform='rotate('+(on?3.1416:Math.atan2(x,y)).toFixed(2)+'rad)';
     var t=(o.n||'なかま')+(o.hp>0?'':'（ダウン）')+' '+(far?'別エリア':Math.round(d)+'m');if(e.lastChild.textContent!==t)e.lastChild.textContent=t;
   }
+}
+var shopEl=null;
+function shopMark(){ // which way to the nearest shop, and how far
+  var S=nearS,W=window.innerWidth,H=window.innerHeight;
+  if(!shopEl){shopEl=document.createElement('div');shopEl.className='mate shop';shopEl.appendChild(document.createElement('i'));shopEl.appendChild(document.createElement('b'));matesBox.appendChild(shopEl);}
+  if(!S||nearD<16||insideS||zoneOf(me.x,me.z).i||ZIP.on){shopEl.style.display='none';return;}
+  tmpV.set(S.dx,3.6,S.dz).project(camera);
+  var behind=tmpV.z>1,x=behind?-tmpV.x:tmpV.x,y=behind?-Math.abs(tmpV.y)-1:tmpV.y,on=!behind&&Math.abs(x)<0.9&&y<0.78&&y>-0.8;
+  if(!on){var m=Math.max(Math.abs(x)/0.9,Math.abs(y)/0.78);if(!(m>1e-4)){x=0;y=-0.78;}else{x/=m;y/=m;}}
+  shopEl.style.display='block';shopEl.className='mate shop'+(on?' on':'');
+  shopEl.style.transform='translate('+Math.round((x*0.5+0.5)*W)+'px,'+Math.round((-y*0.5+0.5)*H)+'px)';
+  shopEl.firstChild.style.transform='rotate('+(on?3.1416:Math.atan2(x,y)).toFixed(2)+'rad)';
+  var t='コンビニ '+Math.round(nearD)+'m';if(shopEl.lastChild.textContent!==t)shopEl.lastChild.textContent=t;
 }
 function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as ringed blue discs with their initial; team-mates off the minimap sit on its edge
   var r=big?9:6,myZ=zoneOf(me.x,me.z);
@@ -3978,6 +4041,7 @@ function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as 
     '.mate i:after{content:"";position:absolute;left:50%;top:5px;margin-left:-7px;border:7px solid transparent;border-top:0;border-bottom:13px solid #fff}'+
     '.mate b{position:absolute;left:-80px;width:160px;top:20px;text-align:center;font:700 13px/1.2 var(--body);color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000;white-space:nowrap}'+
     '.mate.on i{left:-11px;top:-11px;width:22px;height:22px;background:rgba(20,135,240,.85)}.mate.on i:after{top:3px;margin-left:-5px;border-width:5px;border-top:0;border-bottom-width:9px}.mate.on b{top:-30px;font-size:12px}'+
+    '.mate.shop i{background:rgba(240,138,28,.95)}.mate.shop b{color:#ffd9a8}'+
     '.mate.dn i{background:rgba(226,60,45,.95)}.mate.dn b{color:#ffb3aa}';
   document.head.appendChild(st);
   matesBox=document.createElement('div');matesBox.id='matesBox';document.body.appendChild(matesBox);
@@ -4340,7 +4404,7 @@ function drawBig(){
   function SX(x){return BW/2+(bx(x)-bx(bigCx))*k;}function SZ(z){return BH/2+(bz(z)-bz(bigCz))*k;}
   g.font='bold 20px sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=4;
   function tag(x,z,t,c){g.strokeStyle='rgba(0,0,0,.75)';g.strokeText(t,SX(x),SZ(z)-20);g.fillStyle=c;g.fillText(t,SX(x),SZ(z)-20);}
-  STORES.forEach(function(S){var px=SX(S.x),py=SZ(S.z);g.fillStyle='#fff';g.fillRect(px-11,py-11,22,22);g.fillStyle='#17335c';g.fillRect(px-8,py-8,16,16);g.fillStyle='#f0a81c';g.fillRect(px-8,py+2,16,4);tag(S.x,S.z,'コンビニ','#ffd27a');});
+  STORES.forEach(function(S){storeIcon(g,SX(S.x),SZ(S.z),17);g.strokeStyle='rgba(0,0,0,.75)';g.strokeText('コンビニ',SX(S.x),SZ(S.z)-32);g.fillStyle='#ffd27a';g.fillText('コンビニ',SX(S.x),SZ(S.z)-32);});
   if(SHIP)tag(SHIP.x,SHIP.z,'クルーズ船','#ffffff');if(BBQ){g.fillStyle='#e0703a';g.beginPath();g.arc(SX(BBQ.x),SZ(BBQ.z),7,0,7);g.fill();tag(BBQ.x,BBQ.z,'バーベキュー','#ffb27a');}
   if(PARK){g.fillStyle='#9fb6ff';g.fillRect(SX(PARK.gx)-6,SZ(PARK.gz)-6,12,12);tag(PARK.gx,PARK.gz,'立体駐車場（キー）','#c9d6ff');}
   if(MALL)tag(MALL.x,MALL.z,'服売り場','#ffb0d0');tag(ZIP.sx,ZIP.sz,'ジップライン','#ffe9a0');
@@ -4354,7 +4418,7 @@ function drawBig(){
   g.save();g.translate(SX(me.x),SZ(me.z));g.rotate(-me.yaw);g.fillStyle='#000';g.beginPath();g.moveTo(0,-20);g.lineTo(14,14);g.lineTo(-14,14);g.closePath();g.fill();
   g.fillStyle='#ffb000';g.beginPath();g.moveTo(0,-15);g.lineTo(10,10);g.lineTo(-10,10);g.closePath();g.fill();g.restore();
   g.textAlign='left';g.font='bold 20px sans-serif';g.strokeStyle='rgba(0,0,0,.8)';
-  [[zoneOf(me.x,me.z).n,'#ffffff'],['■ コンビニ　緑■ 補給箱','#ffd27a'],['▲ 自分　● 青＝味方　◆ 赤＝敵','#ffffff'],['● 白＝車　水色＝バイク　H ヘリ','#f4f4f4'],['● 青＝ワープ　橙＝のるーと','#bfeaff'],['ドラッグで移動・ピンチ／ホイールで拡大','#ffffff']].forEach(function(l,q){
+  [[zoneOf(me.x,me.z).n,'#ffffff'],['オレンジの店＝コンビニ　緑■ 補給箱','#ffd27a'],['▲ 自分　● 青＝味方　◆ 赤＝敵','#ffffff'],['● 白＝車　水色＝バイク　H ヘリ','#f4f4f4'],['● 青＝ワープ　橙＝のるーと','#bfeaff'],['ドラッグで移動・ピンチ／ホイールで拡大','#ffffff']].forEach(function(l,q){
     g.strokeText(l[0],20,BH-22-q*26);g.fillStyle=l[1];g.fillText(l[0],20,BH-22-q*26);});
 }
 $('mini').addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();toggleMap();});
@@ -4448,7 +4512,7 @@ function drawHud(dt){
   elMax.textContent=myVeh?(' km/h'+(myVeh.type==='heli'?'　高度 '+Math.round(myVeh.y)+'m':'')):('/ '+MAG+(lv?'　Lv'+(lv+1):''));
   elAr.parentNode.classList.toggle('off',armor<=0);elAr.style.width=Math.round(armor)+'%';bNade.classList.toggle('none',nades<=0);
   if(isTouch){var hv=!!(myVeh&&myVeh.type==='heli');bUp.classList.toggle('off',!hv);bDn.classList.toggle('off',!hv);}
-  elTask.textContent=nearS?(nearD<60?('コンビニ 品出し '+(6-nearS.left)+'/6'+(nearS.left===0?'（完了・次のウェーブで再入荷）':'')):('コンビニまで '+Math.round(nearD)+'m　品出しで武器強化')):'';
+  elTask.textContent=nearS&&nearD<60?konTask(nearS):'';
   var pt=promptTxt?((promptAct&&!isTouch?'E：':'')+promptTxt):'';
   if(elPrompt.textContent!==pt)elPrompt.textContent=pt;
   elPrompt.style.opacity=(pt&&!(isTouch&&promptAct))?1:0;
@@ -4477,7 +4541,7 @@ function drawHud(dt){
   VEH.forEach(function(V){if(V===myVeh)return;var px=mx(V.x),py=mz(V.z);if(px<0||py<0||px>240||py>190)return;
     if(V.type==='heli'){mctx.fillStyle='#ffd24a';mctx.fillRect(px-5,py-5,10,10);mctx.fillStyle='#222';mctx.fillRect(px-3,py-3,2,6);mctx.fillRect(px+1,py-3,2,6);mctx.fillRect(px-3,py-1,6,2);}
     else{mctx.fillStyle=V.type==='car'?'#f4f4f4':'#8fd0ff';mctx.beginPath();mctx.arc(px,py,V.type==='car'?3.5:2.6,0,7);mctx.fill();}});
-  STORES.forEach(function(S){var px=clamp(mx(S.x),8,232),py=clamp(mz(S.z),8,182);mctx.fillStyle='#fff';mctx.fillRect(px-6,py-6,12,12);mctx.fillStyle='#17335c';mctx.fillRect(px-4,py-4,8,8);mctx.fillStyle='#f0a81c';mctx.fillRect(px-4,py+1,8,2);});
+  if(!zoneOf(me.x,me.z).i)STORES.forEach(function(S){storeIcon(mctx,clamp(mx(S.x),14,226),clamp(mz(S.z),14,176),10);});
   gasMap(mctx,mx,mz,MZM,240,190);
   mapDots(mctx,mx,mz,false,240,190);
   mctx.save();mctx.translate(mx(me.x),mz(me.z));mctx.rotate(-me.yaw);mctx.fillStyle='#000';mctx.beginPath();mctx.moveTo(0,-14);mctx.lineTo(10,9);mctx.lineTo(-10,9);mctx.closePath();mctx.fill();mctx.fillStyle='#ffb000';mctx.beginPath();mctx.moveTo(0,-10);mctx.lineTo(7,7);mctx.lineTo(-7,7);mctx.closePath();mctx.fill();mctx.restore();
@@ -4534,7 +4598,7 @@ var FOGD=0.00021;
     sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出しなど'],['1 2 3','補給箱の中身を選んで拾う'],['M','全体マップ（ホイールで拡大、ドラッグで移動）'],['右下の ⛶','全画面']]);
   }
   sec('音',[['音が出ないとき','画面を一度タップ。本体の音量を上げる。ポーズメニューの「音」がONか確認'],['iPhone','消音スイッチがオンでも鳴るようにしてあります']]);
-  sec('遊び方',[['目標','WAVE 5 ごとに STAGE CLEAR。のるーと利用券がもらえる'],['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ','中で品出しを終えると武器が強くなる'],['乗り物','車・バイク・ヘリは歩いて触れると乗れる'],['ワープ','スタート地点そばのゲートからドーム、そこから長崎へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える'],['回復','包帯、応急処置セット、バーベキュー']]);
+  sec('遊び方',[['目標','WAVE 5 ごとに STAGE CLEAR。のるーと利用券がもらえる'],['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['コンビニ','地図のオレンジの店。納品ケースを同じ色に光る棚へ6つ。早いほど高ランクで、武器強化・コイン・アイテム。レジではコインで回復や弾・装備が買える'],['乗り物','車・バイク・ヘリは歩いて触れると乗れる'],['ワープ','スタート地点そばのゲートからドーム、そこから長崎へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える'],['回復','包帯、応急処置セット、バーベキュー']]);
   helpB.addEventListener('click',hp.open);
   var hi=pop('histPop','更新履歴'),hd=$('hist');if(hd)hi.body.appendChild(hd);histB.addEventListener('click',hi.open);
   // co-op: rooms that are open now, enter one with its 4-digit code, or open your own
