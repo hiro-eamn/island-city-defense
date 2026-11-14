@@ -2211,11 +2211,11 @@ function startNet(){
     peers:function(){var a=[{peer:myId,isMe:true,sameTab:true,presence:mine}];for(var k in table)if(k!==myId&&table[k]&&typeof table[k]==='object')a.push({peer:k,isMe:false,sameTab:false,presence:table[k]});return a;},
     presence:function(p){mine=p;return Promise.resolve();}
   };
-  function up(){if(dead)return;clearTimeout(openT);room=api;netState='on';joining=false;netFails=0;lastRecv=Date.now();}
+  function up(){if(dead)return;clearTimeout(openT);NET.peer=peer;room=api;netState='on';joining=false;netFails=0;lastRecv=Date.now();}
   function fail(){
     if(dead)return;dead=true;clearInterval(timer);clearTimeout(openT);
     try{peer.destroy();}catch(e){}
-    if(room===api)room=null;
+    if(room===api)room=null;if(NET.peer===peer)NET.peer=null;
     if(++netFails<=4){joining=true;setTimeout(startNet,1200);}else{joining=false;netState='solo';}
   }
   function asClient(){
@@ -2275,7 +2275,7 @@ function readPeers(){
     others.push({peer:String(p.peer),x:clamp(pos[0],-20000,20000),z:clamp(pos[1],-20000,20000),yaw:fin(pos[2])?pos[2]:0,
       hp:fin(pr.hp)?clamp(pr.hp,0,100):0,n:(typeof pr.n==='string'&&pr.n)?pr.n.slice(0,10):'なかま',
       d:(pr.d&&typeof pr.d==='object')?pr.d:null,s:Array.isArray(pr.s)?pr.s:null,h:(pr.h&&typeof pr.h==='object')?pr.h:null,
-      k:Array.isArray(pr.k)?pr.k:null,v:Array.isArray(pr.v)?pr.v:null,t:Array.isArray(pr.t)?pr.t:null,f:Array.isArray(pr.f)?pr.f:null});
+      k:Array.isArray(pr.k)?pr.k:null,v:Array.isArray(pr.v)?pr.v:null,t:Array.isArray(pr.t)?pr.t:null,f:Array.isArray(pr.f)?pr.f:null,c:Array.isArray(pr.c)?pr.c:null,q:Array.isArray(pr.q)?pr.q:null});
   }
 }
 function cleanHs(h){
@@ -2290,7 +2290,7 @@ function sendPresence(dt){
   if(!room)return;
   sendT-=dt;if(sendT>0)return;sendT=0.1;
   var d={},k;for(k in myDmg)d[k]=myDmg[k];
-  var pr={g:1,k:stockOut(),v:vehOut(),t:lootOut(),f:myFace,n:me.name,p:[r1(me.x),r1(me.z),r2(me.yaw)],hp:Math.max(0,Math.round(me.hp)),d:d,s:[me.shots,me.hit[0],me.hit[1],me.hit[2]],
+  var pr={g:1,c:chatOut(),q:[myKills],k:stockOut(),v:vehOut(),t:lootOut(),f:myFace,n:me.name,p:[r1(me.x),r1(me.z),r2(me.yaw)],hp:Math.max(0,Math.round(me.hp)),d:d,s:[me.shots,me.hit[0],me.hit[1],me.hit[2]],
     h:(amHost&&hs)?{gen:hs.gen,w:hs.w,k:hs.k,st:hs.st,t:r1(hs.t),left:hs.left,e:hs.e,g:hs.g?hs.g.map(function(v){return r1(v);}):null,f:hs.f||null}:null};
   try{room.presence(pr).catch(function(){});}catch(e){}
 }
@@ -3673,7 +3673,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
+  [['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+   ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
    ['2026年11月15日','ルールと操作の説明を作り直し（ルール／操作／画面の見方の3タブ）。トップとポーズメニューから開ける'],
@@ -3725,9 +3726,9 @@ function openWear(){
 function updMeta(dt,use){
   if(!hs)return;
   // clear every fifth wave
-  gasTick(dt);ZIP.update(dt,use);
+  gasTick(dt);ZIP.update(dt,use);socialTick(dt);
   var key=hs.gen+'_'+hs.w;
-  if(!soloRun()&&hs.st==='break'&&hs.w>0&&hs.w%5===0&&!cleared[key]){cleared[key]=1;tickets++;saveMeta();showClear(hs.w);}
+  if(!soloRun()&&hs.st==='break'&&hs.w>0&&hs.w%5===0&&!cleared[key]){cleared[key]=1;tickets++;saveMeta();statClear();showClear(hs.w);}
   saveT-=dt;if(saveT<=0){saveT=12;saveMeta();}
   if(amHost){relT-=dt;if(relT<=0){relT=1.5;relocEnemies();}}
   // healing in progress
@@ -3838,7 +3839,7 @@ function drawPack(){
   bFull.innerHTML=I.full;
   elPack=el('div','pack','off');var ph=el('h2','','','リュック',elPack),px=el('button','','','✕ 閉じる',ph);px.type='button';px.addEventListener('pointerdown',function(e){e.preventDefault();setPack(false);});el('div','','g',null,elPack);
   elPause=el('div','pause','off');var pb=el('div','','box',null,elPause);el('h2','','','PAUSE',pb);el('div','','n','',pb);
-  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','ルール・操作',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);var r5b=el('button','pzSnd','','音',pb);r5b.type='button';pb.insertBefore(r5b,r3b);r5b.addEventListener('click',function(){setSound(!soundOn);r5b.textContent='音：'+(soundOn?'ON':'OFF');});r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
+  var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','ルール・操作',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);var r6b=el('button','pzSoc','','ランキング・マイデータ',pb);r6b.type='button';pb.insertBefore(r6b,r4b);r6b.addEventListener('click',function(){openSocial();});var r5b=el('button','pzSnd','','音',pb);r5b.type='button';pb.insertBefore(r5b,r3b);r5b.addEventListener('click',function(){setSound(!soundOn);r5b.textContent='音：'+(soundOn?'ON':'OFF');});r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
   r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});r3b.addEventListener('click',function(){try{location.reload();}catch(e){}});
   elTip=el('div','tip','off');var tb=el('div','','box',null,elTip);tipT=el('div','','t','',tb);var tk=el('button','','','OK',tb);tk.type='button';tk.addEventListener('click',function(){elTip.classList.add('off');});
   var gunKey='',chipSig='?',GUNS={rifle:I.gun,
@@ -3987,7 +3988,7 @@ function gasTick(dt){
   elFin.classList.toggle('off',!on);elFinV.classList.toggle('off',!on);
   if(on){var rem=clamp(FIN_N-(hs.k-F[1]),0,FIN_N),tx='最終決戦　残り '+rem+' / '+FIN_N+'台';if(elFinT.textContent!==tx)elFinT.textContent=tx;elFinB.style.width=((FIN_N-rem)/FIN_N*100)+'%';}
   if(finGen!==hs.gen){finGen=hs.gen;finSeen=F[2];}
-  else if(F[2]>finSeen){finSeen=F[2];tickets++;lives=LIVES;saveMeta();showFinalClear();}
+  else if(F[2]>finSeen){finSeen=F[2];tickets++;lives=LIVES;saveMeta();statClear();showFinalClear();}
 }
 function gasHud(){
   var G=hs&&hs.g,t='',warn=false;
@@ -4270,10 +4271,123 @@ var POST=null;
   }};
 })();
 
+/* ---------- playing together: preset chat, voice chat (where the page allows it), a scoreboard for the room, and your own records kept on this device ---------- */
+var PHR=['こっち来て！','助けて！','ありがとう！','ナイス！','敵がいる！','了解','待って','Cマート行こう','乗り物に乗って','ごめん！','毒ガス来るよ','おつかれ！'];
+var myKills=0,runClears=0,myChat=[0,0],seenC={},chatSeq=0,elChat,elChatP,bChat,bMic,socT=0,socPop=null,socTab=0;
+var STATS={kills:0,time:0,best:0,clears:0,games:0,recs:[]},statKills=0;
+try{var st0=JSON.parse(localStorage.getItem('ic_stats')||'null');if(st0&&typeof st0==='object'){['kills','time','best','clears','games'].forEach(function(k){if(fin(st0[k]))STATS[k]=st0[k];});if(Array.isArray(st0.recs))STATS.recs=st0.recs.filter(function(r){return r&&fin(r.w)&&fin(r.k);}).slice(0,10);}}catch(e){}
+function statSave(){try{localStorage.setItem('ic_stats',JSON.stringify(STATS));}catch(e){}}
+function statClear(){STATS.clears++;runClears++;statTick(0);}
+function statTick(sec){ // totals grow as you play, and the current game keeps its line in the list of your best ones
+  if(!hs||practice)return;
+  var dk=myKills-statKills;if(dk<0)dk=0;statKills=myKills;STATS.kills+=dk;STATS.time+=sec;if(hs.w>STATS.best)STATS.best=hs.w;
+  if(hs.w>=1){var r=null,d=new Date();STATS.recs.forEach(function(x){if(x.g===hs.gen)r=x;});
+    if(!r){r={g:hs.gen,d:d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(),w:0,k:0,c:0,m:NET.mode==='coop'?1:0};STATS.recs.push(r);STATS.games++;runClears=0;}
+    r.w=Math.max(r.w,hs.w);r.k=Math.max(r.k,myKills);r.c=Math.max(r.c||0,runClears);
+    STATS.recs.sort(function(a,b){return (b.c||0)-(a.c||0)||b.w-a.w||b.k-a.k;});if(STATS.recs.length>10)STATS.recs.length=10;}
+  statSave();
+}
+function chatOut(){return myChat;}
+function chatSay(who,txt,mine){
+  var d=document.createElement('div');d.className='cl'+(mine?' me':'');var b=document.createElement('b');b.textContent=who+'：';d.appendChild(b);d.appendChild(document.createTextNode(txt));elChat.appendChild(d);
+  while(elChat.childNodes.length>5)elChat.removeChild(elChat.firstChild);
+  setTimeout(function(){d.classList.add('out');setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},600);},6000);
+  if(!mine){tone({f:880,dur:0.08,v:0.05,type:'triangle'});tone({f:1175,dur:0.12,v:0.05,type:'triangle',t0:0.09});}
+}
+function chatSend(i){myChat=[++chatSeq+Math.floor(Math.random()*1000)*1000,i];chatSay(me.name||'自分',PHR[i],true);elChatP.classList.add('off');}
+/* voice: only where players are linked directly (the friends' page). Each player who turns the microphone on calls the others; everyone always answers, so listening needs no permission */
+var VC={on:false,stream:null,out:{},inc:{},els:{},bound:null};
+function vcAvail(){return NET.mode==='coop'&&NET.kind==='peer'&&!!NET.peer&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);}
+function vcPlay(id,s){var a=VC.els[id];if(!a){a=VC.els[id]=new Audio();a.autoplay=true;a.setAttribute('playsinline','');}try{a.srcObject=s;var p=a.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+function vcBind(){
+  var P=NET.peer;if(!P||VC.bound===P)return;VC.bound=P;VC.out={};VC.inc={};
+  P.on('call',function(c){
+    var two=!!(VC.on&&VC.stream);try{c.answer(two?VC.stream:undefined);}catch(e){return;}
+    VC.inc[c.peer]={c:c,two:two};c.on('stream',function(s){vcPlay(c.peer,s);});
+    var g=function(){if(VC.inc[c.peer]&&VC.inc[c.peer].c===c)delete VC.inc[c.peer];};c.on('close',g);c.on('error',g);});
+}
+function vcTick(){
+  if(NET.mode!=='coop'||NET.kind!=='peer')return;vcBind();
+  if(!VC.on||!VC.stream||!NET.peer)return;
+  others.forEach(function(o){var id=o.peer;if(VC.out[id]||(VC.inc[id]&&VC.inc[id].two))return;
+    try{var c=NET.peer.call(id,VC.stream);if(!c)return;VC.out[id]=c;c.on('stream',function(s){vcPlay(id,s);});var g=function(){if(VC.out[id]===c)delete VC.out[id];};c.on('close',g);c.on('error',g);}catch(e){}});
+}
+function vcUi(){bMic.classList.toggle('on',VC.on);bMic.setAttribute('aria-label',VC.on?'マイクを切る':'マイクを入れる');}
+function vcToggle(){
+  if(VC.on){VC.on=false;if(VC.stream)VC.stream.getAudioTracks().forEach(function(t){t.enabled=false;});vcUi();banner('マイクOFF','',1.2);return;}
+  if(!vcAvail()){banner('ボイスチャット',NET.mode!=='coop'?'協力プレイ中に使えます':'このページでは使えません。友達用のURL（GitHub）で使えます',3.5);return;}
+  if(VC.stream){VC.stream.getAudioTracks().forEach(function(t){t.enabled=true;});VC.on=true;vcUi();vcTick();banner('マイクON','部屋の仲間に声が届きます',2);return;}
+  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(function(s){VC.stream=s;VC.on=true;vcUi();vcTick();banner('マイクON','部屋の仲間に声が届きます',2.5);},
+    function(){banner('マイクを使えません','ブラウザの設定でマイクを許可してください',3.5);});
+}
+function socialTick(dt){
+  var coop=me.inGame&&NET.mode==='coop';bChat.classList.toggle('off',!coop);bMic.classList.toggle('off',!coop);
+  others.forEach(function(o){var c=o.c;if(!c||!fin(c[0])||!fin(c[1]))return;if(seenC[o.peer]===undefined){seenC[o.peer]=c[0];return;}
+    if(c[0]!==seenC[o.peer]){seenC[o.peer]=c[0];var i=clamp(c[1]|0,0,PHR.length-1);chatSay(o.n,PHR[i],false);}});
+  socT-=dt;if(socT<=0){socT=4;statTick(4);vcTick();if(socPop&&!socPop.classList.contains('off'))socDraw();}
+}
+function socDraw(){
+  var body=socPop.querySelector('.sb');body.textContent='';
+  function row(cells,cls){var r=document.createElement('div');r.className='sr'+(cls?' '+cls:'');cells.forEach(function(c){var s=document.createElement('span');s.textContent=c;r.appendChild(s);});body.appendChild(r);}
+  function note(t){var n=document.createElement('div');n.className='sn';n.textContent=t;body.appendChild(n);}
+  [].forEach.call(socPop.querySelectorAll('.ht'),function(b,i){b.classList.toggle('on',i===socTab);});
+  if(socTab===0){
+    if(!me.inGame||!hs){note('ゲームが始まると、この部屋のランキングが出ます。');return;}
+    var L=[{n:me.name||'自分',k:myKills,me:true}];others.forEach(function(o){L.push({n:o.n,k:o.q&&fin(o.q[0])?Math.max(0,o.q[0]|0):0});});L.sort(function(a,b){return b.k-a.k;});
+    row(['順位','なまえ','撃破'],'h');L.forEach(function(p,i){row([(i+1)+'位',p.n+(p.me?'（自分）':''),p.k+' 台'],p.me?'me':'');});
+    note('チーム合計 '+hs.k+' 台　いま WAVE '+hs.w+(NET.mode==='coop'?'':'　（ソロ）'));
+  }else if(socTab===1){
+    if(!STATS.recs.length){note('まだ記録がありません。WAVE 1 が始まると記録されます。');return;}
+    row(['順位','日付','','WAVE','撃破','クリア'],'h');STATS.recs.forEach(function(r,i){row([(i+1)+'位',r.d||'',r.m?'協力':'ソロ','WAVE '+r.w,r.k+' 台',(r.c||0)+' 回'],hs&&r.g===hs.gen?'me':'');});
+    note('クリア回数 → 到達WAVE → 撃破数の順に並べた、自分のベスト10です。');
+  }else{
+    var t=Math.floor(STATS.time),hh=Math.floor(t/3600),mm=Math.floor(t%3600/60);
+    row(['なまえ',me.name||(document.getElementById('nm')&&document.getElementById('nm').value)||'—']);row(['倒したロボット',STATS.kills+' 台']);row(['最高WAVE','WAVE '+STATS.best]);row(['クリア回数',STATS.clears+' 回']);row(['遊んだ回数',STATS.games+' 回']);
+    row(['プレイ時間',(hh?hh+'時間 ':'')+mm+'分']);row(['のるーと利用券',tickets+' 枚']);row(['コイン',Math.floor(coins)+' 枚']);row(['買った服',owned.length+' 着']);
+    note('データはこの端末のこのブラウザに保存されます。別の端末や別のリンク（GitHub版とClaude版）では別々になります。');
+    var b=document.createElement('button');b.type='button';b.className='sdel';b.textContent='記録を消す';b.addEventListener('click',function(){if(b.dataset.sure){STATS={kills:0,time:0,best:0,clears:0,games:0,recs:[]};statSave();socDraw();}else{b.dataset.sure='1';b.textContent='もう一度押すと、撃破数や自己ベストの記録を消します';}});body.appendChild(b);
+  }
+}
+function openSocial(tab){
+  if(!socPop){
+    socPop=document.createElement('div');socPop.id='socPop';socPop.className='pop off';var box=document.createElement('div');box.className='box';socPop.appendChild(box);
+    var h=document.createElement('h2');h.appendChild(document.createTextNode('ランキング・マイデータ'));var x=document.createElement('button');x.type='button';x.className='x';x.textContent='✕ 閉じる';x.addEventListener('click',function(){socPop.classList.add('off');});h.appendChild(x);box.appendChild(h);
+    var tabs=document.createElement('div');tabs.id='helpTabs';box.appendChild(tabs);
+    ['この部屋','自己ベスト','マイデータ'].forEach(function(n,i){var b=document.createElement('button');b.type='button';b.className='ht';b.textContent=n;b.addEventListener('click',function(){socTab=i;socDraw();});tabs.appendChild(b);});
+    var sb=document.createElement('div');sb.className='sb';box.appendChild(sb);document.body.appendChild(socPop);
+  }
+  if(tab!==undefined)socTab=tab;else socTab=me.inGame?0:2;
+  socPop.classList.remove('off');socDraw();
+}
+function socialBtns(rowEl){var b=document.createElement('button');b.type='button';b.id='socBtn';b.className='sbtn';b.textContent='ランキング・マイデータ';b.style.height='44px';b.style.fontSize='14px';b.addEventListener('click',function(){openSocial();});rowEl.appendChild(b);}
+(function(){
+  var st=document.createElement('style');
+  st.textContent=[
+  '#chatlog{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:44%;z-index:4;display:flex;flex-direction:column;gap:4px;pointer-events:none;max-width:60vw}',
+  '.cl{align-self:flex-start;padding:5px 10px;border-radius:14px;background:rgba(8,18,27,.78);border:1px solid rgba(92,200,255,.6);font:700 14px/1.3 var(--body);color:#fff;transition:opacity .5s}','.cl b{color:#8fd8ff}','.cl.me{border-color:rgba(255,176,0,.7)}','.cl.me b{color:var(--signal)}','.cl.out{opacity:0}',
+  '#bChat,#bMic{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));width:40px;height:40px;border-radius:8px;z-index:12;padding:0}','#bChat{left:calc(50% + 52px)}','#bMic{left:calc(50% + 100px)}','#bChat svg,#bMic svg{width:56%;height:56%}',
+  '#bMic.on{border-color:#7ee06a;color:#7ee06a;background:rgba(40,120,40,.35)}',
+  '#chatP{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;width:min(420px,94vw);padding:12px;background:rgba(8,18,27,.95);border:1px solid rgba(255,255,255,.4);border-radius:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;pointer-events:auto}',
+  '#chatP button{min-height:44px;padding:4px 8px;font:700 14px var(--body);color:var(--ink);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4);border-radius:6px;touch-action:none}','#chatP .cx{grid-column:1/3;background:none;border-color:rgba(255,255,255,.25);color:var(--dim)}',
+  '#socPop{z-index:18}','#socPop .sb{display:flex;flex-direction:column;gap:5px;font-size:14px}','.sr{display:flex;gap:8px;padding:7px 10px;background:rgba(255,255,255,.07);border-radius:6px}','.sr span{flex:1}','.sr span:first-child{flex:0 0 auto;min-width:3.2em;color:var(--dim)}',
+  '.sr.h{background:none;padding:2px 10px;font-size:12px;color:var(--dim)}','.sr.me{background:rgba(255,176,0,.18);outline:1px solid rgba(255,176,0,.6)}','.sn{font-size:12px;color:var(--dim);line-height:1.6;padding:4px 2px}',
+  '.sdel{align-self:flex-start;height:36px;padding:0 12px;font:700 12px var(--body);color:var(--dim);background:none;border:1px solid rgba(255,255,255,.3);border-radius:6px}',
+  '@media (orientation:landscape) and (max-height:540px){#bChat,#bMic{width:34px;height:34px;top:6px}#bChat{left:calc(50% + 44px)}#bMic{left:calc(50% + 84px)}#chatlog{top:36%}.cl{font-size:12px}#chatP{padding:8px;gap:6px}#chatP button{min-height:36px;font-size:13px}}'].join('\n');
+  document.head.appendChild(st);
+  elChat=document.createElement('div');elChat.id='chatlog';document.body.appendChild(elChat);
+  function mk(id,label,svg,fn){var b=document.createElement('button');b.type='button';b.id=id;b.className='btn off';b.setAttribute('aria-label',label);b.innerHTML=svg;b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();fn();});document.body.appendChild(b);return b;}
+  bChat=mk('bChat','定型文チャット','<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>',function(){elChatP.classList.toggle('off');});
+  bMic=mk('bMic','マイクを入れる','<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zM6 11a6 6 0 0 0 12 0h2a8 8 0 0 1-7 7.900V22h-2v-3.100A8 8 0 0 1 4 11z"/></svg>',vcToggle);
+  elChatP=document.createElement('div');elChatP.id='chatP';elChatP.className='off';
+  PHR.forEach(function(t,i){var b=document.createElement('button');b.type='button';b.textContent=t;b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();chatSend(i);});elChatP.appendChild(b);});
+  var cx=document.createElement('button');cx.type='button';cx.className='cx';cx.textContent='とじる';cx.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();elChatP.classList.add('off');});elChatP.appendChild(cx);
+  document.body.appendChild(elChatP);
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){
   if(myVeh)leaveVeh();
-  lv=0;carry=0;myStock={};awarded={};defT=0;resetKit();lives=LIVES;lifePend=false;wasDown=false;
+  lv=0;carry=0;myStock={};awarded={};defT=0;resetKit();lives=LIVES;lifePend=false;wasDown=false;myKills=0;
   me.hp=100;me.down=false;me.inv=2;me.ammo=MAG;me.reload=0;me.x=SPAWN.x+rnd(-3,3);me.z=SPAWN.z+rnd(-2,2);me.vx=me.vz=0;
   for(var k in myDmg){delete myDmg[k];delete dmgTime[k];}
   views.forEach(function(v){scene.remove(v.g);});views.clear();
@@ -4288,6 +4402,7 @@ function hurt(d){
   if(me.hp<=0){me.hp=0;me.down=true;me.downT=10;firing=false;adsTog=false;}
 }
 function killView(v){ // the machine blows out and its hulk stays where it fell
+  if(dmgTime['e'+v.id]&&now-dmgTime['e'+v.id]<4)myKills++;        // yours, if you (or your partner) hit it in its last moments
   var T=TYPES[v.t],d=Math.hypot(v.x-me.x,v.z-me.z);
   fxExplode(v.x,T.h*0.55,v.z,v.t===2);sBoom((v.t===2?1:0.55)*clamp(1-d/150,0,1),panOf(v.x,v.z));
   if(d<25)shake=Math.max(shake,(v.t===2?0.9:0.4)*(1-d/25));
@@ -4548,7 +4663,7 @@ bigEl.addEventListener('wheel',function(e){e.preventDefault();bigZ=clamp(bigZ*(e
 function hold(b,fn){b.addEventListener('pointerdown',function(e){e.preventDefault();fn(true);try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',function(){fn(false);});b.addEventListener('pointercancel',function(){fn(false);});}
 hold(bUp,function(v){heliUp=v;});hold(bDn,function(v){heliDn=v;});
-window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyP')setPause(!paused);if(e.code==='KeyV')setTps(!tps);if(e.code==='KeyB')setPack(!packOpen);if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
+window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyP')setPause(!paused);if(e.code==='KeyV')setTps(!tps);if(me.inGame&&NET.mode==='coop'){if(e.code==='KeyY'){elChatP.classList.toggle('off');try{if(document.exitPointerLock)document.exitPointerLock();}catch(_){}}if(e.code==='KeyN')vcToggle();}if(e.code==='Tab'){e.preventDefault();if(me.inGame){try{if(document.exitPointerLock)document.exitPointerLock();}catch(_){}openSocial(0);}}if(e.code==='KeyB')setPack(!packOpen);if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
 window.addEventListener('keyup',function(e){keys[e.code]=false;});
 window.addEventListener('blur',function(){keys={};mouseDown=false;adsHeld=false;});
 
@@ -4690,6 +4805,7 @@ var FOGD=0.00021;
   var a3=el('div','','acts');card.insertBefore(a3,a2);var prB=el('button','pracBtn','sbtn','プラクティス（ロボットなしで練習）',a3);prB.type='button';prB.style.height='44px';prB.style.fontSize='14px';
   prB.addEventListener('click',function(){practice=true;start('solo');banner('プラクティス','ロボットも毒ガスも来ません。自由に練習できます',5);});
   var hrB=el('button','heroBtn','sbtn','',a3);hrB.type='button';hrB.style.height='44px';hrB.style.fontSize='14px';function hrT(){hrB.textContent='キャラモード：'+(HERO.on?'ON（相棒がついてくる）':'OFF');hrB.style.borderColor=HERO.on?'var(--signal)':'';hrB.style.color=HERO.on?'var(--signal)':'';}hrT();hrB.addEventListener('click',function(){HERO.set(!HERO.on);hrT();});
+  var a4=el('div','','acts');card.insertBefore(a4,a2);socialBtns(a4);
   function pop(id,title){
     var root=el('div',id,'pop off',null,document.body),box=el('div','','box',null,root),h=el('h2','','',null,box);h.appendChild(document.createTextNode(title));
     var x=el('button','','x','✕ 閉じる',h);x.type='button';var body=el('div','','',null,box);body.style.display='flex';body.style.flexDirection='column';body.style.gap='10px';
@@ -4703,7 +4819,7 @@ var FOGD=0.00021;
   function showTab(i){grids.forEach(function(q,k){q.style.display=k===i?'grid':'none';tbs[k].classList.toggle('on',k===i);});}
   function sec(title,rows){var d=el('div','','',null,grid);el('h3','','',title,d);rows.forEach(function(r){var l=el('div','','',null,d);el('b','','',r[0],l);l.appendChild(document.createTextNode('　'+r[1]));});}
   grid=grids[0];
-  sec('目的',[['ソロ','毒ガスを3回しのぐと最終決戦。ロボット30台を倒すとクリアで「のるーと利用券」'],['協力プレイ','WAVE 5 ごとにクリアで利用券。4桁のコードで最大4人'],['プラクティス','ロボットも毒ガスも来ない練習用']]);
+  sec('目的',[['ソロ','毒ガスを3回しのぐと最終決戦。ロボット30台を倒すとクリアで「のるーと利用券」'],['協力プレイ','WAVE 5 ごとにクリアで利用券。4桁のコードで最大4人。上の吹き出しボタンで定型文、マイクのボタンで声（声は友達用のURLだけ）'],['ランキング','この部屋の撃破数、自己ベスト10、マイデータ。トップとポーズメニューから'],['プラクティス','ロボットも毒ガスも来ない練習用']]);
   sec('ライフ',[['♥ 3つ','ダウンすると1つ減って、その場ですぐ復活'],['最後の1つ','ダウンするとソロは最初から。協力は仲間が近づくと蘇生']]);
   sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
   sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['Cマート','世界のコーラが集まるコンビニ。品出し：納品ケースを同じ色に光る棚へ6つ。武器強化とコイン。早いほど高ランク'],['レジ','コインでコーラ・イカフライ・弾・装備を買う'],['回復','包帯、応急処置セット、コーラ、イカフライ、バーベキュー']]);
@@ -4717,7 +4833,7 @@ var FOGD=0.00021;
   }else{
     sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（画面をクリックで固定）'],['V','一人称 / 三人称']]);
     sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','銃の持ち替え'],['G','グレネード'],['T','自動射撃の切り替え']]);
-    sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出し・買い物'],['1 2 3','補給箱の中身を選んで拾う'],['H / J','包帯 / 応急処置セット'],['B','リュック'],['M','全体マップ（ホイールで拡大）'],['P','ポーズ']]);
+    sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出し・買い物'],['1 2 3','補給箱の中身を選んで拾う'],['H / J','包帯 / 応急処置セット'],['B','リュック'],['M','全体マップ（ホイールで拡大）'],['P','ポーズ'],['Tab','ランキング'],['Y / N','定型文チャット / マイク（協力プレイ中）']]);
   }
   grid=grids[2];
   sec('左上',[['緑のバー','体力'],['♥','ライフ'],['オレンジの文字','いまの目標'],['緑の文字','毒ガスまでの時間。赤くなったら急いで安全エリアへ']]);
