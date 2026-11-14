@@ -4285,7 +4285,50 @@ function statTick(sec){ // totals grow as you play, and the current game keeps i
     if(!r){r={g:hs.gen,d:d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(),w:0,k:0,c:0,m:NET.mode==='coop'?1:0};STATS.recs.push(r);STATS.games++;runClears=0;}
     r.w=Math.max(r.w,hs.w);r.k=Math.max(r.k,myKills);r.c=Math.max(r.c||0,runClears);
     STATS.recs.sort(function(a,b){return (b.c||0)-(a.c||0)||b.w-a.w||b.k-a.k;});if(STATS.recs.length>10)STATS.recs.length=10;}
-  statSave();
+  statSave();worldMaybe();
+}
+/* the ranking everyone shares (friends' page only): each player's best game is kept in a small online table under an anonymous id that only this browser can write */
+var WORLD={db:'https://island-city-defense-default-rtdb.asia-southeast1.firebasedatabase.app',key:'AIzaSyDfZSHOl2XllFd4tO-Jd8D819ZrU06K3Vg',on:true,a:null,tok:'',exp:0,sent:'',t:0,busy:false,rows:null,err:'',at:0,told:false};
+try{WORLD.on=localStorage.getItem('ic_won')!=='0';WORLD.a=JSON.parse(localStorage.getItem('ic_wa')||'null');WORLD.sent=localStorage.getItem('ic_ws')||'';}catch(e){}
+function worldOk(){return !!(WORLD.db&&WORLD.key&&window.fetch)&&!worldArt();}
+function worldArt(){return !!(window.claude&&window.claude.use)||NET.kind==='room';}
+function wJson(url,opt){return fetch(url,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error((j&&j.error&&(j.error.message||j.error))||('HTTP '+r.status));return j;});});}
+function worldAuth(){ // an id token for this browser's anonymous account, made on first use and renewed when it runs out
+  if(WORLD.tok&&Date.now()<WORLD.exp)return Promise.resolve(WORLD.tok);
+  var p;
+  if(WORLD.a&&WORLD.a.r)p=wJson('https://securetoken.googleapis.com/v1/token?key='+WORLD.key,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(WORLD.a.r)}).then(function(j){return {u:j.user_id,r:j.refresh_token,t:j.id_token,e:+j.expires_in};});
+  else p=wJson('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+WORLD.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'}).then(function(j){return {u:j.localId,r:j.refreshToken,t:j.idToken,e:+j.expiresIn};});
+  return p.then(function(x){WORLD.a={u:x.u,r:x.r};WORLD.tok=x.t;WORLD.exp=Date.now()+((x.e||3600)-120)*1000;try{localStorage.setItem('ic_wa',JSON.stringify(WORLD.a));}catch(e){}return x.t;});
+}
+function worldBest(){var r=STATS.recs[0];if(!r)return null;var c=clamp(r.c|0,0,99),w=clamp(r.w|0,0,999),k=clamp(r.k|0,0,99999),n=String(me.name||'ななし').slice(0,12);return {n:n,c:c,w:w,k:k,s:c*1e8+w*1e5+k,m:r.m?1:0};}
+function worldMaybe(){ // send only when your best game or your name has changed, and never more often than every 30 seconds
+  if(!worldOk()||!WORLD.on||WORLD.busy||practice)return;var b=worldBest();if(!b||!b.s)return;
+  var sig=b.n+'|'+b.s+'|'+b.m;if(sig===WORLD.sent||Date.now()<WORLD.t)return;
+  WORLD.busy=true;WORLD.t=Date.now()+30000;
+  worldAuth().then(function(tok){b.t={'.sv':'timestamp'};return wJson(WORLD.db+'/scores/'+WORLD.a.u+'.json?auth='+tok,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});})
+    .then(function(){WORLD.sent=sig;WORLD.at=0;try{localStorage.setItem('ic_ws',sig);}catch(e){}if(!WORLD.told){WORLD.told=true;banner('みんなのランキングに記録しました','ランキング画面の「みんな」で見られます（OFFにもできます）',3);}})
+    .catch(function(){}).then(function(){WORLD.busy=false;});
+}
+function worldLoad(){
+  if(!worldOk()||Date.now()<WORLD.at)return;WORLD.at=Date.now()+20000;
+  wJson(WORLD.db+'/scores.json?orderBy=%22s%22&limitToLast=50').then(function(j){var L=[];for(var id in j){var x=j[id];if(x&&fin(x.s)&&typeof x.n==='string')L.push({id:id,n:x.n.slice(0,12),c:x.c|0,w:x.w|0,k:x.k|0,s:x.s,m:x.m});}L.sort(function(a,b){return b.s-a.s;});WORLD.rows=L;WORLD.err='';},
+    function(){WORLD.err='ランキングを読み込めませんでした。電波のよいところでもう一度開いてください。';}).then(function(){if(socPop&&!socPop.classList.contains('off')&&socTab===3)socDraw();});
+}
+function worldOff(){ // leaving the ranking also takes your line off it
+  WORLD.on=false;WORLD.sent='';try{localStorage.setItem('ic_won','0');localStorage.removeItem('ic_ws');}catch(e){}
+  if(worldOk()&&WORLD.a)worldAuth().then(function(tok){return fetch(WORLD.db+'/scores/'+WORLD.a.u+'.json?auth='+tok,{method:'DELETE'});}).catch(function(){}).then(function(){WORLD.at=0;worldLoad();});
+}
+function worldDraw(body,row,note){
+  if(!worldOk()){note(worldArt()||!WORLD.db?'みんなのランキングは、友達用のURL（GitHub）で開いたときに見られます。':'この端末では使えません。');if(!WORLD.db||!WORLD.key)return;}
+  if(!worldOk())return;
+  worldLoad();
+  if(WORLD.err)note(WORLD.err);
+  if(!WORLD.rows){if(!WORLD.err)note('読み込み中…');}
+  else if(!WORLD.rows.length)note('まだだれも載っていません。WAVE 1 を始めると最初の1人になれます。');
+  else{row(['順位','なまえ','','クリア','WAVE','撃破'],'h');WORLD.rows.forEach(function(r,i){row([(i+1)+'位',r.n,r.m?'協力':'ソロ',r.c+' 回','WAVE '+r.w,r.k+' 台'],WORLD.a&&r.id===WORLD.a.u?'me':'');});}
+  note(WORLD.on?'クリア回数 → 到達WAVE → 撃破数の順の上位50人です。あなたの「なまえ」といちばん良かった1回の記録だけが、このゲームを開いた全員に見えます。':'いまは参加していません。あなたの記録はだれにも見えません。');
+  var b=document.createElement('button');b.type='button';b.className='sdel';b.textContent=WORLD.on?'ランキングに参加しない（自分の記録を消す）':'ランキングに参加する';
+  b.addEventListener('click',function(){if(WORLD.on)worldOff();else{WORLD.on=true;WORLD.t=0;try{localStorage.setItem('ic_won','1');}catch(e){}worldMaybe();}socDraw();});body.appendChild(b);
 }
 function chatOut(){return myChat;}
 function chatSay(who,txt,mine){
@@ -4340,6 +4383,7 @@ function socDraw(){
     if(!STATS.recs.length){note('まだ記録がありません。WAVE 1 が始まると記録されます。');return;}
     row(['順位','日付','','WAVE','撃破','クリア'],'h');STATS.recs.forEach(function(r,i){row([(i+1)+'位',r.d||'',r.m?'協力':'ソロ','WAVE '+r.w,r.k+' 台',(r.c||0)+' 回'],hs&&r.g===hs.gen?'me':'');});
     note('クリア回数 → 到達WAVE → 撃破数の順に並べた、自分のベスト10です。');
+  }else if(socTab===3){worldDraw(body,row,note);
   }else{
     var t=Math.floor(STATS.time),hh=Math.floor(t/3600),mm=Math.floor(t%3600/60);
     row(['なまえ',me.name||(document.getElementById('nm')&&document.getElementById('nm').value)||'—']);row(['倒したロボット',STATS.kills+' 台']);row(['最高WAVE','WAVE '+STATS.best]);row(['クリア回数',STATS.clears+' 回']);row(['遊んだ回数',STATS.games+' 回']);
@@ -4353,7 +4397,7 @@ function openSocial(tab){
     socPop=document.createElement('div');socPop.id='socPop';socPop.className='pop off';var box=document.createElement('div');box.className='box';socPop.appendChild(box);
     var h=document.createElement('h2');h.appendChild(document.createTextNode('ランキング・マイデータ'));var x=document.createElement('button');x.type='button';x.className='x';x.textContent='✕ 閉じる';x.addEventListener('click',function(){socPop.classList.add('off');});h.appendChild(x);box.appendChild(h);
     var tabs=document.createElement('div');tabs.id='helpTabs';box.appendChild(tabs);
-    ['この部屋','自己ベスト','マイデータ'].forEach(function(n,i){var b=document.createElement('button');b.type='button';b.className='ht';b.textContent=n;b.addEventListener('click',function(){socTab=i;socDraw();});tabs.appendChild(b);});
+    ['この部屋','自己ベスト','マイデータ','みんな'].forEach(function(n,i){var b=document.createElement('button');b.type='button';b.className='ht';b.textContent=n;b.addEventListener('click',function(){socTab=i;socDraw();});tabs.appendChild(b);});
     var sb=document.createElement('div');sb.className='sb';box.appendChild(sb);document.body.appendChild(socPop);
   }
   if(tab!==undefined)socTab=tab;else socTab=me.inGame?0:2;
