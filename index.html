@@ -3020,7 +3020,7 @@ var itemMat=stdMat({roughness:0.6,metalness:0.2});
 function throwNade(){
   if(nades<=0||me.down||myVeh||carry||now<nadeT||!me.inGame)return;nades--;nadeT=now+0.9;
   camera.getWorldDirection(dirV);
-  var m=new THREE.Mesh(nadeGeo,itemMat);m.castShadow=true;scene.add(m);
+  var m;if(KIDS.water){if(!KIDS.bg){KIDS.bg=new THREE.SphereGeometry(0.075,12,9);KIDS.bg.scale(1,1.18,1);KIDS.bq=new THREE.MeshStandardMaterial({color:0x2f9bff,roughness:0.2,emissive:0x0a2a55});}m=new THREE.Mesh(KIDS.bg,KIDS.bq);}else m=new THREE.Mesh(nadeGeo,itemMat);m.castShadow=true;scene.add(m);
   NADES.push({m:m,x:camera.position.x+dirV.x*0.6,y:camera.position.y-0.12+dirV.y*0.6,z:camera.position.z+dirV.z*0.6,vx:dirV.x*17+me.vx,vy:dirV.y*17+4.5,vz:dirV.z*17+me.vz,t:2.4,a:0});
   burst({dur:0.18,type:'bandpass',f:900,f1:300,q:1,v:0.12});sClick(0,2600,0.2);
 }
@@ -3998,7 +3998,7 @@ function metaHud(){
   var solo=soloRun(),GG=hs&&hs.g,FF=hs&&hs.f;
   elGoal.textContent='';var b=document.createElement('b'),flee=gasIn||(GG&&GG[5]===1&&gasDT>0);
   b.textContent=practice?'プラクティス':KIDS.on?(KIDS.water?'ロボットに みずを かけよう':'ロボットを たおそう'):flee?'目標：安全エリアへ急ぐ':solo?(FF&&FF[0]===1?'最終決戦：ロボット'+FIN_N+'台を倒す':(hs&&hs.st==='fight'?'目標：ロボットを倒す':'目標：次のウェーブに備える')):'目標：WAVE '+g+' 突破';elGoal.appendChild(b);gasHud();
-  var cn=document.createElement('span');cn.className='cn';cn.textContent=(practice?'':solo?'毒ガス '+Math.min(3,GG?GG[3]:0)+'/3回・':'')+'コイン '+Math.floor(coins)+'・利用券 '+tickets;elGoal.appendChild(cn);
+  var cn=document.createElement('span');cn.className='cn';cn.textContent=(practice||KIDS.on?'':solo?'毒ガス '+Math.min(3,GG?GG[3]:0)+'/3回・':'')+'コイン '+Math.floor(coins)+'・利用券 '+tickets;elGoal.appendChild(cn);
   bBand.textContent='包帯 '+bands;bKit.textContent='応急 '+kits;bBand.classList.toggle('none',bands<=0);bKit.classList.toggle('none',kits<=0);
 }
 
@@ -4191,7 +4191,7 @@ function livesTick(){ // three lives a game: going down costs one and you are ba
 function gasTick(dt){
   livesTick();
   if(practice&&amHost){hs.st='break';hs.t=99;hs.left=0;if(sim.enemies.length){sim.enemies.length=0;hs.e=[];}hs.g=null;hs.f=null;}   // practice: nothing comes
-  if(amHost&&!practice)gasHost(dt);
+  if(KIDS.on){hs.g=null;hs.f=null;}else if(amHost&&!practice)gasHost(dt);   // kids mode: no gas, no final battle
   var G=hs.g,F=hs.f||[0,0,0],act=gasActive(),isl=!zoneOf(me.x,me.z).i,gk=hs.gen+'_'+(G?G[3]:0),q;
   if(G){
     if(gasPlanned(G)&&G[5]===0&&gasSeen.p!==gk){gasSeen.p=gk;if(G[4]>35)banner('次の安全エリアが決まった','地図の白い点線の円。'+Math.ceil(G[4]/60)+'分後に毒ガス',4);}
@@ -4696,6 +4696,8 @@ function sBroke(v,pan){ // a machine winding down, with a few confused beeps
 function kidsBreak(v,T,d){ // water mode: no blast, the robot shorts out and stops where it stands
   sBroke(clamp(1-d/120,0,1),panOf(v.x,v.z));fxSparks(v.x,T.h*0.7,v.z,10,0,0.6,0,0.6);fxWater(v.x,T.h*0.6,v.z,8,0,1,0);
   v.g.userData.head.children[1].visible=false;v.g.userData.core.visible=false;
+  if(!KIDS.bm){KIDS.bm=robotMat.clone();KIDS.bm.vertexColors=false;KIDS.bm.color.setRGB(0.2,0.5,0.95);KIDS.bm.roughness=0.3;KIDS.bm.metalness=0.1;KIDS.bm.needsUpdate=true;}          // soaked and out of order: the whole robot turns wet blue
+  v.g.traverse(function(o){if(o.isMesh&&o.material===robotMat)o.material=KIDS.bm;});
   wrecks.push({g:v.g,t:0,dir:1,sc:T.scale,h:T.h,r:[0,0,0,0],smk:0,wg:true});
   if(wrecks.length>8){var w=wrecks.shift();scene.remove(w.g);}
 }
@@ -4712,6 +4714,8 @@ function kidsStart(min,water){
   try{localStorage.setItem('ic_kids',JSON.stringify([min,water?1:0]));}catch(e){}
   if(water){
     WPN.rifle.name='みずでっぽう';WPN.smg.name='れんしゃ みずでっぽう';WPN.shot.name='シャワー みずでっぽう';WPN.snip.name='ロング みずでっぽう';
+    ITEM.smg.n=WPN.smg.name;ITEM.shot.n=WPN.shot.name;ITEM.snip.n=WPN.snip.name;ITEM.nade.n='みずふうせん ×2';ITEM.scope.n='ぼうえんきょう';ITEM.armor.n='プロテクター';ITEM.band.n='ばんそうこう ×2';ITEM.kit.n='げんきセット';
+    try{bNade.setAttribute('aria-label','みずふうせんを なげる');}catch(e){}
     ['rifle','smg','shot','snip'].forEach(function(k){var c=GUNS[k].g.children;   // toy colours: the two shared materials are copied once so the ordinary guns keep theirs
       if(!KIDS.m1){KIDS.m1=c[0].material.clone();KIDS.m1.emissive.setRGB(0.02,0.24,0.6);KIDS.m1.metalness=0;KIDS.m1.roughness=0.45;KIDS.m2=c[1].material.clone();KIDS.m2.emissive.setRGB(0.62,0.26,0.02);}
       c[0].material=KIDS.m1;c[2].material=KIDS.m1;c[3].material=KIDS.m1;c[1].material=KIDS.m2;});
@@ -4915,7 +4919,7 @@ function aimFric(dt){ // on a touch screen the view turns a little slower while 
 function musTick(dt){
   var H=hs,fight=!!H&&H.st==='fight'&&views.size>0&&!practice&&!me.down,fin=typeof finOn!=='undefined'&&finOn;
   musI+=((fight?(fin?1.25:1):0)-musI)*Math.min(1,dt*(fight?0.9:0.5));
-  if(me.hp<30&&!me.down&&me.inGame){hbT-=dt;if(hbT<=0){hbT=0.85;tone({f:74,f1:46,dur:0.11,v:0.09,type:'sine'});tone({f:66,f1:42,dur:0.13,v:0.07,type:'sine',t0:0.2});}}
+  if(me.hp<30&&!me.down&&me.inGame&&!KIDS.on){hbT-=dt;if(hbT<=0){hbT=0.85;tone({f:74,f1:46,dur:0.11,v:0.09,type:'sine'});tone({f:66,f1:42,dur:0.13,v:0.07,type:'sine',t0:0.2});}}
   if(!musOn||musI<0.04){musT=0;return;}
   musT-=dt;if(musT>0)return;
   var bt=fin?0.4:0.47;musT+=bt;if(musT<-0.2)musT=0;
@@ -5574,7 +5578,7 @@ function frame(tms,manual){
     if(!first){if(wiped)banner('全滅',lastBest>0?('WAVE '+lastBest+' まで到達。最初からやり直します'):'最初からやり直します',3.5);else banner('合流','仲間のゲームに参加しました',2.5);}
   }
   if(hs){
-    if(hs.w>lastWave){lastWave=hs.w;banner('WAVE '+hs.w,hs.w===1?'ロボットを撃退せよ':(hs.w===2?'ガンナー出現。遮蔽物を使おう':(hs.w===3?'大型のヘビーに注意':'')));sRadio(660,0);sRadio(880,0.14);}
+    if(hs.w>lastWave){lastWave=hs.w;if(KIDS.on)banner('ウェーブ '+hs.w,hs.w===1?'ロボットが きたよ':'',3);else banner('WAVE '+hs.w,hs.w===1?'ロボットを撃退せよ':(hs.w===2?'ガンナー出現。遮蔽物を使おう':(hs.w===3?'大型のヘビーに注意':'')));sRadio(660,0);sRadio(880,0.14);}
     lastBest=hs.w;
   }
   // player
@@ -5583,7 +5587,7 @@ function frame(tms,manual){
   if(me.down){
     var near=false;for(i=0;i<others.length;i++)if(others[i].hp>0&&Math.hypot(others[i].x-me.x,others[i].z-me.z)<4.5)near=true;
     me.downT-=dt*(near?3.5:1);me.vx=me.vz=0;me.amp=0;me.sprint=0;
-    banner('ダウン',near?'仲間が蘇生中…':((lifePend?'ライフを1つ使って復活します（残り '+lives+'）':'復活まで '+Math.ceil(Math.max(0,me.downT))+'秒（仲間が近くに来ると早い）')),0.3);
+    if(KIDS.on)banner('ひとやすみ','すぐ もどれるよ',0.3);else banner('ダウン',near?'仲間が蘇生中…':((lifePend?'ライフを1つ使って復活します（残り '+lives+'）':'復活まで '+Math.ceil(Math.max(0,me.downT))+'秒（仲間が近くに来ると早い）')),0.3);
     if(me.downT<=0){me.down=false;me.hp=60;me.inv=2;me.ammo=MAG;me.reload=0;}
   }else if(myVeh){
     jx=joy.x+((keys.KeyD||keys.ArrowRight)?1:0)-((keys.KeyA||keys.ArrowLeft)?1:0);jy=joy.y+((keys.KeyW||keys.ArrowUp)?1:0)-((keys.KeyS||keys.ArrowDown)?1:0);
