@@ -826,6 +826,12 @@ function buildZones(W,roofM,AOP,ROADS,cars,signals){
     function hbox(a,b2,along,k4){c=at2(a,b2);if(!freeAt(c[0],c[1])||rdist(c[0],c[1])<1.2)return;if(along)mbBox(roofM,c[0],0,c[1],4.1,1.15,1.4,ga,HG);else mbBox(roofM,c[0],0,c[1],1.4,1.15,4.1,ga,HG);if(k4%3===1)tree(c[0],c[1],9);}
     for(q=0;q<9;q++){hbox(26+q*4,-3,true,q);hbox(-26-q*4,-3,true,q+1);}
     for(q=0;q<38;q++){hbox(60,q*4,false,q);var ra=null;for(u=-34;u>=-96;u--){c=at2(u,q*4);if(rdist(c[0],c[1])<3.6){ra=u;break;}}if(ra!==null)hbox(ra+0.5,q*4,false,q+1);}
+    // the side facing the lawn opens onto a broad paved terrace with four rounded garden chairs
+    bx(fp,-2,56.4,0,21,0.14,6.8,[0.93,0.88,0.8]);
+    var cg=new GB(),sp=new THREE.SphereGeometry(1,14,9),WK=[0.62,0.56,0.47],CU=[0.9,0.88,0.83];
+    cg.cyl(0.2,0.25,0.2,10,0,0.1,0,[0.12,0.12,0.13]);cg.add(sp,WK,0,0.42,0,0,0,0,0.5,0.3,0.48);cg.add(sp,WK,0,0.8,-0.3,0,0,0,0.5,0.44,0.22);cg.add(sp,CU,0,0.62,0.04,0,0,0,0.38,0.12,0.35);sp.dispose();
+    var cgeo=cg.geo(),cmat=stdMat({roughness:0.85});
+    [[4.6,57.4,0.25],[2.2,58.0,0.05],[-3.2,58.0,-0.05],[-5.6,57.4,-0.25]].forEach(function(v){c=at2(v[0],v[1]);var cm=new THREE.Mesh(cgeo,cmat);cm.position.set(c[0],0.14,c[1]);cm.rotation.y=ga+v[2];cm.castShadow=true;cm.receiveShadow=true;scene.add(cm);});
     fp.mesh(mConc());
   }
   // ---- dome district
