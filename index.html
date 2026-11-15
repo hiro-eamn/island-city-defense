@@ -4898,6 +4898,50 @@ function waveTick(){ // the moment a wave ends: say so, pay a small bonus
   ehEl=document.createElement('div');ehEl.id='eh';ehName=document.createElement('b');ehEl.appendChild(ehName);var w=document.createElement('div');ehBar=document.createElement('i');w.appendChild(ehBar);ehEl.appendChild(w);document.body.appendChild(ehEl);
 })();
 
+/* ---------- controls and sound: how fast the view turns (kept on this device), a little stickiness on a target for thumbs, a pulse of music while robots are about, a heartbeat when you are nearly down ---------- */
+var SENS=1,SENSL=[0.55,0.75,1,1.35,1.8],sensI=2,musOn=true,musI=0,musT=0,musN=0,hbT=0,frT=0,frN=0;
+try{var sv3=parseInt(localStorage.getItem('ic_sens'),10);if(sv3>=0&&sv3<SENSL.length)sensI=sv3;musOn=localStorage.getItem('ic_mus')!=='0';}catch(e){}
+SENS=SENSL[sensI];
+function aimFric(dt){ // on a touch screen the view turns a little slower while the sight is on a robot
+  if(frT>0)frT-=dt;
+  if(!isTouch||me.down||myVeh)return;
+  if((frN++)%3)return;
+  var a=aimRay(0);if(a.v&&a.t<80)frT=0.16;
+}
+function musTick(dt){
+  var H=hs,fight=!!H&&H.st==='fight'&&views.size>0&&!practice&&!me.down,fin=typeof finOn!=='undefined'&&finOn;
+  musI+=((fight?(fin?1.25:1):0)-musI)*Math.min(1,dt*(fight?0.9:0.5));
+  if(me.hp<30&&!me.down&&me.inGame){hbT-=dt;if(hbT<=0){hbT=0.85;tone({f:74,f1:46,dur:0.11,v:0.09,type:'sine'});tone({f:66,f1:42,dur:0.13,v:0.07,type:'sine',t0:0.2});}}
+  if(!musOn||musI<0.04){musT=0;return;}
+  musT-=dt;if(musT>0)return;
+  var bt=fin?0.4:0.47;musT+=bt;if(musT<-0.2)musT=0;
+  var n=musN++,st=n%8,bar=Math.floor(n/8)%4,k=KIDS.on,v=musI*(k?0.6:1);
+  var root=k?[65.4,65.4,87.3,98][bar]:[55,55,65.4,49][bar];
+  if(!k&&(st%2===0))tone({f:118,f1:44,dur:0.15,v:0.075*v,type:'sine'});
+  tone({f:root*(st===3||st===7?1.5:1),dur:bt*0.8,v:0.05*v,type:'triangle'});
+  if(st%2===1)tone({f:root*2,dur:0.09,v:0.022*v,type:'square'});
+  if(st===0||st===5){var up=k?[523,659,784,659][bar]:[440,523,494,392][bar];tone({f:up,dur:0.5,v:0.02*v,type:'triangle',rv:0.5});}
+}
+(function(){
+  var box=elPause&&elPause.querySelector('.box');if(!box)return;
+  var st=document.createElement('style');
+  st.textContent='#pzSens{display:flex;align-items:center;gap:8px}#pzSens span{flex:1;font:700 14px var(--body);color:var(--ink)}#pzSens button{width:52px;flex:none;font-size:20px}#pzSens b{display:inline-block;min-width:56px;font:700 16px var(--num);color:var(--signal)}#pause .box{max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch}'+
+    '@media (orientation:landscape) and (max-height:540px){#pause .box{width:min(560px,100%);display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px}#pause h2{font-size:22px}#pause h2,#pause .n,#pzSens,#pzResume{grid-column:1/-1}#pause button{height:36px;font-size:13px}#pause .n{font-size:12px;line-height:1.3}}';
+  document.head.appendChild(st);
+  var row=document.createElement('div');row.id='pzSens';
+  var lab=document.createElement('span'),val=document.createElement('b'),mi=document.createElement('button'),pl=document.createElement('button');
+  lab.appendChild(document.createTextNode('視点の速さ '));lab.appendChild(val);mi.type=pl.type='button';mi.textContent='−';pl.textContent='＋';
+  function show(){val.textContent=['とても遅い','遅い','ふつう','速い','とても速い'][sensI];}
+  function set(d){sensI=clamp(sensI+d,0,SENSL.length-1);SENS=SENSL[sensI];try{localStorage.setItem('ic_sens',String(sensI));}catch(e){}show();}
+  mi.addEventListener('click',function(){set(-1);});pl.addEventListener('click',function(){set(1);});
+  row.appendChild(mi);row.appendChild(lab);row.appendChild(pl);show();
+  var mb=document.createElement('button');mb.type='button';mb.id='pzMus';
+  function mshow(){mb.textContent='戦闘中の音楽：'+(musOn?'ON':'OFF');}
+  mb.addEventListener('click',function(){musOn=!musOn;try{localStorage.setItem('ic_mus',musOn?'1':'0');}catch(e){}mshow();});mshow();
+  var snd=document.getElementById('pzSnd'),ref=snd?snd.nextSibling:box.lastChild;
+  box.insertBefore(row,ref);box.insertBefore(mb,ref);
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){
   if(myVeh)leaveVeh();
@@ -5064,7 +5108,7 @@ function updGun(dt){
 var keys={},joy={x:0,y:0},moveId=null,lookId=null,fireId=null,mo={x:0,y:0},lk={x:0,y:0},fk={x:0,y:0},mouseDown=false;
 var TE=$('touch'),joyEl=$('joy'),knob=joyEl.firstElementChild;
 function look(dx,dy,s){
-  s*=0.25+0.75*clamp(camera.fov/(baseFov||64),0.1,1);me.yaw-=dx*s;me.pitch=clamp(me.pitch-dy*s,-1.35,1.35);
+  s*=SENS*(frT>0?0.6:1)*(0.25+0.75*clamp(camera.fov/(baseFov||64),0.1,1));me.yaw-=dx*s;me.pitch=clamp(me.pitch-dy*s,-1.35,1.35);
   swayX=clamp(swayX-dx*s*0.012,-0.02,0.02);swayY=clamp(swayY+dy*s*0.012,-0.02,0.02);
 }
 function mouseBtn(e){mouseDown=!!(e.buttons&1);adsHeld=!!(e.buttons&2);}
@@ -5255,7 +5299,7 @@ function drawHud(dt){
   metaHud();hud2Tick();
   var hp=Math.round(me.hp);
   el.hp.style.transform='scaleX('+(hp/100)+')';el.hp.style.background=hp>50?'var(--ok)':(hp>25?'var(--signal)':'var(--danger)');el.hpt.textContent=hp;
-  el.ammo.textContent=myVeh?Math.round(Math.abs(myVeh.s)*3.6):(carry?'—':(me.reload>0?'…':me.ammo));
+  el.ammo.textContent=myVeh?Math.round(Math.abs(myVeh.s)*3.6):(carry?'—':(me.reload>0?'…':me.ammo));el.ammo.style.color=(!myVeh&&!carry&&me.reload<=0&&me.ammo<=Math.max(1,MAG*0.2))?'var(--danger)':'';
   elMax.textContent=myVeh?(' km/h'+(myVeh.type==='heli'?'　高度 '+Math.round(myVeh.y)+'m':'')):('/ '+MAG+(lv?'　Lv'+(lv+1):''));
   elAr.parentNode.classList.toggle('off',armor<=0);elAr.style.width=Math.round(armor)+'%';bNade.classList.toggle('none',nades<=0);
   if(isTouch){var hv=!!(myVeh&&myVeh.type==='heli');bUp.classList.toggle('off',!hv);bDn.classList.toggle('off',!hv);}
@@ -5562,6 +5606,7 @@ function frame(tms,manual){
   if(insideS||(SHIP&&meGy>1&&SHIP.inHall(me.x,me.z))||(MALL&&MALL.inside(me.x,me.z)))sunVis=0;
   glareA+=(sunVis-glareA)*Math.min(1,dt*7);
   if(hs){syncViews(dt);enemyAttacks(dt);}
+  musTick(dt);aimFric(dt);
   updWrecks(dt);GRASS.update();birds(dt);updNades(dt);updLoot(dt);HERO.update(dt);
   // shooting
   if(!me.down){
