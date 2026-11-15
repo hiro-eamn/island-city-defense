@@ -3949,7 +3949,7 @@ function drawPack(){
     if(act&&!dis)b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();act();packSig='';drawPack();});
     g.appendChild(b);
   }
-  slots.forEach(function(s,i){if(!s)return;tile(WPN[s.k].name,i===cur?'装備中　弾 '+me.ammo+' / '+MAG:'押して持ち替え　弾 '+s.ammo,i===cur?null:function(){setWeapon(i);},i===cur);});
+  slots.forEach(function(s,i){if(!s)return;tile(WPN[s.k].name,i===cur?'装備中　'+(KIDS.water?'みず ':'弾 ')+me.ammo+' / '+MAG:'押して持ち替え　'+(KIDS.water?'みず ':'弾 ')+s.ammo,i===cur?null:function(){setWeapon(i);},i===cur);});
   tile(KIDS.water?'みずふうせん':'グレネード','× '+nades+'　押して投げる',function(){setPack(false);throwNade();},false,nades<=0);
   tile('包帯','× '+bands+'　体力 +35',function(){useBand();},false,bands<=0||me.hp>=100);
   tile('応急処置セット','× '+kits+'　全回復',function(){useKit();},false,kits<=0);
@@ -4598,6 +4598,18 @@ function fxWater(x,y,z,n,nx,ny,nz){
   for(var k=0;k<n;k++){var s=rnd(1.5,5);sparks.emit(x,y,z,((nx||0)*0.6+rnd(-0.7,0.7))*s,((ny||0)*0.6+rnd(0,1))*s,((nz||0)*0.6+rnd(-0.7,0.7))*s,rnd(0.25,0.55),rnd(0.05,0.1),-0.04,0.5,1.5,3.2,0.9,13,1);}
   smoke.emit(x,y,z,rnd(-0.3,0.3),rnd(0.3,0.9),rnd(-0.3,0.3),rnd(0.35,0.6),0.18,0.9,0.75,0.9,1,0.35,0,2);
 }
+var JETS=[],jetI=0,jetGeo=null;
+function jetShow(ax,ay,az,bx,by,bz,l){ // the solid part of the jet: a thin cone of water from the nozzle to where it lands, shown for a moment
+  if(!jetGeo){jetGeo=new THREE.CylinderGeometry(0.05,0.016,1,7,1,true);jetGeo.rotateX(Math.PI/2);jetGeo.translate(0,0,0.5);}
+  var j=JETS[jetI%5];if(!j){var m=new THREE.Mesh(jetGeo,new THREE.MeshBasicMaterial({transparent:true,opacity:0.8,depthWrite:false,fog:false,side:THREE.DoubleSide}));m.material.color.setRGB(0.42,0.74,1);m.frustumCulled=false;m.renderOrder=4;scene.add(m);j=JETS[jetI%5]={m:m,t:0};}
+  jetI++;j.t=0.11;j.m.visible=true;j.m.position.set(ax,ay,az);j.m.lookAt(bx,by,bz);j.m.scale.set(1,1,Math.min(l,45));
+}
+function jetTick(dt){for(var i=0;i<JETS.length;i++){var j=JETS[i];if(!j||j.t<=0)continue;j.t-=dt;if(j.t<=0){j.m.visible=false;continue;}j.m.material.opacity=0.8*Math.min(1,j.t/0.06);var s=1+0.25*Math.sin(now*60+i);j.m.scale.x=j.m.scale.y=s;}}
+function fxStream(ax,ay,az,bx,by,bz){ // a jet of water: the solid jet, plus fat drops strung along the first stretch of the shot, flying on and sagging
+  jetShow(ax,ay,az,bx,by,bz,Math.hypot(bx-ax,by-ay,bz-az)||1);
+  var dx=bx-ax,dy=by-ay,dz=bz-az,l=Math.hypot(dx,dy,dz)||1,m=Math.min(l,34),n=m<6?6:12,i;dx/=l;dy/=l;dz/=l;
+  for(i=0;i<n;i++){var q=(i+Math.random())/n*m,j=0.02+q*0.004;smoke.emit(ax+dx*q+rnd(-j,j),ay+dy*q+rnd(-j,j),az+dz*q+rnd(-j,j),dx*22,dy*22,dz*22,Math.min(rnd(0.22,0.34),(l-q)/22+0.04),0.1+q*0.009,0.2,0.25,0.62,1,1,5,0);if(i%3===0)sparks.emit(ax+dx*q,ay+dy*q,az+dz*q,dx*22,dy*22+0.5,dz*22,0.2,0.05+q*0.004,0,0.6,1.6,3,0.9,6,0);}
+}
 function sSquirt(v){burst({dur:0.1,type:'bandpass',f:2600,f1:1100,q:1.4,v:0.3*v});tone({f:1100,f1:520,dur:0.09,v:0.035*v});}
 function sSplash(v,pan){burst({dur:0.14,type:'bandpass',f:1500,f1:600,q:0.8,v:0.22*v,pan:pan});}
 function sBroke(v,pan){ // a machine winding down, with a few confused beeps
@@ -4743,9 +4755,9 @@ function enemyAttacks(dt){
           var hit=Math.random()<0.55,sy=Math.sin(v.yaw),cy=Math.cos(v.yaw),mx=v.x+cy*0.45+sy*0.78,mz=v.z-sy*0.45+cy*0.78,my=1.36,pan=panOf(v.x,v.z);
           var tx=me.x+(hit?0:rnd(-1,1)),ty=hit?1.25:rnd(1.7,2.4),tz=me.z+(hit?0:rnd(-1,1));
           if(!hit){var ex=tx-mx,ez=tz-mz,el2=Math.hypot(ex,ez)||1;tx+=ex/el2*25;tz+=ez/el2*25;}
-          tracer(mx,my,mz,tx,ty,tz,true);sparks.emit(mx,my,mz,0,0,0,0.07,1.1,0,8,5,2,1,0,0);v.kick=1;
-          if(KIDS.water)tone({f:900,f1:300,dur:0.12,v:0.05,pan:pan});else sGun(clamp(1-d/60,0.15,0.85)*0.6,pan,true);
-          if(hit)hurt(5+Math.min(6,w*0.5));else sWhiz(pan);
+          if(KIDS.water){fxStream(mx,my,mz,tx,ty,tz);if(hit)fxWater(tx,ty,tz,4,0,0.5,0);}else{tracer(mx,my,mz,tx,ty,tz,true);sparks.emit(mx,my,mz,0,0,0,0.07,1.1,0,8,5,2,1,0,0);}v.kick=1;
+          if(KIDS.water)sSplash(clamp(1-d/60,0.15,0.85),pan);else sGun(clamp(1-d/60,0.15,0.85)*0.6,pan,true);
+          if(hit)hurt(5+Math.min(6,w*0.5));else if(!KIDS.water)sWhiz(pan);
         }}
     }else if(d<T.r+1.3&&meAlt<3){v.cd=v.t===2?1.4:0.8;v.atk=0.4;hurt(v.t===2?28:9);if(v.t===2)shake=Math.max(shake,0.9);}
   });
@@ -4792,7 +4804,7 @@ function fire(){
     }
   }
   muzzleWorld(tmpV,1.3);if(myVeh&&ray)tmpV.set(ray.ox+ray.dx*1.7,ray.oy+ray.dy*1.7,ray.oz+ray.dz*1.7);else if(tps&&!scopedNow())tmpV.set(me.x-Math.sin(me.yaw)*0.8,meGy+1.3,me.z-Math.cos(me.yaw)*0.8);
-  if(WG||W.pel>1||W.scope||me.shots%2===0)tracer(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez,WG?2:false);
+  if(WG)fxStream(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez);else if(W.pel>1||W.scope||me.shots%2===0)tracer(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez,false);
   if(WG)fxWater(tmpV.x,tmpV.y,tmpV.z,1,ray.dx*2,ray.dy*2,ray.dz*2);else flashLight(tmpV.x,tmpV.y,tmpV.z,W.rec>0.03?7:4.5,16,1,0.72,0.4);
   if(!WG&&(Math.random()<0.5||W.rec>0.03))smoke.emit(tmpV.x,tmpV.y,tmpV.z,ray.dx*1.5,0.3,ray.dz*1.5,0.5,0.08,0.5,0.5,0.5,0.5,0.16,0,2);
   // brass leaves to the right
@@ -5342,6 +5354,7 @@ function frame(tms,manual){
   updGun(dt);
   updateRemotePlayers(dt);
   for(i=0;i<tracers.length;i++)if(tracers[i].on)moveTracer(tracers[i],dt);
+  if(KIDS.water)jetTick(dt);
   sparks.update(dt);smoke.update(dt);updShells(dt);
   if(fLife>0){fLife-=dt;fLight.intensity=fLife>0?fPeak*(fLife/0.07):0;}
   sendPresence(dt);
