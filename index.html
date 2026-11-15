@@ -793,23 +793,21 @@ function buildZones(W,roofM,AOP,ROADS,cars,signals){
     [-4.6,5.4].forEach(function(a){bx(fp,a,0.4,0,1.9,3.75,1.0,CW,true);[-0.55,0.55].forEach(function(o){bx(W.plain,a+o,0.4,3.75,0.14,1.0,0.14,PO);});});
     bx(fp,-15.2,0.6,0,13,3.7,0.55,CW,true);bx(fp,16.2,0.6,0,14,3.7,0.55,CW,true);
     bx(fp,-22.2,3.2,0,0.55,3.7,5.8,CW,true);bx(fp,23.5,3.2,0,0.55,3.7,5.8,CW,true);                              // the walls turn back at their far ends
-    bx(W.plain,10.9,0.18,0.05,3.3,3.4,0.14,[0.2,0.21,0.22]);bx(W.plain,-12.6,0.28,1.35,3.4,0.3,0.06,[0.1,0.105,0.11]);road([at2(0.5,-6.6),at2(0.5,19.5)],7.6);   // gate leaf; name plate
+    bx(W.plain,10.9,0.18,0.05,3.3,3.4,0.14,[0.2,0.21,0.22]);bx(W.plain,-12.6,0.28,1.35,3.4,0.3,0.06,[0.1,0.105,0.11]);road([at2(0.5,-6.6),at2(0.5,13.5)],7.6);   // gate leaf; name plate
     [[-15.6,12],[16.6,13]].forEach(function(r){bx(fp,r[0],-2.1,0,r[1],0.5,3.2,ST,true);bx(roofM,r[0],-2.1,0.5,r[1]-0.5,0.75,2.7,HG);bx(roofM,r[0]+2,-2.4,0.5,r[1]*0.45,1.25,1.6,[0.13,0.26,0.1]);});
     for(q=0;q<5;q++)bx(W.plain,-7.2+q*3.6,-6.2,0,0.2,0.95,0.2,PO);                                                 // bollards across the drive
     [[-17.5,11],[18,12]].forEach(function(r){var n2=Math.round(r[1]/2);bx(W.plain,r[0],-7.6,0.5,r[1],0.07,0.07,[0.2,0.17,0.15]);bx(W.plain,r[0],-7.6,0.92,r[1],0.07,0.07,[0.2,0.17,0.15]);for(q=0;q<=n2;q++)bx(W.plain,r[0]-r[1]/2+q*r[1]/n2,-7.6,0,0.09,1.0,0.09,[0.2,0.17,0.15]);});
-    var isl=[],ic=at2(0.5,12);for(q=0;q<14;q++)isl.push([ic[0]+Math.cos(q/14*6.283)*3,ic[1]+Math.sin(q/14*6.283)*3]);
-    walls(fp,isl,0,0.45,ST,{tile:4,flat:true});cap(roofM,isl,0.45,HG,0.25);addCol(isl,0.45);tree(ic[0],ic[1],10);  // the planted island the drive turns around
     [[-13,-2.6,11],[-19,-2.2,9],[14,-2.6,11],[20.5,-2.2,10],[-12,4.5,12],[13,4.5,12]].forEach(function(t3){c=at2(t3[0],t3[1]);tree(c[0],c[1],t3[2]);});
     // inside the gate: a stone slab straight ahead, six parking bays behind it with two white saloons at the left end, the single-storey Share Terrace, then a lawn with the barbecue at its near edge
-    bx(fp,0,37,0,12,2.4,0.45,ST,true);road([at2(0,38.4),at2(0,46.6)],9.3);
-    for(q=0;q<=6;q++)bx(W.plain,-8.1+q*2.7,43,0.1,0.1,0.03,5.2,[0.85,0.85,0.82]);
-    [6.75,4.05].forEach(function(a){c=at2(a,42.9);var ca=Math.atan2(-nx,-nz);cars.push([c[0],c[1],ca,0,0]);var cc=addCol(rectP(c[0],c[1],2.2,0.86,ca),1.42);cc.nn=true;cars[cars.length-1].c=cc;});
-    c=at2(4,66);blk(rectP(c[0],c[1],4.5,10,ga),3.4,'office',[0.95,0.93,0.9],[0.6,0.6,0.6]);bx(W.plain,4,66,3.36,22.6,0.28,11.6,CH);
+    bx(fp,0,15,0,10.5,2.4,0.45,ST,true);road([at2(0,15.6),at2(0,27.2)],9.3);
+    for(q=0;q<=6;q++)bx(W.plain,-8.1+q*2.7,19.4,0.1,0.1,0.03,5.2,[0.85,0.85,0.82]);
+    [6.75,4.05].forEach(function(a){c=at2(a,19.3);var ca=Math.atan2(-nx,-nz);cars.push([c[0],c[1],ca,0,0]);var cc=addCol(rectP(c[0],c[1],2.2,0.86,ca),1.42);cc.nn=true;cars[cars.length-1].c=cc;});
+    c=at2(6,39.2);blk(rectP(c[0],c[1],4.5,10,ga),3.4,'office',[0.95,0.93,0.9],[0.6,0.6,0.6]);bx(W.plain,6,39.2,3.36,22.6,0.28,11.6,CH);
     var stm=new THREE.MeshBasicMaterial({map:signTex(512,128,'SHARE TERRACE','シェアテラス','#2b2d30','#d8cfbd')});stm.color.setRGB(0.85,0.85,0.85);
-    var stg=new THREE.Mesh(new THREE.PlaneGeometry(4.2,1.05),stm);c=at2(4,61.44);stg.position.set(c[0],2.55,c[1]);stg.rotation.y=Math.atan2(-nx,-nz);scene.add(stg);
-    c=at2(8,88);cap(zgr,rectP(c[0],c[1],11,18,ga),0,WH,0.2);
-    c=at2(12,79.5);FPG.bq=[c[0],c[1],nx,nz];
-    [[-9,79],[25,97],[-9,97],[25,79],[-9,56],[17,56]].forEach(function(t3){c=at2(t3[0],t3[1]);tree(c[0],c[1],10);});
+    var stg=new THREE.Mesh(new THREE.PlaneGeometry(4.2,1.05),stm);c=at2(6,34.64);stg.position.set(c[0],2.55,c[1]);stg.rotation.y=Math.atan2(-nx,-nz);scene.add(stg);
+    c=at2(8,58.5);cap(zgr,rectP(c[0],c[1],11,18,ga),0,WH,0.2);
+    c=at2(13,49.5);FPG.bq=[c[0],c[1],nx,nz];
+    [[-9,50],[25,68],[-9,68],[25,50]].forEach(function(t3){c=at2(t3[0],t3[1]);tree(c[0],c[1],10);});
     // planting all round the site: along the street front, down the park side, and following the side street on the right
     function hbox(a,b2,along,k4){c=at2(a,b2);if(!freeAt(c[0],c[1])||rdist(c[0],c[1])<1.2)return;if(along)mbBox(roofM,c[0],0,c[1],4.1,1.15,1.4,ga,HG);else mbBox(roofM,c[0],0,c[1],1.4,1.15,4.1,ga,HG);if(k4%3===1)tree(c[0],c[1],9);}
     for(q=0;q<9;q++){hbox(26+q*4,-3,true,q);hbox(-26-q*4,-3,true,q+1);}
