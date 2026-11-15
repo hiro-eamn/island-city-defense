@@ -724,7 +724,7 @@ function zoneOf(x,z){ // which walkable area a point belongs to
   var b=ZONES[0],bd=9e6;for(var i=1;i<ZONES.length;i++){var d=(x-ZONES[i].x)*(x-ZONES[i].x)+(z-ZONES[i].z)*(z-ZONES[i].z);if(d<bd){bd=d;b=ZONES[i];}}
   return b;
 }
-function buildZones(W,roofM,AOP,ROADS,cars){
+function buildZones(W,roofM,AOP,ROADS,cars,signals){
   var WH=[1,1,1],zg=new MB(),zr=new MB(),zgr=new MB(),zl=new MB(),zq=new MB(),H=Math.PI/2,i;
   function rect(cx,cz,w,d,ang){return rectP(cx,cz,d/2,w/2,ang||0);}
   function blk(p,h,kind,col,roofCol){
@@ -782,11 +782,12 @@ function buildZones(W,roofM,AOP,ROADS,cars){
     ROADS.forEach(function(r2){for(var k3=0;k3<r2.length;k3++){jk=Math.round(r2[k3][0]*10)+'_'+Math.round(r2[k3][1]*10);var J3=JN[jk]||(JN[jk]={x:r2[k3][0],z:r2[k3][1],a:0,s:0});J3.a+=(k3===0||k3===r2.length-1)?1:2;if(r2.c<=2)J3.s=1;}});var JD=[];
     for(jk in JN){var J2=JN[jk];if(J2.a<3)continue;var al=(J2.x-px)*rx+(J2.z-pz)*rz,lt=(J2.x-px)*nx+(J2.z-pz)*nz;if(Math.abs(al)<400&&Math.abs(lt)<60)JD.push([Math.round(al),Math.round(lt),J2.a,J2.s]);if(J2.s&&al>25&&al<na&&Math.abs(lt)<8){na=al;nj=J2;}}
     if(nj){[0,6,-6,12,-12,18,-18,24,-24].forEach(function(o){if(okO!==null)return;var cx2=nj.x+rx*o+nx*GD,cz2=nj.z+rz*o+nz*GD,ok=true;for(w2=-24;w2<=24&&ok;w2+=4)[-4,0,4,8,12,16,20].forEach(function(bb){var X=cx2+rx*w2+nx*bb,Z=cz2+rz*w2+nz*bb;if(!freeAt(X,Z)||rdist(X,Z)<2.5)ok=false;});if(ok)okO=o;});
-      px=nj.x+rx*(okO||0);pz=nj.z+rz*(okO||0);}
+      px=nj.x+rx*(okO||0);pz=nj.z+rz*(okO||0);
+      if(signals)for(u=signals.length-1;u>=0;u--)if(Math.hypot(signals[u][0]-nj.x,signals[u][1]-nj.z)<28)signals.splice(u,1);}   // the real entrance has no traffic lights
     var gx=px+nx*GD,gz=pz+nz*GD,ga=Math.atan2(nx,nz),tx=nz,tz=-nx,CN=rgb(0xb7b0a2),CH=rgb(0x3a3c3f),HG=[0.16,0.3,0.12];
     function at2(a,b){return [gx+tx*a+nx*b,gz+tz*a+nz*b];}
     // as it stands today: a thin dark canopy floating on slim posts above two concrete piers, long board-marked concrete walls either side, a dark gate leaf on the left and the name plate on the right, low stone-edged planting in front
-    var fp=new MB(),ST=rgb(0xcfc8b8),CW=[0.98,0.96,0.92],PO=[0.06,0.06,0.065],c0,c,pp,q;FPG=[gx,gz,nx,nz,na,okO,JD];
+    var fp=new MB(),ST=rgb(0xcfc8b8),CW=[0.98,0.96,0.92],PO=[0.06,0.06,0.065],c0,c,pp,q;FPG=[gx,gz,nx,nz,na,okO,JD,ROADS];
     function bx(mb,a,b2,y,w,h,d,col,solid){c=at2(a,b2);pp=mbBox(mb,c[0],y,c[1],w,h,d,ga,col);if(solid)addCol(pp,y+h);return pp;}
     bx(W.plain,1.5,0.4,4.75,27,0.16,7.4,[0.62,0.62,0.6]);bx(W.plain,1.5,0.4,4.91,27.4,0.3,7.8,CH);            // pale soffit under a charcoal edge
     [-4.6,5.4].forEach(function(a){bx(fp,a,0.4,0,1.9,3.75,1.0,CW,true);[-0.55,0.55].forEach(function(o){bx(W.plain,a+o,0.4,3.75,0.14,1.0,0.14,PO);});});
@@ -799,6 +800,20 @@ function buildZones(W,roofM,AOP,ROADS,cars){
     var isl=[],ic=at2(0.5,12);for(q=0;q<14;q++)isl.push([ic[0]+Math.cos(q/14*6.283)*3,ic[1]+Math.sin(q/14*6.283)*3]);
     walls(fp,isl,0,0.45,ST,{tile:4,flat:true});cap(roofM,isl,0.45,HG,0.25);addCol(isl,0.45);tree(ic[0],ic[1],10);  // the planted island the drive turns around
     [[-13,-2.6,11],[-19,-2.2,9],[14,-2.6,11],[20.5,-2.2,10],[-12,4.5,12],[13,4.5,12]].forEach(function(t3){c=at2(t3[0],t3[1]);tree(c[0],c[1],t3[2]);});
+    // inside the gate: a stone slab straight ahead, six parking bays behind it with two white saloons at the left end, the single-storey Share Terrace, then a lawn with the barbecue at its near edge
+    bx(fp,0,37,0,12,2.4,0.45,ST,true);road([at2(0,38.4),at2(0,46.6)],9.3);
+    for(q=0;q<=6;q++)bx(W.plain,-8.1+q*2.7,43,0.1,0.1,0.03,5.2,[0.85,0.85,0.82]);
+    [6.75,4.05].forEach(function(a){c=at2(a,42.9);var ca=Math.atan2(-nx,-nz);cars.push([c[0],c[1],ca,0,0]);var cc=addCol(rectP(c[0],c[1],2.2,0.86,ca),1.42);cc.nn=true;cars[cars.length-1].c=cc;});
+    c=at2(4,66);blk(rectP(c[0],c[1],4.5,10,ga),3.4,'office',[0.95,0.93,0.9],[0.6,0.6,0.6]);bx(W.plain,4,66,3.36,22.6,0.28,11.6,CH);
+    var stm=new THREE.MeshBasicMaterial({map:signTex(512,128,'SHARE TERRACE','シェアテラス','#2b2d30','#d8cfbd')});stm.color.setRGB(0.85,0.85,0.85);
+    var stg=new THREE.Mesh(new THREE.PlaneGeometry(4.2,1.05),stm);c=at2(4,61.44);stg.position.set(c[0],2.55,c[1]);stg.rotation.y=Math.atan2(-nx,-nz);scene.add(stg);
+    c=at2(8,88);cap(zgr,rectP(c[0],c[1],11,18,ga),0,WH,0.2);
+    c=at2(12,79.5);FPG.bq=[c[0],c[1],nx,nz];
+    [[-9,79],[25,97],[-9,97],[25,79],[-9,56],[17,56]].forEach(function(t3){c=at2(t3[0],t3[1]);tree(c[0],c[1],10);});
+    // planting all round the site: along the street front, down the park side, and following the side street on the right
+    function hbox(a,b2,along,k4){c=at2(a,b2);if(!freeAt(c[0],c[1])||rdist(c[0],c[1])<1.2)return;if(along)mbBox(roofM,c[0],0,c[1],4.1,1.15,1.4,ga,HG);else mbBox(roofM,c[0],0,c[1],1.4,1.15,4.1,ga,HG);if(k4%3===1)tree(c[0],c[1],9);}
+    for(q=0;q<9;q++){hbox(26+q*4,-3,true,q);hbox(-26-q*4,-3,true,q+1);}
+    for(q=0;q<38;q++){hbox(60,q*4,false,q);var ra=null;for(u=-34;u>=-96;u--){c=at2(u,q*4);if(rdist(c[0],c[1])<3.6){ra=u;break;}}if(ra!==null)hbox(ra+0.5,q*4,false,q+1);}
     fp.mesh(mConc());
   }
   // ---- dome district
@@ -1315,7 +1330,7 @@ function carGeo(mdl,paint,noW){
     if(dd<19){x=px+nx*19;z=pz+nz*19;}                            // room for the forecourt between shop and street
     buildStore(x,z,Math.atan2(-nx,-nz));
   });
-  buildZones(W,roofM,AOP,ROADS,cars);
+  buildZones(W,roofM,AOP,ROADS,cars,signals);
   STORES.forEach(function(S){AOP.push([S.rect,4]);});
   var aoM=new MB(),AOD=[0.3,0.3,0.32],AOL=[1,1,1];
   AOP.forEach(function(q){ // a ring around each footprint, dark at the wall and fading out, multiplied onto the ground
@@ -3757,6 +3772,7 @@ var BBQ=null,defT=0;
   if(!lawn||ld>120)return;
   var dx=fp[0]-lawn.cx,dz=fp[1]-lawn.cz,dl=Math.hypot(dx,dz)||1,x=lawn.cx,z=lawn.cz;dx/=dl;dz/=dl;
   for(i=0;i<80;i++){var nx=x+dx,nz=z+dz;if(!inP(nx+dx*5,nz+dz*5,lawn.p)||inBox(nx,nz,3))break;x=nx;z=nz;}   // as near the building as the lawn goes
+  if(FPG&&FPG.bq){x=FPG.bq[0];z=FPG.bq[1];dx=FPG.bq[2];dz=FPG.bq[3];}   // now on the lawn behind the Share Terrace
   var ang=Math.atan2(dx,dz),G=new THREE.Group(),b=new GB(),H=Math.PI/2,STL=[0.3,0.31,0.33],BLK=[0.02,0.02,0.022],WD=rgb(0x9a7248),RED=rgb(0xa3261e),BLU=rgb(0x1f5fa8);
   G.position.set(x,0.03,z);G.rotation.y=ang;scene.add(G);
   // kettle-style grill on legs
