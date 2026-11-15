@@ -777,20 +777,26 @@ function buildZones(W,roofM,AOP,ROADS,cars){
         var ok=true;for(w2=-24;w2<=24&&ok;w2+=4)[-4,0,4,8,12,16,20].forEach(function(bb){var X=cxx+ux*w2+n1*bb,Z=czz+uz*w2+n2*bb;if(!freeAt(X,Z)||rdist(X,Z)<2.5)ok=false;});
         if(ok){cbest=dd;px=qx2;pz=qz2;nx=n1;nz=n2;GD=gD;}
       }}}
+    // the real entrance is at the next signal along this street, to the right as you face the towers
+    var JN={},jk,rx=-nz,rz=nx,nj=null,na=1e9,okO=null;
+    ROADS.forEach(function(r2){for(var k3=0;k3<r2.length;k3++){jk=Math.round(r2[k3][0]*10)+'_'+Math.round(r2[k3][1]*10);var J3=JN[jk]||(JN[jk]={x:r2[k3][0],z:r2[k3][1],a:0,s:0});J3.a+=(k3===0||k3===r2.length-1)?1:2;if(r2.c<=2)J3.s=1;}});var JD=[];
+    for(jk in JN){var J2=JN[jk];if(J2.a<3)continue;var al=(J2.x-px)*rx+(J2.z-pz)*rz,lt=(J2.x-px)*nx+(J2.z-pz)*nz;if(Math.abs(al)<400&&Math.abs(lt)<60)JD.push([Math.round(al),Math.round(lt),J2.a,J2.s]);if(J2.s&&al>25&&al<na&&Math.abs(lt)<8){na=al;nj=J2;}}
+    if(nj){[0,6,-6,12,-12,18,-18,24,-24].forEach(function(o){if(okO!==null)return;var cx2=nj.x+rx*o+nx*GD,cz2=nj.z+rz*o+nz*GD,ok=true;for(w2=-24;w2<=24&&ok;w2+=4)[-4,0,4,8,12,16,20].forEach(function(bb){var X=cx2+rx*w2+nx*bb,Z=cz2+rz*w2+nz*bb;if(!freeAt(X,Z)||rdist(X,Z)<2.5)ok=false;});if(ok)okO=o;});
+      px=nj.x+rx*(okO||0);pz=nj.z+rz*(okO||0);}
     var gx=px+nx*GD,gz=pz+nz*GD,ga=Math.atan2(nx,nz),tx=nz,tz=-nx,CN=rgb(0xb7b0a2),CH=rgb(0x3a3c3f),HG=[0.16,0.3,0.12];
     function at2(a,b){return [gx+tx*a+nx*b,gz+tz*a+nz*b];}
     // as it stands today: a thin dark canopy floating on slim posts above two concrete piers, long board-marked concrete walls either side, a dark gate leaf on the left and the name plate on the right, low stone-edged planting in front
-    var fp=new MB(),ST=rgb(0xcfc8b8),CW=[0.98,0.96,0.92],PO=[0.06,0.06,0.065],c0,c,pp,q;FPG=[gx,gz,nx,nz];
+    var fp=new MB(),ST=rgb(0xcfc8b8),CW=[0.98,0.96,0.92],PO=[0.06,0.06,0.065],c0,c,pp,q;FPG=[gx,gz,nx,nz,na,okO,JD];
     function bx(mb,a,b2,y,w,h,d,col,solid){c=at2(a,b2);pp=mbBox(mb,c[0],y,c[1],w,h,d,ga,col);if(solid)addCol(pp,y+h);return pp;}
     bx(W.plain,1.5,0.4,4.75,27,0.16,7.4,[0.62,0.62,0.6]);bx(W.plain,1.5,0.4,4.91,27.4,0.3,7.8,CH);            // pale soffit under a charcoal edge
     [-4.6,5.4].forEach(function(a){bx(fp,a,0.4,0,1.9,3.75,1.0,CW,true);[-0.55,0.55].forEach(function(o){bx(W.plain,a+o,0.4,3.75,0.14,1.0,0.14,PO);});});
     bx(fp,-15.2,0.6,0,13,3.7,0.55,CW,true);bx(fp,16.2,0.6,0,14,3.7,0.55,CW,true);
     bx(fp,-22.2,3.2,0,0.55,3.7,5.8,CW,true);bx(fp,23.5,3.2,0,0.55,3.7,5.8,CW,true);                              // the walls turn back at their far ends
-    bx(W.plain,10.9,0.18,0.05,3.3,3.4,0.14,[0.2,0.21,0.22]);bx(W.plain,-12.6,0.28,1.35,3.4,0.3,0.06,[0.1,0.105,0.11]);road([at2(0.5,-6.6),at2(0.5,19.5)],6.4);   // gate leaf; name plate
+    bx(W.plain,10.9,0.18,0.05,3.3,3.4,0.14,[0.2,0.21,0.22]);bx(W.plain,-12.6,0.28,1.35,3.4,0.3,0.06,[0.1,0.105,0.11]);road([at2(0.5,-6.6),at2(0.5,19.5)],7.6);   // gate leaf; name plate
     [[-15.6,12],[16.6,13]].forEach(function(r){bx(fp,r[0],-2.1,0,r[1],0.5,3.2,ST,true);bx(roofM,r[0],-2.1,0.5,r[1]-0.5,0.75,2.7,HG);bx(roofM,r[0]+2,-2.4,0.5,r[1]*0.45,1.25,1.6,[0.13,0.26,0.1]);});
     for(q=0;q<5;q++)bx(W.plain,-7.2+q*3.6,-6.2,0,0.2,0.95,0.2,PO);                                                 // bollards across the drive
     [[-17.5,11],[18,12]].forEach(function(r){var n2=Math.round(r[1]/2);bx(W.plain,r[0],-7.6,0.5,r[1],0.07,0.07,[0.2,0.17,0.15]);bx(W.plain,r[0],-7.6,0.92,r[1],0.07,0.07,[0.2,0.17,0.15]);for(q=0;q<=n2;q++)bx(W.plain,r[0]-r[1]/2+q*r[1]/n2,-7.6,0,0.09,1.0,0.09,[0.2,0.17,0.15]);});
-    var isl=[],ic=at2(0.5,13);for(q=0;q<14;q++)isl.push([ic[0]+Math.cos(q/14*6.283)*4.6,ic[1]+Math.sin(q/14*6.283)*4.6]);
+    var isl=[],ic=at2(0.5,12);for(q=0;q<14;q++)isl.push([ic[0]+Math.cos(q/14*6.283)*3,ic[1]+Math.sin(q/14*6.283)*3]);
     walls(fp,isl,0,0.45,ST,{tile:4,flat:true});cap(roofM,isl,0.45,HG,0.25);addCol(isl,0.45);tree(ic[0],ic[1],10);  // the planted island the drive turns around
     [[-13,-2.6,11],[-19,-2.2,9],[14,-2.6,11],[20.5,-2.2,10],[-12,4.5,12],[13,4.5,12]].forEach(function(t3){c=at2(t3[0],t3[1]);tree(c[0],c[1],t3[2]);});
     fp.mesh(mConc());
@@ -1179,7 +1185,7 @@ function carGeo(mdl,paint,noW){
       return;
     }
     if(c===5){ribbon(rFoot,p,hw,0,cFoot);return;}
-    ribbon(rAs,p,hw,0,WH);p.hw=hw;ROADS.push(p);
+    ribbon(rAs,p,hw,0,WH);p.hw=hw;p.c=c;ROADS.push(p);
     // stretches that leave the island become bridge deck
     var i0=-1;
     for(k=0;k<=p.length;k++){
