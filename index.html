@@ -1659,7 +1659,7 @@ for(var i=0;i<14;i++){
 function tracer(ax,ay,az,bx,by,bz,red){
   var t=tracers[tIdx++%tracers.length],dx=bx-ax,dy=by-ay,dz=bz-az,l=Math.hypot(dx,dy,dz)||1;
   t.ox=ax;t.oy=ay;t.oz=az;t.dx=dx/l;t.dy=dy/l;t.dz=dz/l;t.len=l;t.s=Math.min(l,rnd(1,5));t.on=true;
-  if(red)t.l.material.color.setRGB(3.2,0.5,0.25);else t.l.material.color.setRGB(3.0,2.2,0.9);
+  if(red===2)t.l.material.color.setRGB(0.5,1.7,3.4);else if(red)t.l.material.color.setRGB(3.2,0.5,0.25);else t.l.material.color.setRGB(3.0,2.2,0.9);
   moveTracer(t,0);
 }
 function moveTracer(t,dt){
@@ -2951,9 +2951,10 @@ function throwNade(){
 }
 function explodeNade(x,y,z){
   var d=Math.hypot(x-me.x,z-me.z);
-  fxExplode(x,y+0.3,z,true);sBoom(clamp(1.25-d/90,0,1.2),panOf(x,z));if(y<1.5)decal(x,0,z,0,1,0,4.6);
+  if(KIDS.water){fxWater(x,y+0.4,z,40,0,1.2,0);fxSmoke(x,y+0.5,z,5,1.6,false);sSplash(clamp(1.25-d/90,0,1.2)*2.5,panOf(x,z));burst({dur:0.5,type:'lowpass',f:700,f1:120,v:0.5*clamp(1.25-d/90,0,1.2),pan:panOf(x,z)});}
+  else{fxExplode(x,y+0.3,z,true);sBoom(clamp(1.25-d/90,0,1.2),panOf(x,z));if(y<1.5)decal(x,0,z,0,1,0,4.6);}
   views.forEach(function(v){var q=Math.hypot(v.x-x,v.z-z);if(q<8.5){var key='e'+v.id;myDmg[key]=(myDmg[key]||0)+Math.round(250*(1-q/8.5)*(1+0.25*lv));dmgTime[key]=now;v.flinch=1;}});
-  if(d<6.5&&Math.abs(y-camera.position.y)<6)hurt(70*(1-d/6.5));
+  if(!KIDS.water&&d<6.5&&Math.abs(y-camera.position.y)<6)hurt(70*(1-d/6.5));
   if(d<40)shake=Math.max(shake,1-d/40);
 }
 function updNades(dt){
@@ -3931,7 +3932,7 @@ function fsTip(){ // shown where the browser cannot go full screen
   elTip.classList.remove('off');
 }
 function setPause(v){
-  if(!me.inGame)return;
+  if(!me.inGame||KIDS.over)return;
   paused=v;elPause.classList.toggle('off',!v);var sb=document.getElementById('pzSnd');if(sb)sb.textContent='音：'+(soundOn?'ON':'OFF');var hb=document.getElementById('pzHero');if(hb)hb.textContent='キャラモード：'+(HERO.on?'ON':'OFF');firing=false;mouseDown=false;adsHeld=false;keys={};
   elPause.querySelector('.n').textContent=NET.mode==='coop'?'協力プレイ中は、ほかの人のためにゲームは止まりません。':'ゲームを止めています。';
   try{if(ac&&NET.mode!=='coop'){if(v)ac.suspend();else ac.resume();}}catch(e){}
@@ -3949,7 +3950,7 @@ function drawPack(){
     g.appendChild(b);
   }
   slots.forEach(function(s,i){if(!s)return;tile(WPN[s.k].name,i===cur?'装備中　弾 '+me.ammo+' / '+MAG:'押して持ち替え　弾 '+s.ammo,i===cur?null:function(){setWeapon(i);},i===cur);});
-  tile('グレネード','× '+nades+'　押して投げる',function(){setPack(false);throwNade();},false,nades<=0);
+  tile(KIDS.water?'みずふうせん':'グレネード','× '+nades+'　押して投げる',function(){setPack(false);throwNade();},false,nades<=0);
   tile('包帯','× '+bands+'　体力 +35',function(){useBand();},false,bands<=0||me.hp>=100);
   tile('応急処置セット','× '+kits+'　全回復',function(){useKit();},false,kits<=0);
   tile('防弾チョッキ',armor>0?'残り '+Math.round(armor)+'%':'なし',null,false,armor<=0);
@@ -4099,7 +4100,7 @@ function showFinalClear(){
 var LIVES=3,lives=LIVES,lifePend=false,wasDown=false,elLives;
 function livesTick(){ // three lives a game: going down costs one and you are back on your feet in a moment; on the last one the old rules apply
   if(me.down&&!wasDown){
-    if(lives>1){lives--;lifePend=true;me.downT=2.4;tone({f:440,f1:220,dur:0.4,v:0.06,type:'triangle'});}
+    if(lives>1||KIDS.on){if(!KIDS.on)lives--;lifePend=true;me.downT=2.4;tone({f:440,f1:220,dur:0.4,v:0.06,type:'triangle'});}
     else{lives=0;lifePend=false;}
   }
   if(!me.down&&wasDown&&lifePend){
@@ -4122,7 +4123,7 @@ function gasTick(dt){
   }
   gasD=G?Math.hypot(me.x-G[0],me.z-G[1])-G[2]:-1;gasIn=act&&isl&&gasD>0;
   if(gasIn&&!me.down&&me.inv<=0){
-    me.hp-=(0.6+0.4*G[3])*dt;   // a fifth of what it was: 0.6 a second at first, 1.0 and 1.4 after the later closingsme.lastHurt=now;hurtA=Math.max(hurtA,0.2);
+    me.hp-=(0.6+0.4*G[3])*dt*(KIDS.on?0.5:1);   // a fifth of what it was: 0.6 a second at first, 1.0 and 1.4 after the later closingsme.lastHurt=now;hurtA=Math.max(hurtA,0.2);
     gasCough-=dt;if(gasCough<=0){gasCough=1.4;burst({dur:0.12,type:'bandpass',f:900,q:1.2,v:0.25});burst({dur:0.1,type:'bandpass',f:800,q:1.2,v:0.2,t0:0.18});}
     if(me.hp<=0){me.hp=0;me.down=true;me.downT=10;firing=false;adsTog=false;}
   }
@@ -4442,7 +4443,7 @@ try{var st0=JSON.parse(localStorage.getItem('ic_stats')||'null');if(st0&&typeof 
 function statSave(){try{localStorage.setItem('ic_stats',JSON.stringify(STATS));}catch(e){}}
 function statClear(){STATS.clears++;runClears++;statTick(0);}
 function statTick(sec){ // totals grow as you play, and the current game keeps its line in the list of your best ones
-  if(!hs||practice)return;
+  if(!hs||practice||KIDS.on)return;
   var dk=myKills-statKills;if(dk<0)dk=0;statKills=myKills;STATS.kills+=dk;STATS.time+=sec;if(hs.w>STATS.best)STATS.best=hs.w;
   if(hs.w>=1){var r=null,d=new Date();STATS.recs.forEach(function(x){if(x.g===hs.gen)r=x;});
     if(!r){r={g:hs.gen,d:d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(),w:0,k:0,c:0,m:NET.mode==='coop'?1:0};STATS.recs.push(r);STATS.games++;runClears=0;}
@@ -4591,6 +4592,86 @@ function socialBtns(rowEl){var b=document.createElement('button');b.type='button
   document.body.appendChild(elChatP);
 })();
 
+/* ---------- kids mode: a play-time limit chosen at the start, an end screen when it runs out, and a choice between the usual guns and water pistols that only make the robots break down ---------- */
+var KIDS={on:false,water:false,min:10,t0:0,end:0,over:false,w1:false,el:null,box:null,iv:0};
+function fxWater(x,y,z,n,nx,ny,nz){
+  for(var k=0;k<n;k++){var s=rnd(1.5,5);sparks.emit(x,y,z,((nx||0)*0.6+rnd(-0.7,0.7))*s,((ny||0)*0.6+rnd(0,1))*s,((nz||0)*0.6+rnd(-0.7,0.7))*s,rnd(0.25,0.55),rnd(0.05,0.1),-0.04,0.5,1.5,3.2,0.9,13,1);}
+  smoke.emit(x,y,z,rnd(-0.3,0.3),rnd(0.3,0.9),rnd(-0.3,0.3),rnd(0.35,0.6),0.18,0.9,0.75,0.9,1,0.35,0,2);
+}
+function sSquirt(v){burst({dur:0.1,type:'bandpass',f:2600,f1:1100,q:1.4,v:0.3*v});tone({f:1100,f1:520,dur:0.09,v:0.035*v});}
+function sSplash(v,pan){burst({dur:0.14,type:'bandpass',f:1500,f1:600,q:0.8,v:0.22*v,pan:pan});}
+function sBroke(v,pan){ // a machine winding down, with a few confused beeps
+  tone({f:700,f1:70,dur:0.7,v:0.16*v,type:'sawtooth',pan:pan});tone({f:1400,dur:0.05,v:0.07*v,type:'square',pan:pan});tone({f:1000,dur:0.05,v:0.07*v,type:'square',t0:0.1,pan:pan});tone({f:520,dur:0.08,v:0.07*v,type:'square',t0:0.2,pan:pan});
+  burst({dur:0.25,type:'highpass',f:4000,v:0.12*v,t0:0.05,pan:pan});
+}
+function kidsBreak(v,T,d){ // water mode: no blast, the robot shorts out and stops where it stands
+  sBroke(clamp(1-d/120,0,1),panOf(v.x,v.z));fxSparks(v.x,T.h*0.7,v.z,10,0,0.6,0,0.6);fxWater(v.x,T.h*0.6,v.z,8,0,1,0);
+  v.g.userData.head.children[1].visible=false;
+  wrecks.push({g:v.g,t:0,dir:1,sc:T.scale,h:T.h,r:[0,0,0,0],smk:0,wg:true});
+  if(wrecks.length>8){var w=wrecks.shift();scene.remove(w.g);}
+}
+function kidsWreck(w,dt){
+  var u=w.g.userData,e=Math.min(1,w.t/0.9);e=e*(2-e);
+  w.g.rotation.x=0.16*e;w.g.rotation.z=w.t<1.2?Math.sin(w.t*42)*0.045*(1-w.t/1.2):0;w.g.position.y=-Math.max(0,w.t-7)*w.h*0.6;
+  u.head.rotation.x=0.55*e;u.hips.rotation.x=0.12*e;
+  if(w.t<5&&Math.random()<dt*5)fxSparks(w.g.position.x,w.h*0.75,w.g.position.z,2,0,0.5,0,0.4);
+  if(w.t<6){w.smk-=dt;if(w.smk<=0){w.smk=0.3+w.t*0.1;fxSmoke(w.g.position.x,w.h*0.85,w.g.position.z,1,0.4*w.sc,false);}}
+}
+function kidsFmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
+function kidsStart(min,water){
+  KIDS.on=true;KIDS.water=!!water;KIDS.min=min;KIDS.t0=Date.now();KIDS.end=KIDS.t0+min*60000;KIDS.over=false;KIDS.w1=false;
+  try{localStorage.setItem('ic_kids',JSON.stringify([min,water?1:0]));}catch(e){}
+  if(water){
+    WPN.rifle.name='みずでっぽう';WPN.smg.name='れんしゃ みずでっぽう';WPN.shot.name='シャワー みずでっぽう';WPN.snip.name='ロング みずでっぽう';
+    ['rifle','smg','shot','snip'].forEach(function(k){var c=GUNS[k].g.children;   // toy colours: the two shared materials are copied once so the ordinary guns keep theirs
+      if(!KIDS.m1){KIDS.m1=c[0].material.clone();KIDS.m1.emissive.setRGB(0.02,0.24,0.6);KIDS.m1.metalness=0;KIDS.m1.roughness=0.45;KIDS.m2=c[1].material.clone();KIDS.m2.emissive.setRGB(0.62,0.26,0.02);}
+      c[0].material=KIDS.m1;c[2].material=KIDS.m1;c[3].material=KIDS.m1;c[1].material=KIDS.m2;});
+  }
+  KIDS.el.classList.remove('off');clearInterval(KIDS.iv);KIDS.iv=setInterval(kidsTick,250);kidsTick();
+}
+function kidsTick(){
+  if(!KIDS.on||KIDS.over)return;
+  var left=(KIDS.end-Date.now())/1000,t='のこり '+kidsFmt(left);
+  if(KIDS.el.textContent!==t)KIDS.el.textContent=t;KIDS.el.classList.toggle('w',left<=60);
+  if(left<=60&&!KIDS.w1&&KIDS.min>1){KIDS.w1=true;banner('あと 1ぷん','もうすぐ おしまいだよ',4);sRadio(660,0);sRadio(660,0.25);}
+  if(left<=0)kidsEnd();
+}
+function kidsEnd(){
+  if(KIDS.over)return;KIDS.over=true;clearInterval(KIDS.iv);
+  var k=hs?hs.k:0,b=KIDS.box;
+  b.querySelector('.m').textContent=KIDS.min+'ふん あそんだよ';
+  b.querySelector('.k').textContent='ロボットを '+k+'だい '+(KIDS.water?'こしょうさせた！':'たおした！');
+  KIDS.el.classList.add('off');b.parentNode.classList.remove('off');
+  firing=false;mouseDown=false;adsHeld=false;adsTog=false;keys={};joy.x=joy.y=0;autoRun=false;
+  try{if(document.exitPointerLock)document.exitPointerLock();}catch(e){}
+  try{setPack(false);if(bigOpen)toggleMap(false);elPause.classList.add('off');}catch(e){}
+  try{if(ac&&ac.state==='suspended')ac.resume();}catch(e){}
+  [784,659,523,392].forEach(function(f,i){tone({f:f,dur:i===3?0.8:0.22,v:0.08,type:'triangle',t0:i*0.2,rv:0.4});});
+  paused=true;setTimeout(function(){try{if(ac)ac.suspend();}catch(e){}},1900);
+}
+(function(){
+  function el(tag,id,cls,txt,parent){var e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(txt)e.textContent=txt;(parent||document.body).appendChild(e);return e;}
+  var st=document.createElement('style');
+  st.textContent=[
+  '#kidsT{font:700 17px/1.2 var(--num);color:#ffe36a;text-shadow:0 1px 3px #000;letter-spacing:.04em}','#kidsT.w{color:#ff6a4d;animation:kidsw 1s ease-in-out infinite}','@keyframes kidsw{50%{opacity:.45}}',
+  '#kidsEnd{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,24,44,.93);touch-action:none}',
+  '#kidsEnd .box{width:min(440px,100%);display:flex;flex-direction:column;gap:12px;padding:22px 18px;border:3px solid #ffe36a;border-radius:18px;background:#17365a;text-align:center}',
+  '#kidsEnd h2{margin:0;font:900 46px/1.1 var(--body);color:#ffe36a;letter-spacing:.06em}','#kidsEnd p{margin:0;font:700 18px/1.5 var(--body);color:#fff}','#kidsEnd p.s{font-size:15px;color:#bfe6ff}',
+  '#kidsHold{position:relative;overflow:hidden;height:52px;margin-top:6px;font:700 13px/1.3 var(--body);color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.5);border-radius:8px;touch-action:none;-webkit-user-select:none;user-select:none}',
+  '#kidsHold i{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(255,227,106,.45)}','#kidsHold.h i{width:100%;transition:width 3s linear}','#kidsHold span{position:relative}',
+  '@media (prefers-reduced-motion:reduce){#kidsT.w{animation:none}}',
+  '@media (orientation:landscape) and (max-height:540px){#kidsEnd .box{gap:6px;padding:12px 16px}#kidsEnd h2{font-size:32px}#kidsEnd p{font-size:15px}#kidsHold{height:44px}}'].join('\n');
+  document.head.appendChild(st);
+  KIDS.el=el('div','kidsT','off','',$('tl'));$('tl').insertBefore(KIDS.el,$('tl').firstChild);
+  var root=el('div','kidsEnd','off'),box=el('div','','box',null,root);KIDS.box=box;
+  el('h2','','','おしまい！',box);el('p','','','やくそくの じかんに なりました',box);el('p','','s m','',box);el('p','','s k','',box);el('p','','','また こんど あそぼうね',box);
+  var hb=el('button','kidsHold','',null,box),ht=0;hb.type='button';el('i','','',null,hb);el('span','','','おうちの人へ：3びょう ながおしで タイトルにもどる',hb);
+  function up(){clearTimeout(ht);hb.classList.remove('h');}
+  hb.addEventListener('pointerdown',function(e){e.preventDefault();up();void hb.offsetWidth;hb.classList.add('h');ht=setTimeout(function(){try{location.reload();}catch(_){}} ,3000);});
+  hb.addEventListener('pointerup',up);hb.addEventListener('pointercancel',up);hb.addEventListener('pointerleave',up);
+  hb.addEventListener('contextmenu',function(e){e.preventDefault();});
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){
   if(myVeh)leaveVeh();
@@ -4604,6 +4685,7 @@ function hurt(d){
   if(me.down||me.inv>0)return;
   if(myVeh)d*=0.6;
   if(defT>0)d*=0.5;
+  if(KIDS.on)d*=0.4;
   if(armor>0){var ab=Math.min(armor,d*0.65);armor-=ab;d-=ab;}          // the vest takes most of each hit until it is used up
   me.hp-=d;me.lastHurt=now;hurtA=0.7;shake=Math.max(shake,0.35+d*0.02);recP+=rnd(-0.02,0.03);recY+=rnd(-0.03,0.03);sHurt();
   if(me.hp<=0){me.hp=0;me.down=true;me.downT=10;firing=false;adsTog=false;}
@@ -4611,6 +4693,7 @@ function hurt(d){
 function killView(v){ // the machine blows out and its hulk stays where it fell
   if(dmgTime['e'+v.id]&&now-dmgTime['e'+v.id]<4)myKills++;        // yours, if you (or your partner) hit it in its last moments
   var T=TYPES[v.t],d=Math.hypot(v.x-me.x,v.z-me.z);
+  if(KIDS.water){kidsBreak(v,T,d);return;}
   fxExplode(v.x,T.h*0.55,v.z,v.t===2);sBoom((v.t===2?1:0.55)*clamp(1-d/150,0,1),panOf(v.x,v.z));
   if(d<25)shake=Math.max(shake,(v.t===2?0.9:0.4)*(1-d/25));
   decal(v.x,0,v.z,0,1,0,v.t===2?5.5:3.2);
@@ -4621,6 +4704,7 @@ function killView(v){ // the machine blows out and its hulk stays where it fell
 function updWrecks(dt){
   for(var i=wrecks.length-1;i>=0;i--){
     var w=wrecks[i],u=w.g.userData;w.t+=dt;
+    if(w.wg){kidsWreck(w,dt);if(w.t>9){scene.remove(w.g);wrecks.splice(i,1);}continue;}
     var k=Math.min(1,w.t/0.6),e=k*k;
     w.g.rotation.x=-w.dir*e*1.5;w.g.position.y=0.2*w.sc*e-Math.max(0,w.t-7)*0.5;
     u.aL.rotation.x=w.r[0]*1.3*e;u.aR.rotation.x=w.r[1]*1.3*e;u.tL.rotation.x=w.r[2]*0.6*e;u.tR.rotation.x=w.r[3]*0.6*e;u.sL.rotation.x=0.5*e;u.sR.rotation.x=0.2*e;
@@ -4660,7 +4744,7 @@ function enemyAttacks(dt){
           var tx=me.x+(hit?0:rnd(-1,1)),ty=hit?1.25:rnd(1.7,2.4),tz=me.z+(hit?0:rnd(-1,1));
           if(!hit){var ex=tx-mx,ez=tz-mz,el2=Math.hypot(ex,ez)||1;tx+=ex/el2*25;tz+=ez/el2*25;}
           tracer(mx,my,mz,tx,ty,tz,true);sparks.emit(mx,my,mz,0,0,0,0.07,1.1,0,8,5,2,1,0,0);v.kick=1;
-          sGun(clamp(1-d/60,0.15,0.85)*0.6,pan,true);
+          if(KIDS.water)tone({f:900,f1:300,dur:0.12,v:0.05,pan:pan});else sGun(clamp(1-d/60,0.15,0.85)*0.6,pan,true);
           if(hit)hurt(5+Math.min(6,w*0.5));else sWhiz(pan);
         }}
     }else if(d<T.r+1.3&&meAlt<3){v.cd=v.t===2?1.4:0.8;v.atk=0.4;hurt(v.t===2?28:9);if(v.t===2)shake=Math.max(shake,0.9);}
@@ -4690,7 +4774,7 @@ function muzzleWorld(o,depth){ // where the rifle's muzzle appears in the main v
 }
 function fire(){
   if(me.down||me.reload>0||now<nextShot)return;
-  var W=curW();
+  var W=curW(),WG=KIDS.water;
   if(me.ammo<=0){nextShot=now+0.3;sClick(0,2400,0.18);startReload();return;}
   nextShot=now+W.rate*(1-0.05*lv);me.ammo--;
   var a=me.ads,sc=useScope()?a:0,sprd=(W.sp+0.007*me.amp+0.014*me.spread)*(1-0.78*a)*(1-0.9*sc)+(W.pel>1?W.sp*0.55*a:0),ex=0,ey=0,ez=0,ray=null,p;
@@ -4699,27 +4783,28 @@ function fire(){
     if(ray.v){
       var key='e'+ray.v.id,dm=(ray.head?W.dmg*2:W.dmg)*(1+0.25*lv);if(W.pel>1)dm*=clamp(1.25-ray.t/28,0.25,1);
       myDmg[key]=(myDmg[key]||0)+Math.round(dm);coins+=dm*0.05;dmgTime[key]=now;ray.v.flinch=1;ray.v.fz=Math.random()<0.5?1:-1;hitT=0.12;
-      if(p<3){if(p===0)sMetal(1,ray.head);fxSparks(ex,ey,ez,ray.head?10:6,-ray.dx,0.3,-ray.dz,0.7);if(Math.random()<0.4)fxDust(ex,ey,ez,-ray.dx,0,-ray.dz,0.05,0.05,0.05,1);}
+      if(WG){if(p<3){if(p===0)sSplash(1,0);fxWater(ex,ey,ez,5,-ray.dx,0.3,-ray.dz);}}else if(p<3){if(p===0)sMetal(1,ray.head);fxSparks(ex,ey,ez,ray.head?10:6,-ray.dx,0.3,-ray.dz,0.7);if(Math.random()<0.4)fxDust(ex,ey,ez,-ray.dx,0,-ray.dz,0.05,0.05,0.05,1);}
     }else if(ray.k&&p<5){
+      if(WG){fxWater(ex,ey,ez,3,ray.nx,ray.k===1?1:0.2,ray.nz);if(p===0&&ray.t<70)sSplash(0.6*(1-ray.t/70),panOf(ex,ez));continue;}
       if(ray.k===1){decal(ex,ey,ez,0,1,0,rnd(0.14,0.22));fxDust(ex,ey+0.06,ez,0,1,0,0.40,0.36,0.29,W.pel>1?1:3);}
       else{decal(ex,ey,ez,ray.nx,ray.ny,ray.nz,rnd(0.09,0.15));fxDust(ex,ey,ez,ray.nx,0.2,ray.nz,0.5,0.49,0.46,W.pel>1?1:3);if(Math.random()<0.45)fxSparks(ex,ey,ez,3,ray.nx,0.3,ray.nz,0.5);}
       if(p===0&&ray.t<70)sImpact(1-ray.t/70,panOf(ex,ez));
     }
   }
   muzzleWorld(tmpV,1.3);if(myVeh&&ray)tmpV.set(ray.ox+ray.dx*1.7,ray.oy+ray.dy*1.7,ray.oz+ray.dz*1.7);else if(tps&&!scopedNow())tmpV.set(me.x-Math.sin(me.yaw)*0.8,meGy+1.3,me.z-Math.cos(me.yaw)*0.8);
-  if(W.pel>1||W.scope||me.shots%2===0)tracer(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez,false);
-  flashLight(tmpV.x,tmpV.y,tmpV.z,W.rec>0.03?7:4.5,16,1,0.72,0.4);
-  if(Math.random()<0.5||W.rec>0.03)smoke.emit(tmpV.x,tmpV.y,tmpV.z,ray.dx*1.5,0.3,ray.dz*1.5,0.5,0.08,0.5,0.5,0.5,0.5,0.16,0,2);
+  if(WG||W.pel>1||W.scope||me.shots%2===0)tracer(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez,WG?2:false);
+  if(WG)fxWater(tmpV.x,tmpV.y,tmpV.z,1,ray.dx*2,ray.dy*2,ray.dz*2);else flashLight(tmpV.x,tmpV.y,tmpV.z,W.rec>0.03?7:4.5,16,1,0.72,0.4);
+  if(!WG&&(Math.random()<0.5||W.rec>0.03))smoke.emit(tmpV.x,tmpV.y,tmpV.z,ray.dx*1.5,0.3,ray.dz*1.5,0.5,0.08,0.5,0.5,0.5,0.5,0.16,0,2);
   // brass leaves to the right
   var m=camera.matrixWorld.elements,sr=rnd(1.6,2.8),su=rnd(1.0,2.0);
   tmpV2.set(0.16*(1-a)+0.05,-0.13,-0.5);camera.localToWorld(tmpV2);
-  if(!myVeh)shell(tmpV2.x,tmpV2.y,tmpV2.z,m[0]*sr+m[4]*su+me.vx,m[1]*sr+m[5]*su,m[2]*sr+m[6]*su+me.vz);
+  if(!myVeh&&!WG)shell(tmpV2.x,tmpV2.y,tmpV2.z,m[0]*sr+m[4]*su+me.vx,m[1]*sr+m[5]*su,m[2]*sr+m[6]*su+me.vz);
   me.shots++;me.hit=[r1(ex),r1(ey),r1(ez)];
-  recP+=W.rec*(1-0.35*a)*rnd(0.85,1.2);recY+=rnd(-1,1)*W.rec*0.4*(1-0.4*a);kick=W.rec>0.03?2.2:1;boltT=0.06;flashT=W.rec>0.03?0.06:0.035;
+  recP+=W.rec*(1-0.35*a)*rnd(0.85,1.2);recY+=rnd(-1,1)*W.rec*0.4*(1-0.4*a);kick=W.rec>0.03?2.2:1;boltT=0.06;flashT=WG?0:(W.rec>0.03?0.06:0.035);
   muzzle.rotation.z=Math.random()*6.283;muzzle.scale.setScalar(rnd(0.7,1.25)*(W.rec>0.03?1.5:1));muzzle2.scale.set(rnd(0.7,1.2),rnd(0.7,1.3),1);
   me.spread=Math.min(1,me.spread+(W.rate>0.5?0.6:0.2));
-  sGun(W.vol,0,false);
-  if(W.rec>0.03){burst({dur:0.4,type:'lowpass',f:380,f1:80,v:0.75,rv:0.5});if(W.pel>1){sClick(0.3,900,0.3);sClick(0.46,1250,0.3);}else{sClick(0.4,1600,0.25);sClick(0.66,2200,0.25);}}
+  if(WG)sSquirt(W.rec>0.03?1.6:1);else sGun(W.vol,0,false);
+  if(W.rec>0.03&&!WG){burst({dur:0.4,type:'lowpass',f:380,f1:80,v:0.75,rv:0.5});if(W.pel>1){sClick(0.3,900,0.3);sClick(0.46,1250,0.3);}else{sClick(0.4,1600,0.25);sClick(0.66,2200,0.25);}}
   if(me.ammo===0)startReload();
 }
 function updGun(dt){
@@ -4870,7 +4955,7 @@ bigEl.addEventListener('wheel',function(e){e.preventDefault();bigZ=clamp(bigZ*(e
 function hold(b,fn){b.addEventListener('pointerdown',function(e){e.preventDefault();fn(true);try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',function(){fn(false);});b.addEventListener('pointercancel',function(){fn(false);});}
 hold(bUp,function(v){heliUp=v;});hold(bDn,function(v){heliDn=v;});
-window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyP')setPause(!paused);if(e.code==='KeyV')setTps(!tps);if(me.inGame&&NET.mode==='coop'){if(e.code==='KeyY'){elChatP.classList.toggle('off');try{if(document.exitPointerLock)document.exitPointerLock();}catch(_){}}if(e.code==='KeyN')vcToggle();}if(e.code==='Tab'){e.preventDefault();if(me.inGame){try{if(document.exitPointerLock)document.exitPointerLock();}catch(_){}openSocial(0);}}if(e.code==='KeyB')setPack(!packOpen);if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
+window.addEventListener('keydown',function(e){if(e.target&&(e.target.id==='nm'||e.target.id==='rid'))return;if(KIDS.over){e.preventDefault();return;}keys[e.code]=true;if(e.code==='KeyR')startReload();if(e.code==='KeyE'||e.code==='KeyF')useReq=true;if(e.code==='KeyM')toggleMap();if(e.code==='KeyP')setPause(!paused);if(e.code==='KeyV')setTps(!tps);if(me.inGame&&NET.mode==='coop'){if(e.code==='KeyY'){elChatP.classList.toggle('off');try{if(document.exitPointerLock)document.exitPointerLock();}catch(_){}}if(e.code==='KeyN')vcToggle();}if(e.code==='Tab'){e.preventDefault();if(me.inGame){try{if(document.exitPointerLock)document.exitPointerLock();}catch(_){}openSocial(0);}}if(e.code==='KeyB')setPack(!packOpen);if(e.code==='KeyQ')swapWeapon();if(e.code==='KeyH')useBand();if(e.code==='KeyJ')useKit();if(e.code==='KeyG')throwNade();if(e.code==='Digit1')takeItem(0);if(e.code==='Digit2')takeItem(1);if(e.code==='Digit3')takeItem(2);if(e.code==='KeyT'){auto=!auto;showAuto();}if(e.code==='Space')e.preventDefault();});
 window.addEventListener('keyup',function(e){keys[e.code]=false;});
 window.addEventListener('blur',function(){keys={};mouseDown=false;adsHeld=false;});
 
@@ -4956,7 +5041,7 @@ function drawHud(dt){
   if(H){
     el.wave.appendChild(document.createTextNode(practice?'プラクティス':(H.w>0?('WAVE '+H.w):'準備中')));
     var s=document.createElement('small');
-    s.textContent=practice?'ロボットは来ません':H.st==='fight'?('敵 残り '+(H.left+H.e.length)+'　撃破 '+H.k):(H.w>0?'次のウェーブまで '+Math.ceil(Math.max(0,H.t))+'秒':'まもなく開始');
+    s.textContent=practice?'ロボットは来ません':H.st==='fight'?((KIDS.on?'ロボット のこり ':'敵 残り ')+(H.left+H.e.length)+(KIDS.on?(KIDS.water?'　こしょう ':'　たおした '):'　撃破 ')+H.k):(H.w>0?'次のウェーブまで '+Math.ceil(Math.max(0,H.t))+'秒':'まもなく開始');
     el.wave.appendChild(s);
   }
   el.mates.textContent='';
@@ -5013,6 +5098,7 @@ var FOGD=0.00021;
   prB.addEventListener('click',function(){practice=true;start('solo');banner('プラクティス','ロボットも毒ガスも来ません。自由に練習できます',5);});
   var hrB=el('button','heroBtn','sbtn','',a3);hrB.type='button';hrB.style.height='44px';hrB.style.fontSize='14px';function hrT(){hrB.textContent='キャラモード：'+(HERO.on?'ON（相棒がついてくる）':'OFF');hrB.style.borderColor=HERO.on?'var(--signal)':'';hrB.style.color=HERO.on?'var(--signal)':'';}hrT();hrB.addEventListener('click',function(){HERO.set(!HERO.on);hrT();});
   var a4=el('div','','acts');card.insertBefore(a4,a2);socialBtns(a4);
+  var a5=el('div','','acts');card.insertBefore(a5,a3);var kdB=el('button','kidsBtn','sbtn','キッズモード（時間をきめて遊ぶ）',a5);kdB.type='button';kdB.style.height='44px';kdB.style.fontSize='14px';kdB.style.borderColor='#ffe36a';kdB.style.color='#ffe36a';
   function pop(id,title){
     var root=el('div',id,'pop off',null,document.body),box=el('div','','box',null,root),h=el('h2','','',null,box);h.appendChild(document.createTextNode(title));
     var x=el('button','','x','✕ 閉じる',h);x.type='button';var body=el('div','','',null,box);body.style.display='flex';body.style.flexDirection='column';body.style.gap='10px';
@@ -5031,7 +5117,7 @@ var FOGD=0.00021;
   sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
   sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['Cマート','世界のコーラが集まるコンビニ。品出し：納品ケースを同じ色に光る棚へ6つ。武器強化とコイン。早いほど高ランク'],['レジ','コインでコーラ・イカフライ・弾・装備を買う'],['回復','包帯、応急処置セット、コーラ、イカフライ、バーベキュー']]);
   sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部。乗ったまま、見ている方向へ撃てる（視点を回せば横や後ろも）'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['クルーズ船','岸壁からタラップで乗船。3階吹き抜けのプロムナードに店が並ぶ。入ってすぐのクリスタルの螺旋階段を回って上の階へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
-  sec('そのほか',[['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
+  sec('そのほか',[['キッズモード','あそぶ時間を決めて始める。時間になると「おしまい」と出て止まる。みずでっぽう（ロボットを故障させるだけ）か、じゅうを選べる。ひとり用'],['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
   grid=grids[1];
   if(isTouch){
     sec('動く・見る',[['画面の左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面の右をドラッグ','向きを変える'],['右上の丸いスティック','首だけ振って周りや後ろを見る']]);
@@ -5081,6 +5167,19 @@ var FOGD=0.00021;
   coopB.addEventListener('click',function(){cp.open();status.textContent='接続しています';netInit(function(){lobbyOpen();});});
   mk.addEventListener('click',function(){if(!NET.kind||NET.kind==='none'){status.textContent='まだ接続できていません。少し待ってからもう一度押してください';return;}start('coop',String(1000+Math.floor(Math.random()*9000)),true);});
   goB.addEventListener('click',function(){start('solo','',false);});
+  // kids mode: how long to play, and which way to play
+  var kp=pop('kidsPop','キッズモード'),kMin=10,kWat=1,kTb=[],kSb=[];
+  try{var ks=JSON.parse(localStorage.getItem('ic_kids')||'null');if(Array.isArray(ks)&&fin(ks[0])&&ks[0]>=1&&ks[0]<=60){kMin=ks[0];kWat=ks[1]?1:0;}}catch(e){}
+  function kLab(t){var d=el('div','','',t,kp.body);d.style.cssText='font:700 14px var(--body);color:var(--signal)';}
+  function kShow(){kTb.forEach(function(q){q[0].classList.toggle('on',q[1]===kMin);});kSb.forEach(function(q){q[0].classList.toggle('on',q[1]===kWat);});}
+  kLab('あそぶ時間（時間になると「おしまい」と出て止まります）');var kr=el('div','','',null,kp.body);kr.style.cssText='display:flex;gap:6px;flex-wrap:wrap';
+  [5,10,15,20,30,45,60].forEach(function(m){var b=el('button','','ht',m+'分',kr);b.type='button';b.style.minWidth='64px';kTb.push([b,m]);b.addEventListener('click',function(){kMin=m;kShow();});});
+  kLab('あそびかた');var ks2=el('div','','',null,kp.body);ks2.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
+  [[1,'みずでっぽう','ロボットに水をかけて「こしょう」させる。爆発や炎は出ません'],[0,'じゅう','ロボットをうってたおす（いつものあそびかた）']].forEach(function(o){var b=el('button','','ht',null,ks2);b.type='button';b.style.cssText='height:auto;min-width:200px;padding:10px;display:flex;flex-direction:column;gap:4px;align-items:center';el('b','','',o[1],b).style.fontSize='17px';var s=el('span','','',o[2],b);s.style.cssText='font-size:12px;font-weight:400;line-height:1.4';kSb.push([b,o[0]]);b.addEventListener('click',function(){kWat=o[0];kShow();});});
+  el('div','','','ひとり用です。受けるダメージは少なめで、ライフは減りません。記録やランキングには残りません。',kp.body).style.cssText='font-size:12px;color:var(--dim);line-height:1.5';
+  var kGo=el('button','kidsGo','cbtn blue','スタート',kp.body);kGo.type='button';kShow();
+  kdB.addEventListener('click',kp.open);
+  kGo.addEventListener('click',function(){practice=false;kp.root.classList.add('off');start('solo','',false);kidsStart(kMin,kWat);banner('キッズモード',(kWat?'みずでっぽうで ロボットを こしょうさせよう':'ロボットを たおそう')+'　'+kMin+'ふんで おしまい',5);});
   nm.addEventListener('keydown',function(e){if(e.key==='Enter')start('solo','',false);});
 })();
 
