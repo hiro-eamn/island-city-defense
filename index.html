@@ -4074,7 +4074,8 @@ function drawPack(){
   elPack=el('div','pack','off');var ph=el('h2','','','リュック',elPack),px=el('button','','','✕ 閉じる',ph);px.type='button';px.addEventListener('pointerdown',function(e){e.preventDefault();setPack(false);});el('div','','g',null,elPack);
   elPause=el('div','pause','off');var pb=el('div','','box',null,elPause);el('h2','','','PAUSE',pb);el('div','','n','',pb);
   var r1b=el('button','pzResume','go','再開する',pb),r2b=el('button','pzHelp','','ルール・操作',pb),r3b=el('button','pzQuit','','タイトルに戻る',pb);r1b.type=r2b.type=r3b.type='button';var r4b=el('button','pzHero','','キャラモード',pb);r4b.type='button';pb.insertBefore(r4b,r3b);var r6b=el('button','pzSoc','','ランキング・マイデータ',pb);r6b.type='button';pb.insertBefore(r6b,r4b);r6b.addEventListener('click',function(){openSocial();});var r5b=el('button','pzSnd','','音',pb);r5b.type='button';pb.insertBefore(r5b,r3b);r5b.addEventListener('click',function(){setSound(!soundOn);r5b.textContent='音：'+(soundOn?'ON':'OFF');});r4b.addEventListener('click',function(){HERO.set(!HERO.on);r4b.textContent='キャラモード：'+(HERO.on?'ON':'OFF');});
-  r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});r3b.addEventListener('click',function(){try{location.reload();}catch(e){}});
+  r1b.addEventListener('click',function(){setPause(false);});r2b.addEventListener('click',function(){var h=document.getElementById('helpBtn');if(h)h.click();});var qT=0;function qOff(){clearTimeout(qT);qT=0;r3b.textContent='タイトルに戻る';r3b.style.borderColor='';r3b.style.color='';}
+  r3b.addEventListener('click',function(){if(qT){try{location.reload();}catch(e){}return;}r3b.textContent='本当に戻る？ もう一度押すと戻ります';r3b.style.borderColor='#ff6a4d';r3b.style.color='#ffb3a3';qT=setTimeout(qOff,4000);});   // asked twice: the game in progress is lost
   elTip=el('div','tip','off');var tb=el('div','','box',null,elTip);tipT=el('div','','t','',tb);var tk=el('button','','','OK',tb);tk.type='button';tk.addEventListener('click',function(){elTip.classList.add('off');});
   var gunKey='',chipSig='?',GUNS={rifle:I.gun,
     smg:'<svg viewBox="0 0 48 24"><path fill="currentColor" d="M8 8h22V6h3v2h8v3h-9l-2 3h-5l-1 8h-5l1-8h-6l-2 3h-4l2-6H8z"/></svg>',
@@ -4100,6 +4101,11 @@ var tps=false,myBody=null,myBodyKey='',bView;
 try{tps=localStorage.getItem('ic_tps')==='1';}catch(e){}
 function scopedNow(){return useScope()&&me.ads>0.86;}
 function setTps(v){tps=v;try{localStorage.setItem('ic_tps',v?'1':'0');}catch(e){}bView.classList.toggle('on',v);if(me.inGame)banner(v?'三人称視点':'一人称視点','',1.2);}
+function runFace(o,yaw,vx,vz,busy,dt){ // the body turns to where the feet are going when running and not shooting, otherwise to where the eyes look; returns how far the shoulders must turn back toward the view
+  var t=yaw,d;if(Math.hypot(vx,vz)>2.2&&!busy)t=Math.atan2(-vx,-vz);
+  if(o.by===undefined)o.by=yaw;d=t-o.by;d=Math.atan2(Math.sin(d),Math.cos(d));o.by+=d*Math.min(1,dt*9);
+  d=yaw-o.by;return clamp(Math.atan2(Math.sin(d),Math.cos(d)),-0.5,0.5)*0.5;
+}
 function updBody(dt){
   var show=tps&&me.inGame&&!myVeh&&!scopedNow(),key=JSON.stringify(myFace);
   if(show&&(!myBody||myBodyKey!==key)){if(myBody)scene.remove(myBody.g);myBody=makePlayer('me',' ',myFace);myBody.g.remove(myBody.sp);myBodyKey=key;}
@@ -4110,9 +4116,10 @@ function updBody(dt){
   myBody.lL.th.rotation.x=s*0.6*a;myBody.lR.th.rotation.x=-s*0.6*a;myBody.lL.sh.rotation.x=-(0.15+0.75*Math.max(0,c))*a;myBody.lR.sh.rotation.x=-(0.15+0.75*Math.max(0,-c))*a;
   myBody.hips.position.y=0.95-0.03*a+Math.abs(c)*0.03*a+Math.sin(now*1.7)*0.004;
   var rl=me.reload>0?Math.sin((1-me.reload/RELOAD)*Math.PI):0,aim=clamp(me.pitch+headPitch,-1.0,1.0)*0.8;
-  myBody.up.rotation.set(aim+kick*0.035-rl*0.32+me.sprint*0.1,clamp(headYaw,-0.9,0.9)*0.55+s*0.07*a,-s*0.03*a);
+  var tw=runFace(myBody,me.yaw,me.vx,me.vz,firing||mouseDown||me.ads>0.2||flashT>0||me.reload>0||me.down,dt);
+  myBody.up.rotation.set((aim+kick*0.035-rl*0.32)*(1-Math.min(1,Math.abs(tw)*3))+me.sprint*0.1,clamp(headYaw,-0.9,0.9)*0.55+s*0.07*a+tw,-s*0.03*a);
   myBody.flash.visible=flashT>0;if(myBody.flash.visible)myBody.flash.rotation.z=Math.random()*6.28;
-  myBody.g.position.set(me.x,meGy,me.z);myBody.g.rotation.set(-0.16*me.sprint-0.04*a,me.yaw,0);
+  myBody.g.position.set(me.x,meGy,me.z);myBody.g.rotation.set(0,myBody.by,0);myBody.g.rotateX(-0.16*me.sprint-0.04*a);
   if(me.down){myBody.g.rotation.x=-Math.PI/2;myBody.g.position.y=meGy+0.25;}
 }
 function tpsCamera(){ // pull the camera back over the right shoulder; come in close when a wall is behind
@@ -5407,6 +5414,28 @@ var FOGD=0.00021;
   var a5=el('div','','acts');card.insertBefore(a5,a3);var kdB=el('button','kidsBtn','sbtn','キッズモード（時間をきめて遊ぶ）',a5);kdB.type='button';kdB.style.height='44px';kdB.style.fontSize='14px';kdB.style.borderColor='#ffe36a';kdB.style.color='#ffe36a';
   var more=el('div','moreBox','off');card.insertBefore(more,a3);more.appendChild(a3);more.appendChild(a4);card.insertBefore(a2,more);var a6=el('div','','acts',null,more);a6.appendChild(histB);
   var moreB=el('button','moreBtn','sbtn','その他 ▾',a2);moreB.type='button';moreB.addEventListener('click',function(){var o=more.classList.toggle('off');moreB.textContent=o?'その他 ▾':'その他 ▴';});
+  // the start card shows everything at once, in three tiers: how to play (solo, co-op), the two gentler ways in (kids, practice), then four small buttons. Name and avatar live behind the chip in the top right corner; the name box stays on the card only until a name has been saved
+  var st2=el('style','','',null,document.head);st2.textContent=[
+  '#card .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}','#card .g2 .sbtn{min-width:0;height:42px!important;font-size:13px!important;padding:0 6px}','#card .g2.q .sbtn{height:38px!important;font-size:12px!important;background:rgba(255,255,255,.07)}',
+  '#meBtn{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));z-index:3;display:flex;align-items:center;gap:8px;height:46px;max-width:46vw;padding:0 14px 0 6px;font:700 13px var(--body);color:var(--ink);background:rgba(10,20,34,.74);border:1px solid rgba(255,255,255,.45);border-radius:24px}',
+  '#meBtn canvas{flex:none;width:34px;height:34px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,.12)}','#meBtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}','#meBtn small{font:11px var(--body);opacity:.7}',
+  '#mePop .mrow{display:flex;flex-direction:column;gap:6px;font:700 13px var(--body);color:var(--ink)}','#meNm{height:44px;padding:0 12px;font:700 16px var(--body);color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.45);border-radius:4px}',
+  '#mePop #avBtn{flex:none;height:54px;justify-content:flex-start}','#mePop .sbtn{flex:none;height:44px}','#mePop .mnote{margin:0;font:13px/1.5 var(--body);color:var(--ink);opacity:.7}',
+  '@media (orientation:landscape) and (max-height:540px){#card .g2.q{grid-template-columns:repeat(4,1fr)}#card .g2.q .sbtn{font-size:11px!important;height:34px!important}#card .g2 .sbtn{height:38px!important}#meBtn{height:40px;top:6px}#meBtn canvas{width:30px;height:30px}}'].join('\n');
+  more.classList.remove('off');moreB.remove();
+  a5.className='g2';a5.appendChild(prB);kdB.textContent='キッズモード';prB.textContent='プラクティス（練習）';helpB.textContent='ルール・操作';
+  hrT=function(){hrB.textContent='キャラモード：'+(HERO.on?'ON':'OFF');hrB.style.borderColor=HERO.on?'var(--signal)':'';hrB.style.color=HERO.on?'var(--signal)':'';};hrT();
+  var g4=el('div','','g2 q');card.insertBefore(g4,more);[helpB,$('socBtn'),hrB,histB].forEach(function(q){if(q)g4.appendChild(q);});
+  var mp=pop('mePop','マイページ'),meB=el('button','meBtn','',null,$('start')),mc=document.createElement('canvas'),ml=el('span','','','',meB);meB.type='button';mc.width=68;mc.height=68;meB.insertBefore(mc,ml);meB.setAttribute('aria-label','マイページ（なまえ・アバター・マイデータ）');
+  var mr=el('label','','mrow',null,mp.body);mr.appendChild(document.createTextNode('なまえ（10文字まで）'));var mi=el('input','meNm','',null,mr);mi.type='text';mi.maxLength=10;mi.autocomplete='off';
+  if(av){mp.body.appendChild(av);av.lastChild.textContent='アバターを作る・変える';av.addEventListener('click',function(){mp.close();});}
+  var md=el('button','','sbtn','ランキング・マイデータを見る',mp.body);md.type='button';md.addEventListener('click',function(){mp.close();openSocial();});
+  el('p','','mnote','なまえとアバターは、この端末のこのブラウザに保存されます。',mp.body);
+  function meShow(){var n=(nm.value||'').trim();if(ml.textContent!==(n||'マイページ'))ml.textContent=n||'マイページ';var pv0=av&&av.querySelector('canvas');if(pv0){try{var g2=mc.getContext('2d');g2.clearRect(0,0,68,68);g2.drawImage(pv0,0,0,pv0.width,pv0.width,0,0,68,68);}catch(e){}}}
+  mi.addEventListener('input',function(){nm.value=mi.value.slice(0,10);var n=nm.value.trim();try{if(n)localStorage.setItem('ic_name',n);}catch(e){}meShow();});
+  nm.addEventListener('input',meShow);meB.addEventListener('click',function(){mi.value=nm.value;mp.open();});mp.onClose=meShow;
+  if(nm.value){nm.style.display='none';goB.style.flex='1';}
+  more.remove();a2.remove();meShow();setInterval(function(){if(!$('start').classList.contains('off'))meShow();},1000);
   function pop(id,title){
     var root=el('div',id,'pop off',null,document.body),box=el('div','','box',null,root),h=el('h2','','',null,box);h.appendChild(document.createTextNode(title));
     var x=el('button','','x','✕ 閉じる',h);x.type='button';var body=el('div','','',null,box);body.style.display='flex';body.style.flexDirection='column';body.style.gap='10px';
@@ -5527,7 +5556,8 @@ function updateRemotePlayers(dt){
     var s=Math.sin(v.ph),c=Math.cos(v.ph),a=v.amp;
     v.lL.th.rotation.x=s*0.6*a;v.lR.th.rotation.x=-s*0.6*a;v.lL.sh.rotation.x=-(0.15+0.75*Math.max(0,c))*a;v.lR.sh.rotation.x=-(0.15+0.75*Math.max(0,-c))*a;
     v.hips.position.y=0.95-0.03*a+Math.abs(c)*0.03*a;
-    var gy=SHIP?SHIP.h(v.x,v.z):0;v.g.position.set(v.x,gy,v.z);v.g.rotation.set(0,v.yaw,0);v.g.visible=!o.v;
+    var gy=SHIP?SHIP.h(v.x,v.z):0;if(v.bt>0)v.bt-=dt;var tw=runFace(v,v.yaw,(v.x-px)/Math.max(dt,1e-3),(v.z-pz)/Math.max(dt,1e-3),v.bt>0||o.hp<=0,dt);if(v.up)v.up.rotation.y=tw;
+    v.g.position.set(v.x,gy,v.z);v.g.rotation.set(0,v.by,0);v.g.visible=!o.v;
     if(o.hp<=0){v.g.rotation.x=-Math.PI/2;v.g.position.y=gy+0.25;}
     if(o.s&&fin(o.s[0])){
       if(v.shots!==null&&o.s[0]!==v.shots&&fin(o.s[1])&&fin(o.s[2])&&fin(o.s[3])){
@@ -5536,7 +5566,7 @@ function updateRemotePlayers(dt){
         sparks.emit(mxx,1.3,mzz,0,0,0,0.06,0.9,0,8,5.5,2.5,1,0,0);
         var dd=Math.hypot(v.x-me.x,v.z-me.z);if(dd<160)sGun(0.5*(1-dd/160),panOf(v.x,v.z),dd>25);
       }
-      v.shots=o.s[0];
+      if(v.shots!==o.s[0])v.bt=0.8;v.shots=o.s[0];
     }
   });
   pviews.forEach(function(v,peer){if(!seen[peer]){scene.remove(v.g);pviews.delete(peer);}});
