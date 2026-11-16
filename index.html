@@ -2768,7 +2768,7 @@ function engine(on,kind){ // one running-engine voice, retuned every frame
 function enterVeh(V){
   myVeh=V;V.occ=true;camYaw=V.yaw;vLookYaw=0;vLookPitch=0;vSetYaw=me.yaw;me.pitch=0;firing=false;adsTog=false;me.reload=0;
   sClick(0,700,0.3);burst({dur:0.12,type:'lowpass',f:300,v:0.3,t0:0.05});engine(true,V.type);
-  banner((V.boost?'スポーツカー':VT[V.type].name)+'に乗った','乗ったまま、見ている方向へ撃てます（視点を回せば横や後ろも）',2.6);
+  if(KIDS.on)banner((V.boost?'スポーツカー':VT[V.type].name)+'に のったよ','しゅっぱつ！',2.2);else banner((V.boost?'スポーツカー':VT[V.type].name)+'に乗った','乗ったまま、見ている方向へ撃てます（視点を回せば横や後ろも）',2.6);
   if(V.type!=='heli'){burst({dur:0.5,type:'lowpass',f:700,f1:200,v:0.25,t0:0.12});}
 }
 function leaveVeh(){
@@ -2861,10 +2861,11 @@ function updVehicles(dt,jx,jy,use){
     if(V){
       promptTxt=(V.boost?'スポーツカー':VT[V.type].name)+'に乗る';promptAct=true;
       var tdx=V.x-me.x,tdz=V.z-me.z,td=Math.hypot(tdx,tdz)||1;                       // walking into it also gets you in
-      if(use||(now>noEnterT&&(V.car!==undefined?V.nd<0.75:td<VT[V.type].touch)&&(me.vx*tdx+me.vz*tdz)/td>1.2)){if(V.car!==undefined)V=wakeCar(V.car);if(V)enterVeh(V);}
+      if(KIDS.on&&KIDS.learn){promptTxt+='（クイズに こたえよう）';if(use&&now>noEnterT)lqOpen(V);}   // learning: the button brings up a quiz first, and walking into it does nothing
+      else if(use||(now>noEnterT&&(V.car!==undefined?V.nd<0.75:td<VT[V.type].touch)&&(me.vx*tdx+me.vz*tdz)/td>1.2)){if(V.car!==undefined)V=wakeCar(V.car);if(V)enterVeh(V);}
     }else if(!promptTxt){
       var nb=null,nd=14;for(i=0;i<VEH.length;i++){var W2=VEH[i];if(W2.remote||W2.y>0.5)continue;var d2=Math.hypot(W2.x-me.x,W2.z-me.z);if(d2<nd){nd=d2;nb=W2;}}
-      if(nb)promptTxt=VT[nb.type].name+'が近くにあります。そのまま歩いて触れると乗れます';
+      if(nb)promptTxt=KIDS.on&&KIDS.learn?VT[nb.type].name+'が ちかくに あるよ。そばで ボタンを おすと クイズが でるよ':VT[nb.type].name+'が近くにあります。そのまま歩いて触れると乗れます';
     }
   }
   for(i=0;i<VEH.length;i++){
@@ -3906,7 +3907,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -4011,7 +4012,7 @@ function fsTip(){ // shown where the browser cannot go full screen
   elTip.classList.remove('off');
 }
 function setPause(v){
-  if(!me.inGame||KIDS.over)return;
+  if(!me.inGame||KIDS.over||LQ.open)return;
   paused=v;elPause.classList.toggle('off',!v);var sb=document.getElementById('pzSnd');if(sb)sb.textContent='音：'+(soundOn?'ON':'OFF');var hb=document.getElementById('pzHero');if(hb)hb.textContent='キャラモード：'+(HERO.on?'ON':'OFF');firing=false;mouseDown=false;adsHeld=false;keys={};
   elPause.querySelector('.n').textContent=NET.mode==='coop'?'協力プレイ中は、ほかの人のためにゲームは止まりません。':'ゲームを止めています。';
   try{if(ac&&NET.mode!=='coop'){if(v)ac.suspend();else ac.resume();}}catch(e){}
@@ -4679,7 +4680,7 @@ function socialBtns(rowEl){var b=document.createElement('button');b.type='button
 })();
 
 /* ---------- kids mode: a play-time limit chosen at the start, an end screen when it runs out, and a choice between the usual guns and water pistols that only make the robots break down ---------- */
-var KIDS={on:false,water:false,min:10,t0:0,end:0,over:false,w1:false,el:null,box:null,iv:0};
+var KIDS={on:false,water:false,learn:0,min:10,t0:0,end:0,over:false,w1:false,el:null,box:null,iv:0};
 function fxWater(x,y,z,n,nx,ny,nz){
   for(var k=0;k<n;k++){var s=rnd(1.5,5);sparks.emit(x,y,z,((nx||0)*0.6+rnd(-0.7,0.7))*s,((ny||0)*0.6+rnd(0,1))*s,((nz||0)*0.6+rnd(-0.7,0.7))*s,rnd(0.25,0.55),rnd(0.05,0.1),-0.04,0.5,1.5,3.2,0.9,13,1);}
   smoke.emit(x,y,z,rnd(-0.3,0.3),rnd(0.3,0.9),rnd(-0.3,0.3),rnd(0.35,0.6),0.18,0.9,0.75,0.9,1,0.35,0,2);
@@ -4718,9 +4719,9 @@ function kidsWreck(w,dt){
   if(w.t<6){w.smk-=dt;if(w.smk<=0){w.smk=0.3+w.t*0.1;fxSmoke(w.g.position.x,w.h*0.85,w.g.position.z,1,0.4*w.sc,false);}}
 }
 function kidsFmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
-function kidsStart(min,water){
-  KIDS.on=true;KIDS.water=!!water;KIDS.min=min;KIDS.t0=Date.now();KIDS.end=KIDS.t0+min*60000;KIDS.over=false;KIDS.w1=false;
-  try{localStorage.setItem('ic_kids',JSON.stringify([min,water?1:0]));}catch(e){}
+function kidsStart(min,water,learn){
+  KIDS.on=true;KIDS.water=!!water;KIDS.min=min;KIDS.t0=Date.now();KIDS.end=KIDS.t0+min*60000;KIDS.over=false;KIDS.w1=false;KIDS.learn=learn||0;LQ.n=0;
+  try{localStorage.setItem('ic_kids',JSON.stringify([min,water?1:0,KIDS.learn]));}catch(e){}
   if(water){
     WPN.rifle.name='みずでっぽう';WPN.smg.name='れんしゃ みずでっぽう';WPN.shot.name='シャワー みずでっぽう';WPN.snip.name='ロング みずでっぽう';
     ITEM.smg.n=WPN.smg.name;ITEM.shot.n=WPN.shot.name;ITEM.snip.n=WPN.snip.name;ITEM.nade.n='みずふうせん ×2';ITEM.scope.n='ぼうえんきょう';ITEM.armor.n='プロテクター';ITEM.band.n='ばんそうこう ×2';ITEM.kit.n='げんきセット';
@@ -4739,10 +4740,11 @@ function kidsTick(){
   if(left<=0)kidsEnd();
 }
 function kidsEnd(){
-  if(KIDS.over)return;KIDS.over=true;clearInterval(KIDS.iv);
+  if(KIDS.over)return;KIDS.over=true;clearInterval(KIDS.iv);if(LQ.open)lqClose(false);
   var k=hs?hs.k:0,b=KIDS.box;
   b.querySelector('.m').textContent=KIDS.min+'ふん あそんだよ';
   b.querySelector('.k').textContent='ロボットを '+k+'だい '+(KIDS.water?'こしょうさせた！':'たおした！');
+  b.querySelector('.q').textContent=KIDS.learn&&LQ.n?'クイズに '+LQ.n+'かい せいかい！':'';b.querySelector('.q').style.display=KIDS.learn&&LQ.n?'':'none';
   KIDS.el.classList.add('off');b.parentNode.classList.remove('off');
   firing=false;mouseDown=false;adsHeld=false;adsTog=false;keys={};joy.x=joy.y=0;autoRun=false;
   try{if(document.exitPointerLock)document.exitPointerLock();}catch(e){}
@@ -4766,7 +4768,7 @@ function kidsEnd(){
   document.head.appendChild(st);
   KIDS.el=el('div','kidsT','off','',$('tl'));$('tl').insertBefore(KIDS.el,$('tl').firstChild);
   var root=el('div','kidsEnd','off'),box=el('div','','box',null,root);KIDS.box=box;
-  el('h2','','','おしまい！',box);el('p','','','やくそくの じかんに なりました',box);el('p','','s m','',box);el('p','','s k','',box);el('p','','','また こんど あそぼうね',box);
+  el('h2','','','おしまい！',box);el('p','','','やくそくの じかんに なりました',box);el('p','','s m','',box);el('p','','s k','',box);el('p','','s q','',box);el('p','','','また こんど あそぼうね',box);
   var hb=el('button','kidsHold','',null,box),ht=0;hb.type='button';el('i','','',null,hb);el('span','','','おうちの人へ：3びょう ながおしで タイトルにもどる',hb);
   function up(){clearTimeout(ht);hb.classList.remove('h');}
   hb.addEventListener('pointerdown',function(e){e.preventDefault();up();void hb.offsetWidth;hb.classList.add('h');ht=setTimeout(function(){try{location.reload();}catch(_){}} ,3000);});
@@ -4774,6 +4776,138 @@ function kidsEnd(){
   hb.addEventListener('contextmenu',function(e){e.preventDefault();});
 })();
 
+/* ---------- kids mode, learning: before getting into a vehicle a small quiz comes up (numbers 1-5, weather, colours, shapes); the game stands still while it is open, a wrong answer costs nothing ---------- */
+var LQ={open:false,V:null,root:null,t:null,show:null,row:null,msg:null,last:'',say:'',ord:0,done:false,n:0};
+function lqPick(a){return a[Math.floor(Math.random()*a.length)];}
+function lqShuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function lqWith(all,x,n){return lqShuf([x].concat(lqShuf(all.filter(function(q){return q!==x;})).slice(0,n)));}
+function lqSvg(s,inner){return '<svg viewBox="0 0 100 100" width="'+s+'" height="'+s+'" aria-hidden="true">'+inner+'</svg>';}
+function lqDice(n,s){
+  var P=[[],[[50,50]],[[30,30],[70,70]],[[28,28],[50,50],[72,72]],[[30,30],[70,30],[30,70],[70,70]],[[28,28],[72,28],[50,50],[28,72],[72,72]]][n];
+  return lqSvg(s,'<rect x="6" y="6" width="88" height="88" rx="16" fill="#fff" stroke="#17365a" stroke-width="5"/>'+P.map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="9.5" fill="'+(n===1?'#e8412c':'#17365a')+'"/>';}).join(''));
+}
+var LQ_SH={
+  'まる':'<circle cx="50" cy="50" r="40"/>','さんかく':'<polygon points="50,10 92,86 8,86"/>','しかく':'<rect x="12" y="12" width="76" height="76" rx="4"/>',
+  'ほし':'<polygon points="50,6 61,37 94,37 67,57 77,89 50,70 23,89 33,57 6,37 39,37"/>','ハート':'<path d="M50 88 C8 58 6 30 27 21 C40 16 50 26 50 35 C50 26 60 16 73 21 C94 30 92 58 50 88Z"/>'
+};
+function lqShape(k,col,s){return lqSvg(s,'<g fill="'+col+'" stroke="#17365a" stroke-width="3" stroke-linejoin="round">'+LQ_SH[k]+'</g>');}
+var LQ_TH={
+  'りんご':'<circle cx="50" cy="58" r="34" fill="#e8412c"/><rect x="47" y="12" width="6" height="18" rx="2" fill="#6b4a2a"/><ellipse cx="66" cy="20" rx="13" ry="6" fill="#3bb54a"/>',
+  'ほし':'<polygon points="50,6 61,37 94,37 67,57 77,89 50,70 23,89 33,57 6,37 39,37" fill="#ffc400" stroke="#b47d00" stroke-width="3" stroke-linejoin="round"/>',
+  'ふうせん':'<ellipse cx="50" cy="40" rx="30" ry="35" fill="#2f7fe0"/><polygon points="50,74 44,82 56,82" fill="#2f7fe0"/><path d="M50 82 Q44 90 52 98" stroke="#17365a" stroke-width="2.5" fill="none"/>',
+  'くるま':'<rect x="8" y="46" width="84" height="26" rx="8" fill="#3bb54a"/><path d="M26 46 L36 26 H66 L76 46Z" fill="#3bb54a"/><path d="M33 44 L40 31 H49 V44Z M53 44 V31 H63 L70 44Z" fill="#dff1ff"/><circle cx="29" cy="74" r="10" fill="#17365a"/><circle cx="71" cy="74" r="10" fill="#17365a"/>'
+};
+function lqThings(k,n,s){var h='';for(var i=0;i<n;i++)h+=lqSvg(s,LQ_TH[k]);return '<span class="th">'+h+'</span>';}
+var LQ_CL='<g fill="#b9c4d2"><circle cx="34" cy="50" r="17"/><circle cx="54" cy="40" r="22"/><circle cx="72" cy="52" r="15"/><rect x="24" y="48" width="58" height="19" rx="9"/></g>';
+var LQ_WX={
+  'はれ':'<circle cx="50" cy="50" r="21" fill="#ffb300"/><g stroke="#ffb300" stroke-width="7" stroke-linecap="round"><path d="M50 8V19M50 81V92M8 50H19M81 50H92M20 20L28 28M72 72L80 80M80 20L72 28M28 72L20 80"/></g>',
+  'くもり':'<g transform="translate(-4 -4)">'+LQ_CL+'</g><g transform="translate(12 18) scale(.8)" opacity=".75">'+LQ_CL+'</g>',
+  'あめ':'<g transform="translate(-3 -16)">'+LQ_CL+'</g><g stroke="#2f7fe0" stroke-width="6" stroke-linecap="round"><path d="M32 62L26 80M52 62L46 80M72 62L66 80"/></g>',
+  'ゆき':'<g transform="translate(-3 -16)">'+LQ_CL+'</g><g stroke="#39a3f0" stroke-width="4" stroke-linecap="round"><path d="M30 62V80M21 71H39M24 65L36 77M36 65L24 77M68 62V80M59 71H77M62 65L74 77M74 65L62 77"/></g>',
+  'かみなり':'<g transform="translate(-3 -16)"><g fill="#6e7b8c"><circle cx="34" cy="50" r="17"/><circle cx="54" cy="40" r="22"/><circle cx="72" cy="52" r="15"/><rect x="24" y="48" width="58" height="19" rx="9"/></g></g><polygon points="54,50 36,74 48,74 42,96 66,66 53,66 60,50" fill="#ffc400" stroke="#b47d00" stroke-width="2.5" stroke-linejoin="round"/>'
+};
+var LQ_IT={
+  'ぼうし':'<ellipse cx="50" cy="68" rx="44" ry="13" fill="#e8c36a" stroke="#a37c2c" stroke-width="3"/><path d="M26 66 A24 30 0 0 1 74 66Z" fill="#f1d58a" stroke="#a37c2c" stroke-width="3"/><path d="M27 58 H73 V66 H26Z" fill="#e8412c"/>',
+  'かさ':'<path d="M8 54 A42 42 0 0 1 92 54Z" fill="#e8412c" stroke="#17365a" stroke-width="3"/><path d="M50 54 V84 Q50 94 40 92" stroke="#17365a" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 6V14" stroke="#17365a" stroke-width="5" stroke-linecap="round"/>',
+  'てぶくろ':'<ellipse cx="27" cy="52" rx="11" ry="16" fill="#2f7fe0" stroke="#17365a" stroke-width="3" transform="rotate(-25 27 52)"/><rect x="30" y="14" width="42" height="62" rx="20" fill="#2f7fe0" stroke="#17365a" stroke-width="3"/><rect x="28" y="70" width="46" height="18" rx="6" fill="#fff" stroke="#17365a" stroke-width="3"/>'
+};
+var LQ_CO=[['あか','#e8412c'],['あお','#2f7fe0'],['きいろ','#ffd21f'],['みどり','#3bb54a'],['ピンク','#ff8fc0'],['むらさき','#8e5bd6']];
+function lqNum(n){return '<b class="num">'+n+'</b>';}
+function lqWord(w){return '<b class="wd">'+w+'</b>';}
+function lqMake(kind){ // one question: what to ask, what to show, and the answers (one of them right) - or five numbers to press in order
+  var k=kind===5?1+Math.floor(Math.random()*4):kind,v,n,x,o,q={t:'',say:'',show:'',opts:[],ord:false,key:''};
+  if(k===1){
+    v=Math.floor(Math.random()*4);n=1+Math.floor(Math.random()*5);
+    if(v===0){q.t='さいころの めは いくつ？';q.say='さいころの目は、いくつ？';q.show=lqDice(n,104);}
+    else if(v===1){x=lqPick(['りんご','ほし','ふうせん','くるま']);q.t=x+'は いくつ？';q.say=x+'は、いくつ？';q.show=lqThings(x,n,54);}
+    if(v<2){for(o=1;o<=5;o++)q.opts.push({h:lqNum(o),ok:o===n});}
+    else if(v===2){q.t='「'+n+'」と おなじ かずは どれ？';q.say=n+'と、同じ数は、どれ？';q.show=lqNum(n);lqWith([1,2,3,4,5],n,2).forEach(function(m){q.opts.push({h:lqDice(m,70),ok:m===n});});}
+    else{q.t='1から 5まで じゅんばんに おそう';q.say='1から5まで、順番に押そう';q.ord=true;n=0;lqShuf([1,2,3,4,5]).forEach(function(m){q.opts.push({h:lqNum(m),n:m});});}
+    q.key='n'+v+n;
+  }else if(k===2){
+    v=Math.floor(Math.random()*3);
+    if(v===2){
+      x=lqPick(['はれ','あめ','ゆき']);o={'はれ':['ぼうし','かぶる'],'あめ':['かさ','さす'],'ゆき':['てぶくろ','てに はめる']}[x];
+      q.t=x+'の ひに '+o[1]+'のは どれ？';q.say=x+'の日に、'+o[1].replace(' ','')+'のは、どれ？';q.show=lqSvg(100,LQ_WX[x])+lqWord(x);
+      lqShuf(['ぼうし','かさ','てぶくろ']).forEach(function(m){q.opts.push({h:lqSvg(70,LQ_IT[m]),ok:m===o[0]});});
+    }else{
+      x=lqPick(['はれ','あめ','くもり','ゆき','かみなり']);
+      if(v===0){q.t='おなじ てんきは どれ？';q.say=x+'。同じ天気は、どれ？';q.show=lqSvg(100,LQ_WX[x])+lqWord(x);}
+      else{q.t='「'+x+'」は どれ？';q.say=x+'は、どれ？';q.show=lqWord(x);}
+      lqWith(['はれ','あめ','くもり','ゆき','かみなり'],x,2).forEach(function(m){q.opts.push({h:lqSvg(70,LQ_WX[m]),ok:m===x});});
+    }
+    q.key='w'+v+x;
+  }else if(k===3){
+    v=Math.floor(Math.random()*2);x=lqPick(LQ_CO);
+    if(v===0){q.t='「'+x[0]+'」は どれ？';q.say=x[0]+'は、どれ？';q.show=lqWord(x[0]);}
+    else{q.t='おなじ いろは どれ？';q.say=x[0]+'。同じ色は、どれ？';q.show=lqShape('ほし',x[1],100)+lqWord(x[0]);}
+    lqWith(LQ_CO,x,2).forEach(function(m){q.opts.push({h:lqShape(v?'まる':lqPick(['まる','しかく']),m[1],66),ok:m===x});});
+    q.key='c'+v+x[0];
+  }else{
+    v=Math.floor(Math.random()*2);x=lqPick(['まる','さんかく','しかく','ほし','ハート']);
+    if(v===0){q.t='おなじ かたちは どれ？';q.say=x+'。同じ形は、どれ？';q.show=lqShape(x,'#8fa3b8',100)+lqWord(x);}
+    else{q.t='「'+x+'」は どれ？';q.say=x+'は、どれ？';q.show=lqWord(x);}
+    lqWith(['まる','さんかく','しかく','ほし','ハート'],x,2).forEach(function(m){q.opts.push({h:lqShape(m,lqPick(LQ_CO)[1],68),ok:m===x});});
+    q.key='s'+v+x;
+  }
+  return q;
+}
+function lqSay(t){try{if(!soundOn||!window.speechSynthesis||!t)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=0.9;speechSynthesis.speak(u);}catch(e){}}
+function lqAsk(){
+  var q,i=0;do{q=lqMake(KIDS.learn);}while(q.key===LQ.last&&++i<6);LQ.last=q.key;LQ.say=q.say;LQ.ord=q.ord?1:0;LQ.done=false;
+  LQ.t.textContent=q.t;LQ.show.innerHTML=q.show;LQ.show.style.display=q.show?'':'none';LQ.msg.textContent='';LQ.row.textContent='';LQ.row.className='row'+(q.opts.length>3?' five':'');
+  q.opts.forEach(function(o){
+    var b=document.createElement('button');b.type='button';b.className='o';b.innerHTML=o.h;LQ.row.appendChild(b);
+    b.addEventListener('click',function(){
+      if(LQ.done||b.classList.contains('ok'))return;
+      var good=q.ord?o.n===LQ.ord:o.ok;
+      if(!good){b.classList.remove('ng');void b.offsetWidth;b.classList.add('ng');LQ.msg.textContent=q.ord?'つぎは '+LQ.ord+' だよ':'おしい！ もういちど';tone({f:300,f1:240,dur:0.16,v:0.07,type:'triangle'});return;}
+      b.classList.add('ok');
+      if(q.ord&&LQ.ord<5){LQ.ord++;LQ.msg.textContent='';tone({f:440+LQ.ord*60,dur:0.09,v:0.07,type:'triangle'});return;}
+      LQ.done=true;LQ.n++;LQ.msg.textContent='せいかい！ のって いいよ';[523,659,784,1047].forEach(function(f,j){tone({f:f,dur:j===3?0.35:0.12,v:0.08,type:'triangle',t0:j*0.11});});
+      setTimeout(function(){if(LQ.open)lqClose(true);},1000);
+    });
+  });
+  lqSay(q.say);
+}
+function lqOpen(V){
+  if(LQ.open||KIDS.over)return;LQ.open=true;LQ.V=V;paused=true;
+  firing=false;mouseDown=false;adsHeld=false;adsTog=false;keys={};joy.x=joy.y=0;autoRun=false;
+  try{if(document.exitPointerLock)document.exitPointerLock();}catch(e){}
+  try{setPack(false);}catch(e){}
+  LQ.root.classList.remove('off');lqAsk();
+}
+function lqClose(ride){
+  if(!LQ.open)return;LQ.open=false;LQ.root.classList.add('off');try{if(window.speechSynthesis)speechSynthesis.cancel();}catch(e){}
+  if(KIDS.over)return;paused=false;noEnterT=now+1.5;
+  var V=LQ.V;LQ.V=null;if(ride&&V&&!myVeh){if(V.car!==undefined)V=wakeCar(V.car);if(V&&!V.occ)enterVeh(V);}
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent=[
+  '#lq{position:fixed;inset:0;z-index:39;display:flex;align-items:center;justify-content:center;padding:12px max(12px,env(safe-area-inset-right,0px)) 12px max(12px,env(safe-area-inset-left,0px));background:rgba(10,24,44,.8);touch-action:manipulation;-webkit-user-select:none;user-select:none}',
+  '#lq .box{width:min(580px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px;border:3px solid #7fd0ff;border-radius:18px;background:#17365a;text-align:center}',
+  '#lq .t{margin:0;font:900 24px/1.3 var(--body);color:#ffe36a}',
+  '#lq .show{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;min-height:112px;padding:8px;border-radius:14px;background:#f4f8ff}',
+  '#lq .th{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}',
+  '#lq .num{font:900 62px/1 var(--num);color:#17365a}','#lq .wd{font:900 40px/1.1 var(--body);color:#17365a}',
+  '#lq .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}',
+  '#lq .o{display:flex;align-items:center;justify-content:center;width:112px;height:96px;padding:0;border:4px solid #7fd0ff;border-radius:16px;background:#f4f8ff;cursor:pointer}',
+  '#lq .row.five .o{width:88px;height:88px}',
+  '#lq .o.ok{border-color:#3bb54a;background:#d9f6dd}','#lq .o.ng{animation:lqng .4s}','@keyframes lqng{25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}',
+  '#lq .msg{min-height:28px;font:900 20px/1.4 var(--body);color:#fff}',
+  '#lq .ft{display:flex;gap:10px;justify-content:space-between}','#lq .ft button{height:42px;padding:0 16px;font:700 14px var(--body);color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.5);border-radius:8px}',
+  '@media (prefers-reduced-motion:reduce){#lq .o.ng{animation:none;border-color:#ff8a6a}}',
+  '@media (orientation:landscape) and (max-height:540px){#lq{padding-top:6px;padding-bottom:6px}#lq .box{gap:6px;padding:8px 12px;width:min(640px,100%)}#lq .t{font-size:19px}#lq .show{min-height:70px;padding:4px}#lq .show svg{width:62px;height:62px}#lq .th svg{width:40px;height:40px}#lq .num{font-size:46px}#lq .wd{font-size:30px}#lq .o,#lq .row.five .o{width:86px;height:68px}#lq .o svg{width:56px;height:56px}#lq .msg{min-height:22px;font-size:16px}#lq .ft button{height:36px}}',
+  '@media (max-width:420px){#lq .o{width:92px;height:88px}#lq .row.five .o{width:56px;height:64px}#lq .row.five .num{font-size:44px}#lq .row{gap:6px}}'].join('\n');
+  document.head.appendChild(st);
+  function el(tag,cls,txt,parent){var e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;parent.appendChild(e);return e;}
+  var root=document.createElement('div');root.id='lq';root.className='off';document.body.appendChild(root);
+  var box=el('div','box',null,root);LQ.root=root;LQ.t=el('h2','t','',box);LQ.show=el('div','show',null,box);LQ.row=el('div','row',null,box);LQ.msg=el('div','msg','',box);LQ.msg.setAttribute('aria-live','polite');
+  var ft=el('div','ft',null,box),sb=el('button','','もういちど きく',ft),xb=el('button','','やめる（のらない）',ft);sb.type='button';xb.type='button';
+  sb.addEventListener('click',function(){lqSay(LQ.say);});xb.addEventListener('click',function(){lqClose(false);});
+  try{if(!window.speechSynthesis)sb.style.visibility='hidden';}catch(e){sb.style.visibility='hidden';}
+})();
 /* ---------- first impressions: the camera comes down from the title view to where you stand; a mark and a sound when a shot lands or a robot goes down; a small notice line; a result card when a game ends ---------- */
 var INTRO={t:0,dur:5.4,fast:false,t0:0,p:new THREE.Vector3(),q:new THREE.Quaternion(),pf:new THREE.Vector3(),qf:new THREE.Quaternion(),ql:new THREE.Quaternion(),m:new THREE.Matrix4(),tg:new THREE.Vector3(),up:new THREE.Vector3(0,1,0)};
 var hmEl,kpEl,toastEl,resEl,hmLast=-1,kpLast=-9,kpN=0,resBest=STATS.best|0;
@@ -5454,7 +5588,7 @@ var FOGD=0.00021;
   sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
   sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['Cマート','世界のコーラが集まるコンビニ。品出し：納品ケースを同じ色に光る棚へ6つ。武器強化とコイン。早いほど高ランク'],['レジ','コインでコーラ・イカフライ・弾・装備を買う'],['回復','包帯、応急処置セット、コーラ、イカフライ、バーベキュー']]);
   sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部。乗ったまま、見ている方向へ撃てる（視点を回せば横や後ろも）'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['クルーズ船','岸壁からタラップで乗船。3階吹き抜けのプロムナードに店が並ぶ。入ってすぐのクリスタルの螺旋階段を回って上の階へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
-  sec('そのほか',[['キッズモード','あそぶ時間を決めて始める。時間になると「おしまい」と出て止まる。みずでっぽう（ロボットを故障させるだけ）か、じゅうを選べる。ひとり用'],['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
+  sec('そのほか',[['キッズモード','あそぶ時間を決めて始める。時間になると「おしまい」と出て止まる。みずでっぽう（ロボットを故障させるだけ）か、じゅうを選べる。まなびモードにすると、乗り物に乗る前に かず・てんき・いろ・かたち のクイズが出る。ひとり用'],['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
   grid=grids[1];
   if(isTouch){
     sec('動く・見る',[['画面の左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面の右をドラッグ','向きを変える'],['右上の丸いスティック','首だけ振って周りや後ろを見る']]);
@@ -5505,18 +5639,20 @@ var FOGD=0.00021;
   mk.addEventListener('click',function(){if(!NET.kind||NET.kind==='none'){status.textContent='まだ接続できていません。少し待ってからもう一度押してください';return;}start('coop',String(1000+Math.floor(Math.random()*9000)),true);});
   goB.addEventListener('click',function(){start('solo','',false);});
   // kids mode: how long to play, and which way to play
-  var kp=pop('kidsPop','キッズモード'),kMin=10,kWat=1,kTb=[],kSb=[];
-  try{var ks=JSON.parse(localStorage.getItem('ic_kids')||'null');if(Array.isArray(ks)&&fin(ks[0])&&ks[0]>=1&&ks[0]<=60){kMin=ks[0];kWat=ks[1]?1:0;}}catch(e){}
+  var kp=pop('kidsPop','キッズモード'),kMin=10,kWat=1,kLrn=0,kTb=[],kSb=[],kLb=[];
+  try{var ks=JSON.parse(localStorage.getItem('ic_kids')||'null');if(Array.isArray(ks)&&fin(ks[0])&&ks[0]>=1&&ks[0]<=60){kMin=ks[0];kWat=ks[1]?1:0;kLrn=ks[2]>=1&&ks[2]<=5?Math.floor(ks[2]):0;}}catch(e){}
   function kLab(t){var d=el('div','','',t,kp.body);d.style.cssText='font:700 14px var(--body);color:var(--signal)';}
-  function kShow(){kTb.forEach(function(q){q[0].classList.toggle('on',q[1]===kMin);});kSb.forEach(function(q){q[0].classList.toggle('on',q[1]===kWat);});}
+  function kShow(){kTb.forEach(function(q){q[0].classList.toggle('on',q[1]===kMin);});kSb.forEach(function(q){q[0].classList.toggle('on',q[1]===kWat);});kLb.forEach(function(q){q[0].classList.toggle('on',q[1]===kLrn);});}
   kLab('あそぶ時間（時間になると「おしまい」と出て止まります）');var kr=el('div','','',null,kp.body);kr.style.cssText='display:flex;gap:6px;flex-wrap:wrap';
   [5,10,15,20,30,45,60].forEach(function(m){var b=el('button','','ht',m+'分',kr);b.type='button';b.style.minWidth='64px';kTb.push([b,m]);b.addEventListener('click',function(){kMin=m;kShow();});});
   kLab('あそびかた');var ks2=el('div','','',null,kp.body);ks2.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
   [[1,'みずでっぽう','ロボットに水をかけて「こしょう」させる。爆発や炎は出ません'],[0,'じゅう','ロボットをうってたおす（いつものあそびかた）']].forEach(function(o){var b=el('button','','ht',null,ks2);b.type='button';b.style.cssText='height:auto;min-width:200px;padding:10px;display:flex;flex-direction:column;gap:4px;align-items:center';el('b','','',o[1],b).style.fontSize='17px';var s=el('span','','',o[2],b);s.style.cssText='font-size:12px;font-weight:400;line-height:1.4';kSb.push([b,o[0]]);b.addEventListener('click',function(){kWat=o[0];kShow();});});
+  kLab('まなびモード（のりものに乗る前にクイズが出て、正解すると乗れます）');var kr3=el('div','','',null,kp.body);kr3.style.cssText='display:flex;gap:6px;flex-wrap:wrap';
+  [[0,'なし'],[1,'かず（1〜5）'],[2,'てんき'],[3,'いろ'],[4,'かたち'],[5,'ぜんぶ まぜる']].forEach(function(o){var b=el('button','','ht',o[1],kr3);b.type='button';b.style.minWidth='64px';kLb.push([b,o[0]]);b.addEventListener('click',function(){kLrn=o[0];kShow();});});
   el('div','','','ひとり用です。受けるダメージは少なめで、ライフは減りません。記録やランキングには残りません。',kp.body).style.cssText='font-size:12px;color:var(--dim);line-height:1.5';
   var kGo=el('button','kidsGo','cbtn blue','スタート',kp.body);kGo.type='button';kShow();
   kdB.addEventListener('click',kp.open);
-  kGo.addEventListener('click',function(){practice=false;kp.root.classList.add('off');start('solo','',false);kidsStart(kMin,kWat);banner('キッズモード',(kWat?'みずでっぽうで ロボットを こしょうさせよう':'ロボットを たおそう')+'　'+kMin+'ふんで おしまい',5);});
+  kGo.addEventListener('click',function(){practice=false;kp.root.classList.add('off');start('solo','',false);kidsStart(kMin,kWat,kLrn);banner('キッズモード',(kWat?'みずでっぽうで ロボットを こしょうさせよう':'ロボットを たおそう')+'　'+kMin+'ふんで おしまい',5);});
   nm.addEventListener('keydown',function(e){if(e.key==='Enter')start('solo','',false);});
 })();
 
