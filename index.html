@@ -2535,7 +2535,7 @@ function danOf(sp){var i=0;sp=sp||0;while(i<DAN.length-1&&sp>=DAN[i+1][0])i++;re
 function danTxt(sp){var i=danOf(sp);return DAN[i][1]+(i<DAN.length-1?'（'+DAN[i+1][1]+'まで あと '+(DAN[i+1][0]-Math.floor(sp||0))+'）':'');}
 function spAdd(n,cases){ // rank points: one for each case, more for a fast job or a good challenge score
   if(KIDS.on||!(n>0))return;
-  var a=danOf(STATS.sp);STATS.sp=(STATS.sp||0)+n;if(cases)STATS.stock=(STATS.stock||0)+cases;statSave();
+  var a=danOf(STATS.sp);STATS.sp=(STATS.sp||0)+n;if(cases){STATS.stock=(STATS.stock||0)+cases;if(!SHIFT.on&&!practice)STATS.bstock=(STATS.bstock||0)+cases;}statSave();
   var d=danOf(STATS.sp);if(d>a){SHIFT.up=DAN[d][1];if(!SHIFT.over)banner(d>=11?'昇段！':'昇級！','品出し '+DAN[d][1],4);[659,784,988,1319].forEach(function(f,i){tone({f:f,dur:i===3?0.5:0.13,v:0.07,type:'triangle',t0:0.5+i*0.12,rv:0.3});});}
 }
 function holdShow(){ // the cases in your arms, each in the colour of its goods
@@ -4004,7 +4004,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -4662,7 +4662,7 @@ function qualTick(){
 var PHR=['こっち来て！','助けて！','ありがとう！','ナイス！','敵がいる！','了解','待って','Cマート行こう','乗り物に乗って','ごめん！','毒ガス来るよ','おつかれ！'];
 var myKills=0,runClears=0,myChat=[0,0],seenC={},chatSeq=0,elChat,elChatP,bChat,bMic,socT=0,socPop=null,socTab=0;
 var STATS={kills:0,time:0,best:0,clears:0,games:0,stock:0,sp:0,sbest:0,recs:[]},statKills=0;
-try{var st0=JSON.parse(localStorage.getItem('ic_stats')||'null');if(st0&&typeof st0==='object'){['kills','time','best','clears','games','stock','sp','sbest'].forEach(function(k){if(fin(st0[k]))STATS[k]=st0[k];});if(Array.isArray(st0.recs))STATS.recs=st0.recs.filter(function(r){return r&&fin(r.w)&&fin(r.k);}).slice(0,10);}}catch(e){}
+try{var st0=JSON.parse(localStorage.getItem('ic_stats')||'null');if(st0&&typeof st0==='object'){['kills','time','best','clears','games','stock','bstock','sp','sbest'].forEach(function(k){if(fin(st0[k]))STATS[k]=st0[k];});if(Array.isArray(st0.recs))STATS.recs=st0.recs.filter(function(r){return r&&fin(r.w)&&fin(r.k);}).slice(0,10);}}catch(e){}
 function statSave(){try{localStorage.setItem('ic_stats',JSON.stringify(STATS));}catch(e){}}
 function statClear(){STATS.clears++;runClears++;statTick(0);}
 function statTick(sec){ // totals grow as you play, and the current game keeps its line in the list of your best ones
@@ -4724,7 +4724,7 @@ function worldDraw(body,row,note){
   }else{
   if(!WORLD.rows){if(!WORLD.err)note('読み込み中…');}
   else if(!WORLD.rows.length)note('まだだれも載っていません。ロボットを5台倒すと最初の1人になれます。');
-  else{row(['順位','なまえ','','クリア','WAVE','撃破'],'h');WORLD.rows.forEach(function(r,i){row([(i+1)+'位',r.n,r.m?'協力':'ソロ',r.c+' 回','WAVE '+r.w,r.k+' 台'],WORLD.a&&r.id===WORLD.a.u?'me':'');});}
+  else{row(['順位','なまえ','','クリア','WAVE','撃破','品出し'],'h');WORLD.rows.forEach(function(r,i){row([(i+1)+'位',r.n,r.m?'協力':'ソロ',r.c+' 回','WAVE '+r.w,r.k+' 台',r.p>0?r.p+' ケース':'—'],WORLD.a&&r.id===WORLD.a.u?'me':'');});}
   }
   note(WORLD.on?'たたかいは、クリア回数 → 到達WAVE → 撃破数の順の上位50人です。あなたの「なまえ」、いちばん良かった1回の記録、品出しの数と段位だけが、このゲームを開いた全員に見えます。':'いまは参加していません。あなたの記録はだれにも見えません。');
   var b=document.createElement('button');b.type='button';b.className='sdel';b.textContent=WORLD.on?'ランキングに参加しない（自分の記録を消す）':'ランキングに参加する';
@@ -4786,7 +4786,7 @@ function socDraw(){
   }else if(socTab===3){worldDraw(body,row,note);
   }else{
     var t=Math.floor(STATS.time),hh=Math.floor(t/3600),mm=Math.floor(t%3600/60);
-    row(['なまえ',me.name||(document.getElementById('nm')&&document.getElementById('nm').value)||'—']);row(['倒したロボット',STATS.kills+' 台']);row(['最高WAVE','WAVE '+STATS.best]);row(['クリア回数',STATS.clears+' 回']);row(['遊んだ回数',STATS.games+' 回']);row(['品出しの段位',danTxt(STATS.sp)]);row(['並べたケース',(STATS.stock||0)+' ケース']);row(['品出しチャレンジ最高',(STATS.sbest||0).toLocaleString()+' 点']);
+    row(['なまえ',me.name||(document.getElementById('nm')&&document.getElementById('nm').value)||'—']);row(['倒したロボット',STATS.kills+' 台']);row(['最高WAVE','WAVE '+STATS.best]);row(['クリア回数',STATS.clears+' 回']);row(['遊んだ回数',STATS.games+' 回']);row(['品出しの段位',danTxt(STATS.sp)]);row(['並べたケース（合計）',(STATS.stock||0)+' ケース']);row(['うち バトル中の品出し',(STATS.bstock||0)+' ケース']);row(['品出しチャレンジ最高',(STATS.sbest||0).toLocaleString()+' 点']);
     row(['プレイ時間',(hh?hh+'時間 ':'')+mm+'分']);row(['のるーと利用券',tickets+' 枚']);row(['コイン',Math.floor(coins)+' 枚']);row(['買った服',owned.length+' 着']);
     note('データはこの端末のこのブラウザに保存されます。別の端末や別のリンク（GitHub版とClaude版）では別々になります。');
     var b=document.createElement('button');b.type='button';b.className='sdel';b.textContent='記録を消す';b.addEventListener('click',function(){if(b.dataset.sure){STATS={kills:0,time:0,best:0,clears:0,games:0,stock:0,sp:0,sbest:0,recs:[]};statSave();socDraw();}else{b.dataset.sure='1';b.textContent='もう一度押すと、撃破数・自己ベスト・品出しの段位を消します';}});body.appendChild(b);
