@@ -4696,7 +4696,7 @@ function worldMaybe(){ // send only when your best game or your name has changed
       function put(x){return wJson(u,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(x)});}
       if(WORLD.old)return hasK?put(b7):null;
       return put(b).catch(function(e){WORLD.old=true;sig=b.n+'|'+b.s+'|'+b.m;if(!hasK)throw e;return put(b7);});})   // until the table accepts the two restocking fields, send the record without them
-    .then(function(){WORLD.sent=sig;WORLD.at=0;try{localStorage.setItem('ic_ws',sig);}catch(e){}if(!WORLD.told){WORLD.told=true;toast('みんなのランキングに記録しました（ランキング画面でOFFにできます）',6);}})
+    .then(function(){WORLD.sent=sig;WORLD.at=0;try{localStorage.setItem('ic_ws',sig);}catch(e){}if(socPop&&!socPop.classList.contains('off')&&socTab===3)worldLoad();if(!WORLD.told){WORLD.told=true;toast('みんなのランキングに記録しました（ランキング画面でOFFにできます）',6);}})
     .catch(function(){}).then(function(){WORLD.busy=false;});
 }
 function worldLoad(){
@@ -4705,6 +4705,7 @@ function worldLoad(){
       wJson(WORLD.db+'/scores.json?orderBy=%22p%22&limitToLast=50').then(function(j2){var P=[];for(var id2 in j2){var y=j2[id2];if(y&&fin(y.p)&&y.p>0&&typeof y.n==='string')P.push({id:id2,n:y.n.slice(0,12),p:y.p|0,d:clamp(y.d|0,0,DAN.length-1)});}P.sort(function(a,b){return b.p-a.p;});WORLD.rowsP=P;if(socPop&&!socPop.classList.contains('off')&&socTab===3)socDraw();},function(){WORLD.rowsP=null;});},
     function(){WORLD.err='ランキングを読み込めませんでした。電波のよいところでもう一度開いてください。';}).then(function(){if(socPop&&!socPop.classList.contains('off')&&socTab===3)socDraw();});
 }
+setTimeout(function(){try{worldMaybe();}catch(e){}},6000); // a record saved by an older version gains its restocking count without waiting for the next game
 function worldOff(){ // leaving the ranking also takes your line off it
   WORLD.on=false;WORLD.sent='';try{localStorage.setItem('ic_won','0');localStorage.removeItem('ic_ws');}catch(e){}
   if(worldOk()&&WORLD.a)worldAuth().then(function(tok){return fetch(WORLD.db+'/scores/'+WORLD.a.u+'.json?auth='+tok,{method:'DELETE'});}).catch(function(){}).then(function(){WORLD.at=0;worldLoad();});
@@ -4712,7 +4713,7 @@ function worldOff(){ // leaving the ranking also takes your line off it
 function worldDraw(body,row,note){
   if(!worldOk()){note(worldArt()||!WORLD.db?'みんなのランキングは、友達用のURL（GitHub）で開いたときに見られます。':'この端末では使えません。');if(!WORLD.db||!WORLD.key)return;}
   if(!worldOk())return;
-  worldLoad();
+  worldMaybe();worldLoad();
   var tg=document.createElement('div');tg.style.cssText='display:flex;gap:6px';['たたかい','品出し'].forEach(function(n,i){var q=document.createElement('button');q.type='button';q.className='sdel';q.textContent=n+'のランキング';q.style.cssText='flex:1;height:38px;font-size:13px;'+((WORLD.board|0)===i?'color:#1a1200;background:var(--signal);border-color:var(--signal)':'');q.addEventListener('click',function(){WORLD.board=i;socDraw();});tg.appendChild(q);});body.appendChild(tg);
   if(WORLD.err)note(WORLD.err);
   if(WORLD.board===1){
@@ -4726,7 +4727,7 @@ function worldDraw(body,row,note){
   else if(!WORLD.rows.length)note('まだだれも載っていません。ロボットを5台倒すと最初の1人になれます。');
   else{row(['順位','なまえ','','クリア','WAVE','撃破','品出し'],'h');WORLD.rows.forEach(function(r,i){row([(i+1)+'位',r.n,r.m?'協力':'ソロ',r.c+' 回','WAVE '+r.w,r.k+' 台',r.p>0?r.p+' ケース':'—'],WORLD.a&&r.id===WORLD.a.u?'me':'');});}
   }
-  note(WORLD.on?'たたかいは、クリア回数 → 到達WAVE → 撃破数の順の上位50人です。あなたの「なまえ」、いちばん良かった1回の記録、品出しの数と段位だけが、このゲームを開いた全員に見えます。':'いまは参加していません。あなたの記録はだれにも見えません。');
+  note(WORLD.on?'たたかいは、クリア回数 → 到達WAVE → 撃破数の順の上位50人です。あなたの「なまえ」、いちばん良かった1回の記録、品出しの数と段位だけが、このゲームを開いた全員に見えます。品出しが「—」の人は、まだ新しい版で記録を送っていない人です。':'いまは参加していません。あなたの記録はだれにも見えません。');
   var b=document.createElement('button');b.type='button';b.className='sdel';b.textContent=WORLD.on?'ランキングに参加しない（自分の記録を消す）':'ランキングに参加する';
   b.addEventListener('click',function(){if(WORLD.on)worldOff();else{WORLD.on=true;WORLD.t=0;try{localStorage.setItem('ic_won','1');}catch(e){}worldMaybe();}socDraw();});body.appendChild(b);
 }
