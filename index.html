@@ -2213,10 +2213,10 @@ function codeHash(c){var h=7;c=String(c);for(var i=0;i<c.length;i++)h=(h*31+c.ch
 function netStatus(s){NET.status=s;if(NET.onStatus)NET.onStatus(s);}
 function setRooms(list){
   var seen={},out=[];
-  list.forEach(function(r){if(!r||typeof r.id!=='string'||seen[r.id])return;seen[r.id]=1;out.push({id:r.id.slice(0,24),n:String(r.n||'プレイヤー').slice(0,10),c:fin(r.c)?clamp(r.c|0,1,4):1,h:fin(r.h)?r.h:-1});});
+  list.forEach(function(r){if(!r||typeof r.id!=='string'||seen[r.id])return;seen[r.id]=1;out.push({id:r.id.slice(0,24),n:String(r.n||'プレイヤー').slice(0,10),c:fin(r.c)?clamp(r.c|0,1,4):1,h:fin(r.h)?r.h:-1,v:r.v===1?1:0});});
   NET.rooms=out;if(NET.onRooms)NET.onRooms(out);
 }
-function myRoomInfo(){return (NET.created&&me.inGame&&roomCode)?{id:NET.rid,n:me.name,c:1+others.length,h:codeHash(roomCode)}:null;}
+function myRoomInfo(){return (NET.created&&me.inGame&&roomCode)?{id:NET.rid,n:me.name,c:1+others.length,h:codeHash(roomCode),v:VS.on?1:0}:null;}
 function netInit(cb){ // pick the transport once
   if(NET.kind){cb();return;}
   var done=false,fb=typeof window.Peer==='function'?'peer':'none';
@@ -2280,13 +2280,13 @@ function tryJoin(){
   if(!me.inGame||!roomCode||room||joining||NET.mode!=='coop')return;
   joining=true;netState='wait';
   if(NET.kind==='claude'){
-    cRoom.join('g'+roomCode).then(function(nr){room={peers:function(){return nr.peers();},presence:function(p){return nr.presence(p);}};netState='on';joining=false;netFails=0;},
+    cRoom.join((VS.on?'v':'g')+roomCode).then(function(nr){room={peers:function(){return nr.peers();},presence:function(p){return nr.presence(p);}};netState='on';joining=false;netFails=0;},
       function(){joining=false;if(++netFails<=4)setTimeout(tryJoin,1500);else netState='solo';});
   }else if(typeof window.Peer==='function')startNet();
   else{joining=false;netState='solo';}
 }
 function startNet(){
-  var hubId='icfps-'+roomCode,mine={},table={},conns={},seenAt={},peer=null,hubConn=null,isHub=false,myId=null,dead=false,lastRecv=Date.now(),timer=null,openT=null;
+  var hubId=(VS.on?'icvs-':'icfps-')+roomCode,mine={},table={},conns={},seenAt={},peer=null,hubConn=null,isHub=false,myId=null,dead=false,lastRecv=Date.now(),timer=null,openT=null;
   var api={
     peers:function(){var a=[{peer:myId,isMe:true,sameTab:true,presence:mine}];for(var k in table)if(k!==myId&&table[k]&&typeof table[k]==='object')a.push({peer:k,isMe:false,sameTab:false,presence:table[k]});return a;},
     presence:function(p){mine=p;return Promise.resolve();}
@@ -2355,7 +2355,7 @@ function readPeers(){
     others.push({peer:String(p.peer),x:clamp(pos[0],-20000,20000),z:clamp(pos[1],-20000,20000),yaw:fin(pos[2])?pos[2]:0,
       hp:fin(pr.hp)?clamp(pr.hp,0,100):0,n:(typeof pr.n==='string'&&pr.n)?pr.n.slice(0,10):'なかま',
       d:(pr.d&&typeof pr.d==='object')?pr.d:null,s:Array.isArray(pr.s)?pr.s:null,h:(pr.h&&typeof pr.h==='object')?pr.h:null,
-      k:Array.isArray(pr.k)?pr.k:null,v:Array.isArray(pr.v)?pr.v:null,t:Array.isArray(pr.t)?pr.t:null,f:Array.isArray(pr.f)?pr.f:null,c:Array.isArray(pr.c)?pr.c:null,q:Array.isArray(pr.q)?pr.q:null});
+      k:Array.isArray(pr.k)?pr.k:null,v:Array.isArray(pr.v)?pr.v:null,t:Array.isArray(pr.t)?pr.t:null,f:Array.isArray(pr.f)?pr.f:null,c:Array.isArray(pr.c)?pr.c:null,q:Array.isArray(pr.q)?pr.q:null,vs:(pr.vs&&typeof pr.vs==='object')?pr.vs:null});
   }
 }
 function cleanHs(h){
@@ -2370,7 +2370,7 @@ function sendPresence(dt){
   if(!room)return;
   sendT-=dt;if(sendT>0)return;sendT=0.1;
   var d={},k;for(k in myDmg)d[k]=myDmg[k];
-  var pr={g:1,c:chatOut(),q:[myKills,runStock,danOf(STATS.sp)],k:stockOut(),v:vehOut(),t:lootOut(),f:myFace,n:me.name,p:[r1(me.x),r1(me.z),r2(me.yaw)],hp:Math.max(0,Math.round(me.hp)),d:d,s:[me.shots,me.hit[0],me.hit[1],me.hit[2]],
+  var pr={g:1,vs:VS.on?vsOut():null,c:chatOut(),q:[myKills,runStock,danOf(STATS.sp)],k:stockOut(),v:vehOut(),t:lootOut(),f:myFace,n:me.name,p:[r1(me.x),r1(me.z),r2(me.yaw)],hp:Math.max(0,Math.round(me.hp)),d:d,s:[me.shots,me.hit[0],me.hit[1],me.hit[2]],
     h:(amHost&&hs)?{gen:hs.gen,w:hs.w,k:hs.k,st:hs.st,t:r1(hs.t),left:hs.left,e:hs.e,g:hs.g?hs.g.map(function(v){return r1(v);}):null,f:hs.f||null}:null};
   try{room.presence(pr).catch(function(){});}catch(e){}
 }
@@ -2480,7 +2480,7 @@ function hostUpdate(dt){
     if(sum>e.taken)e.taken=sum;e.hp=e.max-e.taken;
   }
   for(i=sim.enemies.length-1;i>=0;i--)if(sim.enemies[i].hp<=0){sim.enemies.splice(i,1);hs.k++;}
-  if(hs.st==='break'){
+  if(VS.on){vsHost(dt,players);}else if(hs.st==='break'){
     hs.t-=dt;
     if(hs.t<=0){hs.w++;hs.st='fight';hs.left=Math.min(40,5+2*hs.w+(nP-1)*(2+hs.w));sim.spawnT=0.5;}
   }else{
@@ -2488,7 +2488,7 @@ function hostUpdate(dt){
     if(hs.left>0&&sim.enemies.length<Math.min(14,8+2*nP)&&sim.spawnT<=0&&players.length){spawnEnemy(players);hs.left--;sim.spawnT=rnd(0.5,1.3);}
     if(hs.left<=0&&sim.enemies.length===0){hs.st='break';hs.t=6;}
   }
-  if(players.length===0){sim.allDownT+=dt;if(sim.allDownT>3.5){newGame();return;}}else sim.allDownT=0;
+  if(players.length===0&&!VS.on){sim.allDownT+=dt;if(sim.allDownT>3.5){newGame();return;}}else sim.allDownT=0;
   for(i=0;i<sim.enemies.length;i++){
     e=sim.enemies[i];var T=TYPES[e.t],tgt=null,bd=1e9,tj=0;
     for(j=0;j<players.length;j++){var dd=Math.hypot(players[j].x-e.x,players[j].z-e.z);if(dd<bd){bd=dd;tgt=players[j];tj=j;}}
@@ -3115,7 +3115,7 @@ function setWeapon(i){
   gunMag=GUNS[k].mag;gunBolt=GUNS[k].bolt;muzzle.position.z=W.mz;muzzle2.position.z=W.mz-0.08;gunDot.position.y=W.sy;
   applyLv();me.ammo=Math.min(slots[i].ammo,MAG);me.reload=0;nextShot=now+0.35;sClick(0,1500,0.25);sClick(0.12,2100,0.2);
 }
-function swapWeapon(){if(slots[1-cur]&&!me.down&&!myVeh&&!carry)setWeapon(1-cur);}
+function swapWeapon(){if(VS.on){vsSwap();return;}if(slots[1-cur]&&!me.down&&!myVeh&&!carry)setWeapon(1-cur);}
 function resetKit(){slots=[{k:'rifle',ammo:30},null];cur=0;hasScope=false;nades=1;armor=0;myLoot={};bands=1;kits=0;healT=0;regenT=0;hasKey=false;me.ammo=30;setWeapon(0);NADES.forEach(function(n){scene.remove(n.m);});NADES.length=0;}
 
 var nadeGeo=(function(){var b=new GB(),OL=[0.06,0.08,0.045];b.add(SPH,OL,0,0,0,0,0,0,0.045,0.055,0.045);b.cyl(0.018,0.022,0.03,8,0,0.06,0,[0.2,0.2,0.21]);b.box(0.012,0.07,0.02,0.03,0.03,0,[0.2,0.2,0.21],0,0,-0.25);return b.geo();})();
@@ -3224,7 +3224,7 @@ function takeItem(j){
   var S=lootNear;if(!S||j>=S.items.length||((S.mask>>j)&1)||me.down||myVeh)return;
   var k=S.items[j];myLoot[S.i]=(myLoot[S.i]||0)|(1<<j);S.mask|=1<<j;
   if(WPN[k]){
-    if(slots[0].k===k||(slots[1]&&slots[1].k===k)){var si=slots[0].k===k?0:1;slots[si].ammo=WPN[k].mag;if(si===cur)me.ammo=MAG;}
+    if(VS.on){vsAmmo(k);}else if(slots[0].k===k||(slots[1]&&slots[1].k===k)){var si=slots[0].k===k?0:1;slots[si].ammo=WPN[k].mag;if(si===cur)me.ammo=MAG;}
     else if(!slots[1]){slots[1]={k:k,ammo:WPN[k].mag};setWeapon(1);}
     else{slots[cur]={k:k,ammo:WPN[k].mag};me.ammo=WPN[k].mag;setWeapon(cur);}
   }else if(k==='scope')hasScope=true;else if(k==='nade')nades=Math.min(6,nades+2);else if(k==='armor')armor=100;else if(k==='band')bands=Math.min(8,bands+2);else if(k==='kit')kits=Math.min(3,kits+1);else if(k==='key'){hasKey=true;tone({f:1320,dur:0.5,v:0.07,type:'triangle',rv:0.5});}
@@ -4007,7 +4007,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -4304,7 +4304,7 @@ function showFinalClear(){
   [523,659,784,1047,1319].forEach(function(f,i){tone({f:f,dur:i===4?0.9:0.2,v:0.08,type:'triangle',t0:i*0.17,rv:0.4});tone({f:f/2,dur:i===4?0.9:0.2,v:0.05,type:'square',t0:i*0.17});});
 }
 var LIVES=3,lives=LIVES,lifePend=false,wasDown=false,elLives;
-function livesTick(){ // three lives a game: going down costs one and you are back on your feet in a moment; on the last one the old rules apply
+function livesTick(){if(VS.on){wasDown=me.down;lifePend=false;return;} // three lives a game: going down costs one and you are back on your feet in a moment; on the last one the old rules apply
   if(me.down&&!wasDown){
     if(lives>1||KIDS.on){if(!KIDS.on)lives--;lifePend=true;me.downT=2.4;tone({f:440,f1:220,dur:0.4,v:0.06,type:'triangle'});}
     else{lives=0;lifePend=false;}
@@ -4319,7 +4319,7 @@ function livesTick(){ // three lives a game: going down costs one and you are ba
 }
 function gasTick(dt){
   livesTick();
-  if(practice&&amHost){hs.st='break';hs.t=99;hs.left=0;if(sim.enemies.length){sim.enemies.length=0;hs.e=[];}hs.g=null;hs.f=null;}   // practice: nothing comes
+  if(practice&&!VS.on&&amHost){hs.st='break';hs.t=99;hs.left=0;if(sim.enemies.length){sim.enemies.length=0;hs.e=[];}hs.g=null;hs.f=null;}   // practice: nothing comes
   if(KIDS.on){hs.g=null;hs.f=null;}else if(amHost&&!practice)gasHost(dt);   // kids mode: no gas, no final battle
   var G=hs.g,F=hs.f||[0,0,0],act=gasActive(),isl=!zoneOf(me.x,me.z).i,gk=hs.gen+'_'+(G?G[3]:0),q;
   if(G){
@@ -4476,7 +4476,7 @@ function gasMark(){ // which way out of the gas: a green marker at the nearest e
   gasEl.firstChild.style.transform='rotate('+(on?3.1416:Math.atan2(x,y)).toFixed(2)+'rad)';
   var t=lab+Math.ceil(ds)+'m';if(gasEl.lastChild.textContent!==t)gasEl.lastChild.textContent=t;
 }
-function mateMarks(){
+function mateMarks(){if(VS.on)return;
   shopMark();gasMark();
   var L=matesNow(),W=window.innerWidth,H=window.innerHeight,i,myZ=zoneOf(me.x,me.z);
   for(i=0;i<L.length||i<mateEls.length;i++){
@@ -5313,16 +5313,16 @@ function tipTick(dt){
     ':root{--glass:linear-gradient(180deg,rgba(30,54,74,.82),rgba(10,22,34,.9));--edge:rgba(255,255,255,.2);--amber2:#ff8a00}',
     /* ---- title ---- */
     '#start{background:linear-gradient(180deg,rgba(6,16,26,.1) 0%,rgba(6,16,26,.3) 34%,rgba(6,14,24,.94) 78%),linear-gradient(90deg,rgba(6,14,24,.55),rgba(6,14,24,0) 62%)}',
-    '#card{display:grid!important;grid-template-columns:1fr 1fr;gap:8px 8px!important;max-width:600px!important}#card>*{grid-column:1/-1;min-width:0}#card>#row{grid-column:1}#card>.acts{grid-column:2}',
-    '#card::before{content:"NEW　建物の中に入れるようになった";justify-self:start;font:700 11px/1 var(--body);letter-spacing:.06em;color:#1a1200;background:linear-gradient(90deg,var(--signal),#ffd24a);padding:5px 10px 5px 8px;border-radius:3px 12px 12px 3px;box-shadow:0 2px 10px rgba(255,176,0,.35)}',
+    '#card{display:grid!important;grid-template-columns:1fr 2fr;gap:8px 8px!important;max-width:620px!important}#card>*{grid-column:1/-1;min-width:0}#card>#row{grid-column:1}#card>.acts{grid-column:2}',
+    '#card::before{content:"NEW　対戦モード（コードでオンライン対戦）";justify-self:start;font:700 11px/1 var(--body);letter-spacing:.06em;color:#1a1200;background:linear-gradient(90deg,var(--signal),#ffd24a);padding:5px 10px 5px 8px;border-radius:3px 12px 12px 3px;box-shadow:0 2px 10px rgba(255,176,0,.35)}',
     '#card h1{font-weight:800;letter-spacing:.03em;text-shadow:0 2px 0 rgba(0,0,0,.45),0 0 26px rgba(120,200,255,.28);padding-bottom:6px;background:linear-gradient(90deg,var(--signal) 0 46px,rgba(255,255,255,.28) 46px 100%) left bottom/100% 2px no-repeat}',
     '#card h1 span{display:flex;align-items:center;gap:8px;margin-bottom:6px}#card h1 span::before{content:"";width:18px;height:8px;background:repeating-linear-gradient(135deg,var(--signal) 0 3px,transparent 3px 6px)}',
-    '#row{display:flex}#go,#coopBtn{position:relative;flex:1;width:100%;height:56px!important;border-radius:10px!important;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:0 12px 0 54px!important;text-align:left;font-size:17px!important;line-height:1.1!important;border:0;box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .08s}',
-    '#go{background:linear-gradient(180deg,#ffc93d,#ffa200)!important;color:#1a1200!important}#coopBtn{background:linear-gradient(180deg,#8adcff,#3fb4f2)!important;color:#04121b!important}',
-    '#go:active,#coopBtn:active,.sbtn:active{transform:translateY(1px) scale(.99)}',
+    '#row{display:flex}#go,#coopBtn,#vsBtn{position:relative;flex:1;width:100%;height:56px!important;border-radius:10px!important;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:0 12px 0 54px!important;text-align:left;font-size:17px!important;line-height:1.1!important;border:0;box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .08s}',
+    '#go{background:linear-gradient(180deg,#ffc93d,#ffa200)!important;color:#1a1200!important}#card .acts{flex-wrap:nowrap!important}#coopBtn{background:linear-gradient(180deg,#8adcff,#3fb4f2)!important;color:#04121b!important}',
+    '#vsBtn{background:linear-gradient(180deg,#ff8f7a,#f0503c)!important;color:#1d0703!important}#vsBtn::before{content:"VS";position:absolute;left:11px;top:50%;margin-top:-13px;font:700 26px/1 var(--num);letter-spacing:-.02em;opacity:.9}#vsBtn::after{content:"コードで個人戦";font:600 11px/1 var(--body);opacity:.8}#go:active,#coopBtn:active,#vsBtn:active,.sbtn:active{transform:translateY(1px) scale(.99)}',
     '#go::before,#coopBtn::before{content:"";position:absolute;left:12px;top:50%;width:32px;height:32px;margin-top:-16px;background:currentColor;-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat;opacity:.9}',
     '#go{--i:'+ic(I.solo)+'}#coopBtn{--i:'+ic(I.coop)+'}',
-    '#go::after,#coopBtn::after{font:600 11px/1 var(--body);opacity:.78;letter-spacing:.02em}#go::after{content:"ロボットから街を守る"}#coopBtn::after{content:"部屋を選ぶ／作る・最大4人"}',
+    '#go::after,#coopBtn::after{font:600 11px/1 var(--body);opacity:.78;letter-spacing:.02em}#go::after{content:"ロボットから街を守る"}#coopBtn::after{content:"コードで最大4人"}',
     '.sbtn{position:relative;display:flex!important;align-items:center;justify-content:flex-start;gap:0;border-radius:9px!important;border:1px solid var(--edge)!important;background:var(--glass)!important;color:var(--ink)!important;box-shadow:0 4px 12px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.14);text-align:left;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);white-space:nowrap;overflow:hidden}',
     '.sbtn::before{content:"";flex:none;background:var(--c,var(--ink));-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat}',
     '.t3 .sbtn{height:50px!important;padding:0 8px 0 10px!important;font-size:13.5px!important;font-weight:700;flex-direction:row;justify-content:flex-start!important}.t3 .sbtn::before{width:24px;height:24px;margin-right:8px}',
@@ -5870,6 +5870,125 @@ function inBuild(A){
   scene.add(G);A.g=G;A.B.cb.inb=A;INS.push(A);
 }
 
+/* ---------- versus: a free-for-all in a coded room. The room's maker sets the rules; everyone scores for players and COM robots brought down ---------- */
+var VS={on:false,pick:false,rules:{min:5,wn:2,com:4,lv:1},t:300,over:false,out:{},seen:{},kb:{},deaths:0,pk:0,arm:[],ai:0,lastBy:'',wasDown:false,el:null,end:null,sig:'',again:0,seenA:undefined,auth:false,rp:null,ARS:['rifle','smg','shot','snip']};
+try{var vr0=JSON.parse(localStorage.getItem('ic_vs')||'null');if(vr0&&fin(vr0.min)&&fin(vr0.wn)&&fin(vr0.com)&&fin(vr0.lv))VS.rules={min:clamp(vr0.min|0,1,15),wn:clamp(vr0.wn|0,1,4),com:clamp(vr0.com|0,0,8),lv:clamp(vr0.lv|0,0,2)};}catch(e){}
+function vsBegin(created){VS.t=VS.rules.min*60;VS.over=false;VS.auth=!!created;vsReset();}
+function vsArm(){ // the agreed number of weapons, all in hand from the start
+  VS.arm=VS.ARS.slice(0,VS.rules.wn).map(function(k){return {k:k,ammo:WPN[k].mag};});VS.ai=0;slots[0]=VS.arm[0];slots[1]=null;cur=0;me.ammo=slots[0].ammo;setWeapon(0);me.ammo=MAG;
+}
+function vsSwap(){if(VS.arm.length<2||me.down||myVeh)return;VS.arm[VS.ai].ammo=me.ammo;VS.ai=(VS.ai+1)%VS.arm.length;slots[0]=VS.arm[VS.ai];me.ammo=slots[0].ammo;setWeapon(0);}
+function vsAmmo(k){for(var i=0;i<VS.arm.length;i++)if(VS.arm[i].k===k){VS.arm[i].ammo=WPN[k].mag;if(i===VS.ai)me.ammo=MAG;}}
+function vsPlace(){ // stand somewhere open, away from the others
+  var x=me.x,z=me.z,ok=false;
+  for(var k=0;k<40&&!ok;k++){x=SPAWN.x+rnd(-170,170);z=SPAWN.z+rnd(-170,170);if(!inIsland(x,z,4)||!inFree(x,z))continue;ok=true;for(var q=0;q<others.length;q++)if(Math.hypot(others[q].x-x,others[q].z-z)<(k<25?40:15))ok=false;}
+  if(INB)inLeave();if(ok){me.x=x;me.z=z;}me.vx=me.vz=0;resolve(me,0.6);clampIsland(me,2.5);me.yaw=Math.atan2(me.x-SPAWN.x,me.z-SPAWN.z);me.pitch=0;
+}
+function vsReset(){ // a fresh match: scores to zero, weapons as agreed, a new place to stand
+  VS.out={};VS.seen={};VS.kb={};VS.deaths=0;VS.pk=0;VS.lastBy='';VS.over=false;VS.wasDown=false;VS.sig='';myKills=0;
+  others.forEach(function(o){if(o.vs&&o.vs.o&&myPeer&&fin(o.vs.o[myPeer]))VS.seen[o.peer]=o.vs.o[myPeer];});
+  if(VS.auth)VS.t=VS.rules.min*60;
+  vsArm();nades=1;me.hp=100;me.down=false;me.inv=3;vsPlace();if(VS.end)VS.end.classList.add('off');
+}
+function vsOut(){var o={g:hs?hs.gen:0,o:VS.out,kb:VS.kb,k:myKills,d:VS.deaths,c:NET.created?1:0,a:VS.again};if(VS.auth){o.r=[VS.rules.min,VS.rules.wn,VS.rules.com,VS.rules.lv];o.t=Math.ceil(VS.t);o.e=VS.over?1:0;}return o;}
+function vsHost(dt,players){ // COM robots: keep the agreed number in the field
+  hs.st='fight';hs.left=0;hs.w=[1,3,6][VS.rules.lv];sim.spawnT-=dt;
+  if(VS.over){if(sim.enemies.length)sim.enemies.length=0;return;}
+  if(sim.enemies.length<VS.rules.com&&sim.spawnT<=0&&players.length){spawnEnemy(players);sim.spawnT=rnd(2.5,5);}
+}
+function vsShot(ray,W){ // does this shot meet another player before it meets anything else?
+  if(VS.over)return 0;var best=ray.t,tg=null,i,t;
+  for(i=0;i<others.length;i++){var o=others[i];if(o.hp<=0||!o.vs)continue;t=rayCyl(ray.ox,ray.oy,ray.oz,ray.dx,ray.dy,ray.dz,o.x,o.z,0.42,1.82);if(t<best){best=t;tg=o;}}
+  if(!tg)return 0;
+  var y=ray.oy+ray.dy*best,head=y>1.46,dm=(head?W.dmg*1.6:W.dmg)*0.8;if(W.pel>1)dm*=clamp(1.25-best/28,0.25,1);
+  VS.out[tg.peer]=(VS.out[tg.peer]||0)+Math.max(1,Math.round(dm));hitT=0.12;hitMark(head?1:0);runHit(head);
+  fxSparks(ray.ox+ray.dx*best,y,ray.oz+ray.dz*best,head?8:5,-ray.dx,0.3,-ray.dz,0.6);
+  return best;
+}
+function vsAim(ray){ // is another player under the crosshair, within auto-fire range?
+  if(VS.over)return false;for(var i=0;i<others.length;i++){var o=others[i];if(o.hp<=0||!o.vs)continue;var t=rayCyl(ray.ox,ray.oy,ray.oz,ray.dx,ray.dy,ray.dz,o.x,o.z,0.42,1.82);if(t<ray.t&&t<70)return true;}return false;
+}
+function vsDown(dt){
+  me.downT-=dt;me.vx=me.vz=0;me.amp=0;me.sprint=0;
+  if(!VS.over)banner('やられた',(VS.lastBy?VS.lastBy+' に倒された　':'')+'復活まで '+Math.ceil(Math.max(0,me.downT))+'秒',0.3);
+  if(me.downT<=0&&!VS.over){me.down=false;me.hp=100;me.inv=3;VS.arm.forEach(function(a){a.ammo=WPN[a.k].mag;});me.ammo=MAG;me.reload=0;if(nades<1)nades=1;vsPlace();}
+}
+function vsScores(){
+  var L=[],g=hs?hs.gen:0,P=[{peer:myPeer||'me',n:me.name||'自分',vs:{kb:VS.kb,k:myKills,d:VS.deaths},me:true}];
+  others.forEach(function(o){if(o.vs&&o.vs.g===g)P.push(o);});
+  P.forEach(function(p){var pk=0;P.forEach(function(q){if(q!==p&&q.vs.kb&&fin(q.vs.kb[p.peer]))pk+=clamp(q.vs.kb[p.peer]|0,0,999);});
+    var ck=fin(p.vs.k)?clamp(p.vs.k|0,0,9999):0;L.push({n:p.n,pk:pk,ck:ck,d:fin(p.vs.d)?clamp(p.vs.d|0,0,999):0,s:pk*2+ck,me:!!p.me});});
+  L.sort(function(a,b){return b.s-a.s||a.d-b.d;});return L;
+}
+function vsLine(){var L=vsScores(),r=1,i;for(i=0;i<L.length;i++)if(L[i].me)r=i+1;return 'のこり '+fmtMS(VS.t)+'　'+r+'位 / '+L.length+'人';}
+function vsTick(dt){
+  var i,o,C=null,H=null,g=hs?hs.gen:0;
+  for(i=0;i<others.length;i++){o=others[i];if(!o.vs)continue;if(o.vs.c===1&&(!C||o.peer<C.peer))C=o;if(Array.isArray(o.vs.r)&&(!H||o.peer<H.peer))H=o;}
+  VS.auth=NET.created||(amHost&&!C);
+  if(VS.auth){if(!VS.over){VS.t-=dt;if(VS.t<=0){VS.t=0;VS.over=true;}}}
+  else{var S=C&&Array.isArray(C.vs.r)?C:H;
+    if(S){var r=S.vs.r;if(fin(r[0])&&fin(r[1])&&fin(r[2])&&fin(r[3])){var wn=clamp(r[1]|0,1,4);VS.rules.min=clamp(r[0]|0,1,15);VS.rules.com=clamp(r[2]|0,0,8);VS.rules.lv=clamp(r[3]|0,0,2);if(wn!==VS.rules.wn||VS.arm.length!==wn){VS.rules.wn=wn;vsArm();}}
+      if(fin(S.vs.t))VS.t=clamp(S.vs.t,0,900);VS.over=S.vs.e===1;}}
+  if(amHost&&C&&fin(C.vs.a)){if(VS.seenA===undefined)VS.seenA=C.vs.a;else if(C.vs.a!==VS.seenA){VS.seenA=C.vs.a;newGame();}}   // the room's maker asked for another match
+  // damage the others report having done to me
+  var by=null;
+  for(i=0;i<others.length;i++){o=others[i];if(!o.vs||o.vs.g!==g||!o.vs.o||!myPeer)continue;var v=o.vs.o[myPeer];if(!fin(v))continue;var s=VS.seen[o.peer]||0;
+    if(v>s){VS.seen[o.peer]=v;if(!VS.over&&!me.down&&me.inv<=0){hurt(Math.min(v-s,160),o.x,o.z);if(me.down)by=o;}}else if(v<s)VS.seen[o.peer]=v;}
+  if(me.down&&!VS.wasDown){VS.deaths++;me.downT=3;if(by){VS.kb[by.peer]=(VS.kb[by.peer]||0)+1;VS.lastBy=by.n;}else VS.lastBy='';}
+  VS.wasDown=me.down;
+  var pk=0;for(i=0;i<others.length;i++){o=others[i];if(o.vs&&o.vs.g===g&&o.vs.kb&&myPeer&&fin(o.vs.kb[myPeer]))pk+=o.vs.kb[myPeer];}
+  if(pk>VS.pk&&VS.pk>=0&&!VS.over){banner('撃破！','+2点',1.6);hitMark(2);[659,988].forEach(function(f,q){tone({f:f,dur:0.14,v:0.07,type:'triangle',t0:q*0.1});});}
+  VS.pk=pk;
+  vsHud();
+}
+function vsHud(){
+  if(!VS.el){
+    var st=document.createElement('style');
+    st.textContent='html.m-vs #lives,html.m-vs #goal,html.m-vs #gasl,html.m-vs #mates,html.m-vs #task,html.m-vs #gaso{display:none!important}'+
+      '#vsb{display:flex;flex-direction:column;gap:2px;width:190px;font:700 12px/1.3 var(--body);text-shadow:0 1px 2px #000}#vsb div{display:flex;gap:6px;padding:2px 8px;border-radius:9px;background:rgba(6,14,22,.5)}#vsb div.me{background:rgba(255,176,0,.3);outline:1px solid rgba(255,176,0,.6)}#vsb b{width:14px;color:var(--signal)}#vsb span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#vsb i{font-style:normal;font-family:var(--num);font-size:14px}'+
+      '#vsEnd{position:fixed;inset:0;z-index:38;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(4,10,18,.82);pointer-events:auto}#vsEnd .bx{width:min(560px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.2);border-top:3px solid var(--signal);background:linear-gradient(180deg,rgba(24,46,66,.97),rgba(9,20,32,.98));box-shadow:0 22px 60px rgba(0,0,0,.6)}'+
+      '#vsEnd h2{margin:0;font:700 26px/1 var(--num);letter-spacing:.14em;color:var(--signal);text-align:center}#vsEnd .w{text-align:center;font:700 15px var(--body)}#vsEnd .r{display:flex;gap:8px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.07);font:700 13px var(--body);align-items:center}#vsEnd .r span{flex:1}#vsEnd .r span:nth-child(2){flex:2.2}#vsEnd .r.h{background:none;font-size:11px;color:var(--dim);padding:0 10px}#vsEnd .r.me{background:rgba(255,176,0,.22);outline:1px solid rgba(255,176,0,.6)}'+
+      '#vsEnd .bt{display:flex;gap:8px}#vsEnd button{flex:1;height:44px;border-radius:10px;font:700 14px var(--body);color:var(--ink);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3)}#vsEnd button.go{color:#1a1200;background:linear-gradient(180deg,#ffc93d,#ffa200);border-color:transparent}#vsEnd p{margin:0;text-align:center;font:12px var(--body);color:var(--dim)}';
+    document.head.appendChild(st);
+    VS.el=document.createElement('div');VS.el.id='vsb';document.getElementById('tl').appendChild(VS.el);
+    VS.end=document.createElement('div');VS.end.id='vsEnd';VS.end.className='off';document.body.appendChild(VS.end);
+  }
+  document.documentElement.classList.add('m-vs');
+  var L=vsScores(),sig=L.map(function(p){return p.n+p.s+'/'+p.d+(p.me?'*':'');}).join('|')+'|'+VS.over+'|'+VS.auth;
+  if(sig===VS.sig)return;VS.sig=sig;
+  VS.el.textContent='';
+  L.slice(0,4).forEach(function(p,i){var d=document.createElement('div'),b=document.createElement('b'),s=document.createElement('span'),k=document.createElement('i');if(p.me)d.className='me';b.textContent=i+1;s.textContent=p.n;k.textContent=p.s+'点';d.appendChild(b);d.appendChild(s);d.appendChild(k);VS.el.appendChild(d);});
+  if(!VS.over){VS.end.classList.add('off');return;}
+  VS.end.textContent='';VS.end.classList.remove('off');
+  var bx=document.createElement('div');bx.className='bx';VS.end.appendChild(bx);
+  function add(tag,cls,txt,par){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;(par||bx).appendChild(e);return e;}
+  add('h2','','試合終了');add('div','w',L.length&&L[0].s>0?('優勝　'+L[0].n):'引き分け');
+  var hr=add('div','r h');['順位','なまえ','プレイヤー撃破','COM撃破','やられた','点'].forEach(function(t){add('span','',t,hr);});
+  L.forEach(function(p,i){var r=add('div','r'+(p.me?' me':''));[(i+1)+'位',p.n+(p.me?'（自分）':''),p.pk+' 人',p.ck+' 台',p.d+' 回',p.s+' 点'].forEach(function(t){add('span','',t,r);});});
+  add('p','','プレイヤー撃破 2点、COM撃破 1点。同点はやられた回数の少ないほうが上です。');
+  var bt=add('div','bt');
+  if(VS.auth){var ag=add('button','go','同じルールでもう一度',bt);ag.type='button';ag.addEventListener('click',function(){if(amHost)newGame();else VS.again++;});}
+  else add('p','','部屋を作った人が次の試合を始めるのを待っています',bt).style.flex='1';
+  var tb=add('button','','タイトルに戻る',bt);tb.type='button';tb.addEventListener('click',function(){try{location.reload();}catch(e){}});
+}
+function vsPopMode(cp){ // the room window serves co-op and versus; versus adds the rules
+  var h=cp.root.querySelector('h2');if(h&&h.firstChild&&h.firstChild.nodeType===3)h.firstChild.nodeValue=VS.pick?'対戦':'協力プレイ';
+  var mk=document.getElementById('coMake');if(mk)mk.textContent=VS.pick?'このルールで部屋を作る（4桁のコードが発行されます）':'部屋を作る（4桁のコードが発行されます）';
+  if(!VS.rp&&mk){
+    var st=document.createElement('style');st.textContent='#vsRules{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14)}#vsRules .rr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}#vsRules .rl{width:92px;font:700 13px var(--body);color:var(--signal)}#vsRules .ht{flex:1;min-width:52px;height:36px;font-size:13px}#vsRules small{font:12px/1.5 var(--body);color:var(--dim)}';document.head.appendChild(st);
+    VS.rp=document.createElement('div');VS.rp.id='vsRules';mk.parentNode.insertBefore(VS.rp,mk);
+    var WN=['ライフル','＋サブマシンガン','＋ショットガン','＋スナイパー'],note=document.createElement('small');
+    function row(label,key,vals,names){var r=document.createElement('div');r.className='rr';var l=document.createElement('span');l.className='rl';l.textContent=label;r.appendChild(l);var bs=[];
+      vals.forEach(function(v,i){var b=document.createElement('button');b.type='button';b.className='ht';b.textContent=names[i];b.addEventListener('click',function(){VS.rules[key]=v;try{localStorage.setItem('ic_vs',JSON.stringify(VS.rules));}catch(e){}paint();});r.appendChild(b);bs.push(b);});
+      VS.rp.appendChild(r);return function(){bs.forEach(function(b,i){b.classList.toggle('on',VS.rules[key]===vals[i]);});};}
+    var ps=[row('試合時間','min',[3,5,10],['3分','5分','10分']),row('武器の数','wn',[1,2,3,4],['1つ','2つ','3つ','4つ']),row('COMの数','com',[0,2,4,6,8],['なし','2体','4体','6体','8体']),row('COMの強さ','lv',[0,1,2],['よわい','ふつう','つよい'])];
+    VS.rp.appendChild(note);
+    var paint=function(){ps.forEach(function(f){f();});note.textContent='武器：'+WN.slice(0,VS.rules.wn).join(' ')+'（武器ボタンで持ちかえ）。全員が敵の個人戦で、プレイヤー撃破 2点・COM撃破 1点。入る人は、部屋を作った人のルールで遊びます。';};
+    paint();
+  }
+  if(VS.rp)VS.rp.classList.toggle('off',!VS.pick);
+}
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){INLOOT={};
   if(myVeh)leaveVeh();
@@ -5972,6 +6091,7 @@ function muzzleWorld(o,depth){ // where the rifle's muzzle appears in the main v
   o.set(gun.position.x/gz*k*depth,gun.position.y/gz*k*depth,-depth);return camera.localToWorld(o);
 }
 function fire(){
+  if(VS.on&&VS.over)return;
   if(me.down||me.reload>0||now<nextShot)return;
   var W=curW(),WG=KIDS.water;
   if(me.ammo<=0){nextShot=now+0.3;sClick(0,2400,0.18);startReload();return;}
@@ -5979,6 +6099,7 @@ function fire(){
   var a=me.ads,sc=useScope()?a:0,sprd=(W.sp+0.007*me.amp+0.014*me.spread)*(1-0.78*a)*(1-0.9*sc)+(W.pel>1?W.sp*0.55*a:0),ex=0,ey=0,ez=0,ray=null,p;
   for(p=0;p<W.pel;p++){
     ray=aimRay(sprd);ex=ray.ox+ray.dx*ray.t;ey=ray.oy+ray.dy*ray.t;ez=ray.oz+ray.dz*ray.t;
+    if(VS.on){var vh=vsShot(ray,W);if(vh){ex=ray.ox+ray.dx*vh;ey=ray.oy+ray.dy*vh;ez=ray.oz+ray.dz*vh;continue;}}
     if(ray.v){
       var key='e'+ray.v.id,dm=(ray.head?W.dmg*2:W.dmg)*(1+0.25*lv);if(W.pel>1)dm*=clamp(1.25-ray.t/28,0.25,1);
       myDmg[key]=(myDmg[key]||0)+Math.round(dm);coins+=dm*0.05;dmgTime[key]=now;ray.v.flinch=1;ray.v.fz=Math.random()<0.5?1:-1;hitT=0.12;hitMark(ray.head?1:0);tgtHit(ray.v);runHit(ray.head);
@@ -6239,13 +6360,13 @@ function drawHud(dt){
   bD.classList.toggle('on',adsTog);
   var H=hs;el.wave.textContent='';
   if(H){
-    el.wave.appendChild(document.createTextNode(SHIFT.on?'品出しチャレンジ':practice?'プラクティス':(H.w>0?('WAVE '+H.w):'準備中')));
+    el.wave.appendChild(document.createTextNode(VS.on?'対戦':SHIFT.on?'品出しチャレンジ':practice?'プラクティス':(H.w>0?('WAVE '+H.w):'準備中')));
     var s=document.createElement('small');
-    s.textContent=SHIFT.on?'Cマートの品出しで点を競う':practice?'ロボットは来ません':H.st==='fight'?((KIDS.on?'ロボット のこり ':'敵 残り ')+(H.left+H.e.length)+(KIDS.on?(KIDS.water?'　こしょう ':'　たおした '):'　撃破 ')+H.k):(H.w>0?'次のウェーブまで '+Math.ceil(Math.max(0,H.t))+'秒':'まもなく開始');
+    s.textContent=VS.on?vsLine():SHIFT.on?'Cマートの品出しで点を競う':practice?'ロボットは来ません':H.st==='fight'?((KIDS.on?'ロボット のこり ':'敵 残り ')+(H.left+H.e.length)+(KIDS.on?(KIDS.water?'　こしょう ':'　たおした '):'　撃破 ')+H.k):(H.w>0?'次のウェーブまで '+Math.ceil(Math.max(0,H.t))+'秒':'まもなく開始');
     el.wave.appendChild(s);
   }
   el.mates.textContent='';
-  others.forEach(function(o){
+  if(!VS.on)others.forEach(function(o){
     var d=document.createElement('div'),n=document.createElement('span'),bar=document.createElement('i'),b=document.createElement('b');
     n.textContent=o.hp>0?o.n:(o.n+'（ダウン）');b.style.width=o.hp+'%';bar.appendChild(b);d.appendChild(bar);d.appendChild(n);el.mates.appendChild(d);
   });
@@ -6292,7 +6413,7 @@ var FOGD=0.00021;
   var card=$('card'),nm=$('nm'),goB=$('go');goB.textContent='ソロで出撃';var cr0=$('credit');if(cr0)cr0.appendChild(document.createTextNode('　建物の高さ：国土交通省 PLATEAU（福岡市 2024年度）'));var cp0=card.querySelector('p');if(cp0)cp0.textContent='実際の地図から再現した福岡アイランドシティ。押し寄せるロボットから、仲間と一緒に街を守れ。';
   try{var sv=localStorage.getItem('ic_name');if(sv)nm.value=sv.slice(0,10);}catch(e){}
   var a1=el('div','','acts'),a2=el('div','','acts');card.insertBefore(a1,$('row').nextSibling);card.insertBefore(a2,a1.nextSibling);
-  var coopB=el('button','coopBtn','','協力プレイ',a1);coopB.type='button';
+  var coopB=el('button','coopBtn','','協力プレイ',a1);coopB.type='button';var vsB=el('button','vsBtn','','対戦',a1);vsB.type='button';vsB.addEventListener('click',function(){VS.pick=true;vsPopMode(cp);cp.open();status.textContent='接続しています';netInit(function(){lobbyOpen();});});
   var av=$('avBtn');if(av){a2.appendChild(av);av.lastChild.textContent='アバター';}
   var helpB=el('button','helpBtn','sbtn','操作説明',a2);helpB.type='button';var histB=el('button','histBtn','sbtn','更新履歴',a2);histB.type='button';
   var a3=el('div','','acts');card.insertBefore(a3,a2);var prB=el('button','pracBtn','sbtn','プラクティス（ロボットなしで練習）',a3);prB.type='button';prB.style.height='44px';prB.style.fontSize='14px';
@@ -6339,7 +6460,7 @@ var FOGD=0.00021;
   function showTab(i){grids.forEach(function(q,k){q.style.display=k===i?'grid':'none';tbs[k].classList.toggle('on',k===i);});}
   function sec(title,rows){var d=el('div','','',null,grid);el('h3','','',title,d);rows.forEach(function(r){var l=el('div','','',null,d);el('b','','',r[0],l);l.appendChild(document.createTextNode('　'+r[1]));});}
   grid=grids[0];
-  sec('目的',[['ソロ','毒ガスを3回しのぐと最終決戦。ロボット30台を倒すとクリアで「のるーと利用券」'],['協力プレイ','WAVE 5 ごとにクリアで利用券。4桁のコードで最大4人。上の吹き出しボタンで定型文、マイクのボタンで声（声は友達用のURLだけ）'],['ランキング','この部屋の撃破数、自己ベスト10、マイデータ。トップとポーズメニューから'],['プラクティス','ロボットも毒ガスも来ない練習用'],['建物の中','ドアのある建物は歩いて入れる。住宅・マンションのエントランス・オフィス・カフェ・ラーメン店・クリニック・倉庫・スーパー・スパ。壁の向こうからは撃たれないが、ドアと窓は弾が通る。物資ケースを開けるとコインと体力。ミニマップの黄色い点が入り口'],['品出しチャレンジ','Cマートの品出しだけで点を競う。90秒から始まり、納品を1回終えるたびに +15秒。棚をまちがえると −3秒']]);
+  sec('目的',[['ソロ','毒ガスを3回しのぐと最終決戦。ロボット30台を倒すとクリアで「のるーと利用券」'],['協力プレイ','WAVE 5 ごとにクリアで利用券。4桁のコードで最大4人。上の吹き出しボタンで定型文、マイクのボタンで声（声は友達用のURLだけ）'],['ランキング','この部屋の撃破数、自己ベスト10、マイデータ。トップとポーズメニューから'],['対戦','4桁のコードで集まる個人戦（最大4人）。部屋を作る人が試合時間・武器の数・COMの数と強さを決める。プレイヤー撃破2点、COM撃破1点。やられても3秒で別の場所に復活'],['プラクティス','ロボットも毒ガスも来ない練習用'],['建物の中','ドアのある建物は歩いて入れる。住宅・マンションのエントランス・オフィス・カフェ・ラーメン店・クリニック・倉庫・スーパー・スパ。壁の向こうからは撃たれないが、ドアと窓は弾が通る。物資ケースを開けるとコインと体力。ミニマップの黄色い点が入り口'],['品出しチャレンジ','Cマートの品出しだけで点を競う。90秒から始まり、納品を1回終えるたびに +15秒。棚をまちがえると −3秒']]);
   sec('ライフ',[['♥ 3つ','ダウンすると1つ減って、その場ですぐ復活'],['最後の1つ','ダウンするとソロは最初から。協力は仲間が近づくと蘇生']]);
   sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
   sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['Cマート','世界のコーラが集まるコンビニ。品出し：納品ケース（3つまで持てる）を同じ色に光る棚へ。続けて並べるとコンボ、白く光る「急ぎの棚」はボーナス。武器強化とコイン。早いほど高ランク'],['品出しの段位','並べるほど 見習い → 10級 … 1級 → 初段 … 十段 → 名人。Sランクやチャレンジの高得点で早く上がる'],['レジ','コインでコーラ・イカフライ・弾・装備を買う'],['回復','包帯、応急処置セット、コーラ、イカフライ、バーベキュー']]);
@@ -6369,7 +6490,7 @@ var FOGD=0.00021;
   function start(mode,code,created,rid){
     me.name=(nm.value||'').trim().slice(0,10)||'プレイヤー';
     try{localStorage.setItem('ic_name',me.name);}catch(e){}
-    NET.mode=mode;NET.created=!!created;NET.rid=created?Math.random().toString(36).slice(2,10):(rid||'');roomCode=mode==='coop'?String(code):'';netState=mode==='coop'?'wait':'solo';netFails=0;
+    VS.on=!!VS.pick&&mode==='coop';if(VS.on){practice=true;vsBegin(!!created);}NET.mode=mode;NET.created=!!created;NET.rid=created?Math.random().toString(36).slice(2,10):(rid||'');roomCode=mode==='coop'?String(code):'';netState=mode==='coop'?'wait':'solo';netFails=0;
     initAudio();me.inGame=true;audioKick();nm.blur();tryJoin();
     $('start').classList.add('off');cp.root.classList.add('off');introStart();
     ['tl','tr','cross','ammo','prompt','bPause','bPack','bView'].forEach(function(id){$(id).classList.remove('off');});
@@ -6381,7 +6502,7 @@ var FOGD=0.00021;
   }
   function render(rooms){
     list.textContent='';
-    rooms.forEach(function(r){
+    rooms.filter(function(r){return (r.v===1)===!!VS.pick;}).forEach(function(r){
       var row=el('div','','rm',null,list),sp=el('span','','',null,row);sp.appendChild(document.createTextNode(r.n+' の部屋　'));el('small','','',r.c+' / 4人',sp);
       if(openId!==r.id){var b=el('button','','cbtn',r.c>=4?'満員':'入る',row);b.type='button';if(r.c<4)b.addEventListener('click',function(){openId=r.id;render(NET.rooms);});return;}
       var inp=el('input','coCode','',null,row);inp.type='text';inp.inputMode='numeric';inp.maxLength=4;inp.placeholder='0000';inp.autocomplete='off';
@@ -6391,7 +6512,7 @@ var FOGD=0.00021;
     });
   }
   NET.onStatus=function(s){status.textContent=s;};NET.onRooms=function(r){if(!document.getElementById('coCode')||document.activeElement!==document.getElementById('coCode'))render(r);};
-  coopB.addEventListener('click',function(){cp.open();status.textContent='接続しています';netInit(function(){lobbyOpen();});});
+  coopB.addEventListener('click',function(){VS.pick=false;vsPopMode(cp);cp.open();status.textContent='接続しています';netInit(function(){lobbyOpen();});});
   mk.addEventListener('click',function(){if(!NET.kind||NET.kind==='none'){status.textContent='まだ接続できていません。少し待ってからもう一度押してください';return;}start('coop',String(1000+Math.floor(Math.random()*9000)),true);});
   goB.addEventListener('click',function(){start('solo','',false);});
   // kids mode: how long to play, and which way to play
@@ -6496,23 +6617,23 @@ function frame(tms,manual){
   }else{
     var h=cleanHs(hostO.h);if(h)hs=h;
   }
-  wasHost=amHost;
+  wasHost=amHost;if(VS.on)vsTick(dt);
   if(hs&&hs.gen!==me.gen){
-    var first=me.gen===-1,wiped=me.down,rk=myKills,rw=lastBest;me.gen=hs.gen;resetSelf();lastWave=hs.w;if(!first&&wiped&&!KIDS.on)showResult(rw,rk);runReset();
+    var first=me.gen===-1,wiped=me.down,rk=myKills,rw=lastBest;me.gen=hs.gen;resetSelf();if(VS.on)vsReset();lastWave=hs.w;if(!first&&wiped&&!KIDS.on)showResult(rw,rk);runReset();
     if(!first){if(wiped)banner('全滅',lastBest>0?('WAVE '+lastBest+' まで到達。最初からやり直します'):'最初からやり直します',3.5);else banner('合流','仲間のゲームに参加しました',2.5);}
   }
   if(hs){
-    if(hs.w>lastWave){lastWave=hs.w;if(KIDS.on)banner('ウェーブ '+hs.w,hs.w===1?'ロボットが きたよ':'',3);else banner('WAVE '+hs.w,hs.w===1?'ロボットを撃退せよ':(hs.w===2?'ガンナー出現。遮蔽物を使おう':(hs.w===3?'大型のヘビーに注意':'')));sRadio(660,0);sRadio(880,0.14);}
+    if(hs.w>lastWave&&!VS.on){lastWave=hs.w;if(KIDS.on)banner('ウェーブ '+hs.w,hs.w===1?'ロボットが きたよ':'',3);else banner('WAVE '+hs.w,hs.w===1?'ロボットを撃退せよ':(hs.w===2?'ガンナー出現。遮蔽物を使おう':(hs.w===3?'大型のヘビーに注意':'')));sRadio(660,0);sRadio(880,0.14);}
     lastBest=hs.w;
   }
   // player
   var wantFire=false,jx=0,jy=0;
   if(me.inv>0)me.inv-=dt;
   if(me.down){
-    var near=false;for(i=0;i<others.length;i++)if(others[i].hp>0&&Math.hypot(others[i].x-me.x,others[i].z-me.z)<4.5)near=true;
+    if(VS.on){vsDown(dt);}else{var near=false;for(i=0;i<others.length;i++)if(others[i].hp>0&&Math.hypot(others[i].x-me.x,others[i].z-me.z)<4.5)near=true;
     me.downT-=dt*(near?3.5:1);me.vx=me.vz=0;me.amp=0;me.sprint=0;
     if(KIDS.on)banner('ひとやすみ','すぐ もどれるよ',0.3);else banner('ダウン',near?'仲間が蘇生中…':((lifePend?'ライフを1つ使って復活します（残り '+lives+'）':'復活まで '+Math.ceil(Math.max(0,me.downT))+'秒（仲間が近くに来ると早い）')),0.3);
-    if(me.downT<=0){me.down=false;me.hp=60;me.inv=2;me.ammo=MAG;me.reload=0;}
+    if(me.downT<=0){me.down=false;me.hp=60;me.inv=2;me.ammo=MAG;me.reload=0;}}
   }else if(myVeh){
     jx=joy.x+((keys.KeyD||keys.ArrowRight)?1:0)-((keys.KeyA||keys.ArrowLeft)?1:0);jy=joy.y+((keys.KeyW||keys.ArrowUp)?1:0)-((keys.KeyS||keys.ArrowDown)?1:0);
     var jv=Math.hypot(jx,jy);if(jv>1){jx/=jv;jy/=jv;}
@@ -6536,7 +6657,7 @@ function frame(tms,manual){
     var sN=Math.floor(me.bob/Math.PI);if(sN!==stepN){stepN=sN;if(sp>1.2)sStep(run?1.25:0.8);}
     if(now-me.lastHurt>6&&me.hp<100)me.hp=Math.min(100,me.hp+5*dt);
     if(me.reload>0){me.reload-=dt;if(me.reload<=0)me.ammo=MAG;}
-    for(i=0;i<others.length;i++){var o=others[i];if(o.hp<=0&&Math.hypot(o.x-me.x,o.z-me.z)<4.5){banner('蘇生中',o.n+' を助けています',0.3);break;}}
+    for(i=0;i<others.length;i++){var o=others[i];if(!VS.on&&o.hp<=0&&Math.hypot(o.x-me.x,o.z-me.z)<4.5){banner('蘇生中',o.n+' を助けています',0.3);break;}}
   }
   var hq=Math.min(1,dt*(lookPid===null?7:11));                 // head follows the stick, and swings back when it is let go
   headYaw+=(-lookV.x*3.0-headYaw)*hq;headPitch+=(-lookV.y*0.95-headPitch)*hq;
@@ -6567,7 +6688,7 @@ function frame(tms,manual){
   // shooting
   if(!me.down){
     if(carry)wantFire=false;
-    else if(!wantFire&&auto&&me.reload<=0){var ar=aimRay(0);if(ar.v&&ar.t<70)wantFire=true;}
+    else if(!wantFire&&auto&&me.reload<=0){var ar=aimRay(0);if((ar.v&&ar.t<70)||(VS.on&&vsAim(ar)))wantFire=true;}
     if(wantFire&&me.sprint<0.6&&!inI)fire();
   }
   updGun(dt);
