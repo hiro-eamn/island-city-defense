@@ -1288,6 +1288,7 @@ function carGeo(mdl,paint,noW){
       house=[0xf1ece0,0xe3d8c4,0xdfe5e8,0xefe2d6,0xd9cdb8].map(function(h){return rgb(h);}),shed=[0xdfe3e6,0xd5dade,0xcfd6db,0xbfd0d6].map(function(h){return rgb(h);}),
       roofH=[0x6b4d43,0x3f5568,0x7a3b32,0x4c5a4e,0x3a3d42].map(function(h){return rgb(h,1.5);}),roofB=[0x8d949b,0x7d868e,0x9aa0a6].map(function(h){return rgb(h,1.5);}),cUnit=rgb(0xb4b8bb,1.4);
   function pick(a){return a[Math.floor(mapRng()*a.length)];}
+  INROAD=roadDist;
   function roadDist(x,z){ // distance to the nearest street
     var best=1e18;
     for(var q=0;q<ROADS.length;q++){var p=ROADS[q];for(var e=1;e<p.length;e++){
@@ -1336,7 +1337,7 @@ function carGeo(mdl,paint,noW){
     if(FPC&&bt===2&&h>30&&Math.hypot((cb.x0+cb.x1)/2-FPC[0],(cb.z0+cb.z1)/2-FPC[1])<230){kd='forest';col=[1,1,1];}
     cb.bld={id:BLD.length,p:p,h:h,kd:kd,a:a,cb:cb,bt:bt,sp:special[bi]||0,front:sfr};BLD.push(cb.bld);
     if(kd==='shed')walls(W.shed,p,0,h,col,{tile:6});
-    else{var uo=Math.floor(mapRng()*4)/4,vo=Math.floor(mapRng()*4)/4;walls(W[kd],p,0,h,col,{bay:true,uo:uo,vo:kd==='house'?0:vo,alt:W.plain});}
+    else{var uo=Math.floor(mapRng()*4)/4,vo=Math.floor(mapRng()*4)/4;cb.bld.uo=uo;walls(W[kd],p,0,h,col,{bay:true,uo:uo,vo:kd==='house'?0:vo,alt:W.plain});}
     if((small||(kd==='house'&&a<700))&&p.length<=12&&(convex(p)||starry(p))){hipRoof(roofM,p,h,pick(roofH));return;}
     cap(roofM,p,h,small?pick(roofH):(big?[col[0]*1.2,col[1]*1.2,col[2]*1.2]:pick(roofB)),0.25);
     if(small)return;
@@ -5312,9 +5313,9 @@ function tipTick(dt){
   var css=[
     ':root{--glass:linear-gradient(180deg,rgba(30,54,74,.82),rgba(10,22,34,.9));--edge:rgba(255,255,255,.2);--amber2:#ff8a00}',
     /* ---- title ---- */
-    '#start{background:linear-gradient(180deg,rgba(6,16,26,.1) 0%,rgba(6,16,26,.3) 34%,rgba(6,14,24,.94) 78%),linear-gradient(90deg,rgba(6,14,24,.55),rgba(6,14,24,0) 62%)}',
-    '#card{display:grid!important;grid-template-columns:1fr 2fr;gap:8px 8px!important;max-width:620px!important}#card>*{grid-column:1/-1;min-width:0}#card>#row{grid-column:1}#card>.acts{grid-column:2}',
-    '#card::before{content:"NEW　対戦モード（コードでオンライン対戦）";justify-self:start;font:700 11px/1 var(--body);letter-spacing:.06em;color:#1a1200;background:linear-gradient(90deg,var(--signal),#ffd24a);padding:5px 10px 5px 8px;border-radius:3px 12px 12px 3px;box-shadow:0 2px 10px rgba(255,176,0,.35)}',
+    '#start{background:linear-gradient(180deg,rgba(6,16,26,.1) 0%,rgba(6,16,26,.3) 34%,rgba(6,14,24,.94) 78%)}',
+    '#card{display:grid!important;grid-template-columns:1fr 2fr;gap:8px 8px!important;max-width:680px!important;margin-left:auto!important;margin-right:auto!important;width:100%}#credit{text-align:center}#card>*{grid-column:1/-1;min-width:0}#card>#row{grid-column:1}#card>.acts{grid-column:2}',
+    '#card::before{content:"NEW　対戦モード（コードでオンライン対戦）";justify-self:start;white-space:nowrap;font:700 11px/1 var(--body);letter-spacing:.06em;color:#1a1200;background:linear-gradient(90deg,var(--signal),#ffd24a);padding:5px 10px 5px 8px;border-radius:3px 12px 12px 3px;box-shadow:0 2px 10px rgba(255,176,0,.35)}',
     '#card h1{font-weight:800;letter-spacing:.03em;text-shadow:0 2px 0 rgba(0,0,0,.45),0 0 26px rgba(120,200,255,.28);padding-bottom:6px;background:linear-gradient(90deg,var(--signal) 0 46px,rgba(255,255,255,.28) 46px 100%) left bottom/100% 2px no-repeat}',
     '#card h1 span{display:flex;align-items:center;gap:8px;margin-bottom:6px}#card h1 span::before{content:"";width:18px;height:8px;background:repeating-linear-gradient(135deg,var(--signal) 0 3px,transparent 3px 6px)}',
     '#row{display:flex}#go,#coopBtn,#vsBtn{position:relative;flex:1;width:100%;height:56px!important;border-radius:10px!important;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:0 12px 0 54px!important;text-align:left;font-size:17px!important;line-height:1.1!important;border:0;box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .08s}',
@@ -5368,7 +5369,7 @@ function tipTick(dt){
 
 /* ---------- interiors: most buildings on the map have a door you can walk through and a furnished ground floor ---------- */
 var INB=null,INCB=null,INS=[],INK={house:[7.5,6.8,2.5,1.2],lobby:[11,8,2.9,1.9],office:[13,9.5,2.9,1.9],cafe:[9.5,7.2,2.8,1.6],clinic:[11,8,2.8,1.9],ware:[18,13,5.4,3.4],super:[26,18,4.2,3.0],spa:[14,10,3.0,1.9],ramen:[7.5,6.6,2.7,1.5]},
-    INNAME={house:'住宅',lobby:'マンションのエントランス',office:'オフィスビル',cafe:'カフェ',clinic:'クリニック',ware:'倉庫',super:'スーパー',spa:'スパ・温泉',ramen:'ラーメン店'},INT=0.3,INM=null,INP=null,inT=0,inNear=[],inHintB=null,inReady=false;
+    INNAME={house:'住宅',lobby:'マンションのエントランス',office:'オフィスビル',cafe:'カフェ',clinic:'クリニック',ware:'倉庫',super:'スーパー',spa:'スパ・温泉',ramen:'ラーメン店'},INT=0.3,INROAD,INM=null,INP=null,inT=0,inNear=[],inHintB=null,inReady=false;
 function inHash(B){var c=B.cb;return Math.abs(Math.round((c.x0+c.x1)*37.3+(c.z0+c.z1)*91.7+B.h*13))|0;}
 function inKind(B){ // what is behind the door: by the building's type and size, varied by a hash of where it stands
   var k=inHash(B)%20;
@@ -5392,19 +5393,29 @@ function inFree(x,z,skip){ // nothing solid stands on this spot
 function inDoor(B){ // where the door goes, and the biggest room that fits behind it
   if(B.dr!==undefined)return B.dr;B.dr=null;
   if((B.sp&&!B.front)||B.h<2.7)return null;
-  var kind=B.sp?(B.sp===4?'spa':'super'):inKind(B),K=INK[kind],p=B.p,n=p.length,s=sarea(p)>0?1:-1,best=null,j=n-1,i;
-  if(B.sp)best={sc:0,mx:B.front.mx,mz:B.front.mz,nx:-B.front.nx,nz:-B.front.nz,l:B.front.l};
+  var kind=B.sp?(B.sp===4?'spa':'super'):inKind(B),K=INK[kind],p=B.p,n=p.length,s=sarea(p)>0?1:-1,C=[],best=null,j=n-1,i,b,ci;
+  if(B.sp)C.push({sc:0,mx:B.front.mx,mz:B.front.mz,nx:-B.front.nx,nz:-B.front.nz,l:B.front.l});
   else for(i=0;i<n;j=i++){
     var ax=p[j][0],az=p[j][1],ex=p[i][0]-ax,ez=p[i][1]-az,l=Math.hypot(ex,ez);if(l<K[3]+1.6)continue;
     var ox=ez/l*s,oz=-ex/l*s,mx=ax+ex/2,mz=az+ez/2;                      // (ox,oz) points out of the building
-    if(!inFree(mx+ox*1.1,mz+oz*1.1,B.cb)||!inFree(mx+ox*2.2,mz+oz*2.2,B.cb))continue;
-    var sc=Math.min(l,K[0]+4)+(inFree(mx+ox*5,mz+oz*5,B.cb)?6:0)+(inFree(mx+ox*9,mz+oz*9,B.cb)?3:0);
-    if(!best||sc>best.sc)best={sc:sc,mx:mx,mz:mz,nx:-ox,nz:-oz,l:l};
+    var rd=INROAD?INROAD(mx+ox*6,mz+oz*6):99,base=Math.min(l,K[0]+4)+clamp((40-rd)/30,0,1)*8;   // the wall that faces a street is the front
+    // the wall is painted in bays (see walls()): the door goes in the middle of one, on the painted front door where a house has one
+    var N=B.uo===undefined?0:Math.max(1,Math.round(l/3)),bw=N?l/N:0,c0=N?Math.round(B.uo*4):0;
+    for(b=0;b<=N;b++){                                                  // the last one is the middle of the wall, kept as a fallback
+      var f=b<N?(b+0.5)/N:0.5,off=Math.abs(f-0.5)*l;if(f*l<K[3]/2+0.45||(1-f)*l<K[3]/2+0.45)continue;
+      var px=ax+ex*f,pz=az+ez*f,col=(c0+b)%4,pref=b===N?(N?-9:0):(B.kd==='house'?(col===1?5:(col===3?-3:0)):0);
+      if(!inFree(px+ox*1.1,pz+oz*1.1,B.cb)||!inFree(px+ox*2.2,pz+oz*2.2,B.cb))continue;
+      C.push({sc:base+pref-off*0.7+(inFree(px+ox*5,pz+oz*5,B.cb)?6:0)+(inFree(px+ox*9,pz+oz*9,B.cb)?3:0),mx:px,mz:pz,nx:-ox,nz:-oz,l:2*Math.min(f,1-f)*l});
+    }
   }
-  if(!best)return null;
-  var nx=best.nx,nz=best.nz,tx=nz,tz=-nx,W=Math.min(K[0],best.l-0.5),D,ok=false,u,v;
+  if(!C.length)return null;
+  C.sort(function(a,b){return b.sc-a.sc;});
+  var nx,nz,tx,tz,W,D,ok=false,u,v;
   function fits(W,D){for(u=0;u<=4;u++)for(v=0;v<=4;v++){var lu=(u/4-0.5)*(W+0.3),lv=0.06+(v/4)*(D+INT+0.15);if(!inP(best.mx+tx*lu+nx*lv,best.mz+tz*lu+nz*lv,p))return false;}return true;}
-  while(W>=Math.max(3.4,K[3]+1.5)&&!ok){for(D=K[1];D>=3.2;D-=0.6)if(fits(W,D)){ok=true;break;}if(!ok)W*=0.8;}
+  for(ci=0;ci<C.length&&ci<16&&!ok;ci++){
+    best=C[ci];nx=best.nx;nz=best.nz;tx=nz;tz=-nx;W=Math.min(K[0],best.l-0.5);
+    while(W>=Math.max(3.4,K[3]+1.5)&&!ok){for(D=K[1];D>=3.2;D-=0.6)if(fits(W,D)){ok=true;break;}if(!ok)W*=0.8;}
+  }
   if(!ok)return null;
   var H=Math.min(K[2],B.h-0.25);if(H<2.3)return null;
   return B.dr={B:B,kind:kind,ox:best.mx,oz:best.mz,tx:tx,tz:tz,nx:nx,nz:nz,W:W,D:D,H:H,dw:Math.min(K[3],W-1.4),T:INT,ang:Math.atan2(-tz,tx),g:null,cols:[],wins:[],open:0,seed:inHash(B)};
