@@ -1481,7 +1481,7 @@ function carGeo(mdl,paint,noW){
     inst(vb.geo(),stdMat({roughness:0.45,metalness:0.2}),vends.filter(function(v,q){return q%2===vk;}),function(l){P.set(l[0],0.13,l[1]);Q.setFromAxisAngle(YA,l[2]);M.compose(P,Q,S);C.r=-1;});
     C.setRGB(1,1,1);
   });
-  vends.forEach(function(v){var cc=addCol(rectP(v[0],v[1],0.4,0.55,v[2]),1.85);cc.nn=true;});
+  vends.forEach(function(v){var cc=addCol(rectP(v[0],v[1],0.4,0.55,v[2]),1.85);cc.nn=true;});FXV=vends;
   var mhc=cvs(64),mhg=mhc.getContext('2d');mhg.fillStyle='#3a3b3d';mhg.fillRect(0,0,64,64);mhg.strokeStyle='#232425';mhg.lineWidth=3;
   for(i=6;i<32;i+=7){mhg.beginPath();mhg.arc(32,32,i,0,6.283);mhg.stroke();}for(i=0;i<8;i++){mhg.beginPath();mhg.moveTo(32,32);mhg.lineTo(32+Math.cos(i*0.785)*30,32+Math.sin(i*0.785)*30);mhg.stroke();}
   var mhGeo=new THREE.CircleGeometry(0.33,20);mhGeo.rotateX(-Math.PI/2);
@@ -1666,7 +1666,7 @@ function robotGeos(t){
   g.shin=b.geo();
   RGEO[t]=g;return g;
 }
-function makeEnemy(t){
+function makeEnemy(t){var t0=t;if(TYPES[t].base!==undefined)t=TYPES[t].base;
   var G=robotGeos(t),R=RB[t],g=new THREE.Group(),hips=new THREE.Group(),k=R.k;
   g.rotation.order='YXZ';hips.position.y=1.0;g.add(hips);
   function limb(geo,parent,x,y,z){var grp=new THREE.Group();grp.position.set(x,y,z);var m=new THREE.Mesh(geo,robotMat);m.castShadow=true;m.receiveShadow=true;grp.add(m);parent.add(grp);return grp;}
@@ -1676,9 +1676,9 @@ function makeEnemy(t){
   var core=new THREE.Mesh(BOX,eyeMats[t]);core.scale.set(R.w*0.26,0.036,0.02);core.position.set(0,0.525,0.17*k+0.058);hips.add(core);
   var aL=limb(G.armL,hips,R.w/2+0.15,0.66,0),aR=limb(G.armR,hips,-R.w/2-0.15,0.66,0);
   var tL=limb(G.thigh,hips,0.17*k,0,0),tR=limb(G.thigh,hips,-0.17*k,0,0),sL=limb(G.shin,tL,0,-0.5,0),sR=limb(G.shin,tR,0,-0.5,0);
-  g.scale.setScalar(TYPES[t].scale);
+  g.scale.setScalar(TYPES[t0].scale);
   g.userData={core:core,hips:hips,head:head,aL:aL,aR:aR,tL:tL,tR:tR,sL:sL,sR:sR};
-  scene.add(g);
+  scene.add(g);if(t0!==t)fxSkin(g,t0);
   return g;
 }
 function poseEnemy(v,dt,sp){ // walk cycle driven by distance actually covered
@@ -1749,7 +1749,7 @@ function fxSmoke(x,y,z,n,sz,dark){
   for(var k=0;k<n;k++){var c=dark?rnd(0.02,0.07):rnd(0.16,0.3);smoke.emit(x+rnd(-0.3,0.3)*sz,y+rnd(-0.2,0.3)*sz,z+rnd(-0.3,0.3)*sz,rnd(-0.5,0.5),rnd(0.6,1.9),rnd(-0.5,0.5),rnd(1.4,3.2),rnd(0.5,0.9)*sz,rnd(0.5,1.1)*sz,c,c,c*1.05,dark?0.6:0.4,-0.15,0.5);}
 }
 function fxFire(x,y,z,s){sparks.emit(x+rnd(-0.3,0.3)*s,y,z+rnd(-0.3,0.3)*s,rnd(-0.3,0.3),rnd(1.2,2.6),rnd(-0.3,0.3),rnd(0.25,0.5),rnd(0.5,0.9)*s,-0.9*s,rnd(3,5),rnd(1.1,1.8),0.3,0.75,0,0.6);}
-function fxExplode(x,y,z,big){
+function fxExplode(x,y,z,big){fxRing(x,y,z,big);
   var s=big?1.8:1;
   sparks.emit(x,y,z,0,0,0,0.12,7*s,0,9,6,2.6,1,0,0);sparks.emit(x,y,z,0,0.5,0,0.22,3.4*s,5,7,3,1,0.8,0,0);
   fxSparks(x,y,z,big?46:22,0,0.5,0,1.3*s);fxSmoke(x,y,z,big?12:6,1.3*s,true);fxSmoke(x,y+0.5,z,big?6:3,1.5*s,false);
@@ -2395,7 +2395,7 @@ function cleanHs(h){
   if(!h||!fin(h.gen)||!fin(h.w)||!Array.isArray(h.e))return null;
   var e=[];
   for(var i=0;i<h.e.length&&i<24;i++){var a=h.e[i];
-    if(Array.isArray(a)&&fin(a[0])&&(a[1]===0||a[1]===1||a[1]===2)&&fin(a[2])&&fin(a[3])&&fin(a[4]))e.push([a[0],a[1],clamp(a[2],-20000,20000),clamp(a[3],-20000,20000),a[4]]);}
+    if(Array.isArray(a)&&fin(a[0])&&(a[1]>=0&&a[1]<TYPES.length&&a[1]===Math.floor(a[1]))&&fin(a[2])&&fin(a[3])&&fin(a[4]))e.push([a[0],a[1],clamp(a[2],-20000,20000),clamp(a[3],-20000,20000),a[4]]);}
   return {gen:h.gen,w:clamp(Math.floor(h.w),0,999),k:fin(h.k)?h.k:0,st:h.st==='fight'?'fight':'break',t:fin(h.t)?h.t:0,left:fin(h.left)?h.left:0,e:e,g:(Array.isArray(h.g)&&h.g.length===9&&h.g.every(function(v){return fin(v);}))?h.g.slice():null,f:(Array.isArray(h.f)&&h.f.length===3&&h.f.every(function(v){return fin(v);}))?h.f.slice():null};
 }
 var sendT=0;
@@ -2491,7 +2491,7 @@ function inBox(x,z,m){
   return false;
 }
 function spawnEnemy(players){
-  var w=hs.w,r=Math.random(),t=(w>=3&&r<0.12)?2:((w>=2&&r<0.38)?1:0),x=0,z=0,ok=false;
+  var w=hs.w,r=Math.random(),t=fxType(w,r),x=0,z=0,ok=false;
   for(var k=0;k<40&&!ok;k++){
     var pi=(Math.random()*players.length)|0,p=players[pi],a=Math.random()*Math.PI*2,d=rnd(42,75);
     x=p.x+Math.cos(a)*d;z=p.z+Math.sin(a)*d;
@@ -2512,25 +2512,25 @@ function hostUpdate(dt){
     for(j=0;j<others.length;j++){var od=others[j].d;if(od){var v=od[key];if(fin(v)&&v>0)sum+=Math.min(v,1e5);}}
     if(sum>e.taken)e.taken=sum;e.hp=e.max-e.taken;
   }
-  for(i=sim.enemies.length-1;i>=0;i--)if(sim.enemies[i].hp<=0){sim.enemies.splice(i,1);hs.k++;}
+  fxCull();for(i=sim.enemies.length-1;i>=0;i--)if(sim.enemies[i].hp<=0){sim.enemies.splice(i,1);hs.k++;}
   if(VS.on){vsHost(dt,players);}else if(hs.st==='break'){
     hs.t-=dt;
-    if(hs.t<=0){hs.w++;hs.st='fight';hs.left=Math.min(40,5+2*hs.w+(nP-1)*(2+hs.w));sim.spawnT=0.5;}
+    if(hs.t<=0){hs.w++;hs.st='fight';hs.left=Math.min(40,5+2*hs.w+(nP-1)*(2+hs.w));sim.spawnT=0.5;fxWave(nP);}
   }else{
     sim.spawnT-=dt;
     if(hs.left>0&&sim.enemies.length<Math.min(14,8+2*nP)&&sim.spawnT<=0&&players.length){spawnEnemy(players);hs.left--;sim.spawnT=rnd(0.5,1.3);}
-    if(hs.left<=0&&sim.enemies.length===0){hs.st='break';hs.t=6;}
+    if(hs.left<=0&&sim.enemies.length===0){hs.st='break';hs.t=10;}
   }
   if(players.length===0&&!VS.on){sim.allDownT+=dt;if(sim.allDownT>3.5){newGame();return;}}else sim.allDownT=0;
   for(i=0;i<sim.enemies.length;i++){
     e=sim.enemies[i];var T=TYPES[e.t],tgt=null,bd=1e9,tj=0;
     for(j=0;j<players.length;j++){var dd=Math.hypot(players[j].x-e.x,players[j].z-e.z);if(dd<bd){bd=dd;tgt=players[j];tj=j;}}
     if(!tgt||bd<0.01)continue;
-    var dx=(tgt.x-e.x)/bd,dz=(tgt.z-e.z)/bd,stop=e.t===1?19:(T.r+0.5),mv=bd>stop;
+    var dx=(tgt.x-e.x)/bd,dz=(tgt.z-e.z)/bd,stop=e.t===1?19:(T.r+0.5),mv=bd>stop;if(e.t===5){dx=-dx;dz=-dz;mv=bd<55;e.age=(e.age||0)+dt;}
     if(!mv&&e.t===1&&bd>3&&!los(e.x,e.z,tgt.x,tgt.z))mv=true;
-    if(mv&&bd>6&&e.sideT<=0&&navDir(e,fields[tj])){dx=ND.x;dz=ND.z;}   // walk around buildings
+    if(mv&&bd>6&&e.t!==5&&e.sideT<=0&&navDir(e,fields[tj])){dx=ND.x;dz=ND.z;}   // walk around buildings
     if(e.sideT>0){e.sideT-=dt;var sx=-dz*e.side,sz=dx*e.side;dx=dx*0.25+sx;dz=dz*0.25+sz;var l=Math.hypot(dx,dz);dx/=l;dz/=l;mv=true;}
-    if(mv){e.x+=dx*T.sp*dt;e.z+=dz*T.sp*dt;}
+    if(mv){var fs=T.sp*fxSp(e,dt);e.x+=dx*fs*dt;e.z+=dz*fs*dt;}
     for(j=0;j<sim.enemies.length;j++){if(j===i)continue;var o2=sim.enemies[j],sxx=e.x-o2.x,szz=e.z-o2.z,sd=Math.hypot(sxx,szz),mn=T.r+TYPES[o2.t].r;
       if(sd<mn&&sd>1e-4){e.x+=sxx/sd*(mn-sd)*0.5;e.z+=szz/sd*(mn-sd)*0.5;}}
     resolve(e,T.r);clampIsland(e,2);
@@ -2548,7 +2548,7 @@ STORES.forEach(function(S){ // open the navigation grid through the doorway and 
 });
 var carryCat=0,CATN=['イカフライ','コーラ','おかし'],CATC=['黄色','赤','青'],CATH=[0xffd23a,0xff5a47,0x4fb0ff],CATM=null,konOpen=null,elKon=null;
 var lv=0,carry=0,useReq=false,myStock={},awarded={},promptTxt='',promptAct=false,nearS=null,nearD=1e9,insideS=false;
-function applyLv(){var W=WPN[slots[cur].k];MAG=W.mag+Math.max(1,Math.round(W.mag/6))*lv;RELOAD=W.rel-0.12*lv;}
+function applyLv(){var W=WPN[slots[cur].k];MAG=W.mag+Math.max(1,Math.round(W.mag/6))*lv;RELOAD=(W.rel-0.12*lv)*pkv('rel');MAG=Math.round(MAG*pkv('mag'));}
 function stockOut(){var a=[];for(var k in myStock){var s=myStock[k];a.push([+k,s.w,s.g,s.m]);}return a;}
 function needOf(S){ // six bays stand empty each wave; every player derives the same six
   var key=hs.gen+'_'+hs.w+'_'+(S.rd||0);if(S.key===key)return;S.t0=0;S.miss=0;S.rush=-1;S.rushN=0;if(!SHIFT.on){S.combo=0;S.lastT=0;}var nn=SHIFT.on?[6,8,10,12][Math.min(3,SHIFT.round)]:6;
@@ -2694,7 +2694,7 @@ function updStores(dt){
         held.splice(held.indexOf(ct),1);if(!held.length)carry=0;holdShow();
         S.combo=(now-(S.lastT||0)<12&&S.lastT)?(S.combo||0)+1:1;S.lastT=now;var rb=tj===S.rush,bn=10*S.combo,pts=100*Math.min(10,S.combo)+(rb?300:0);   // keep the pace up and each case is worth more
         if(rb){S.rush=-1;S.rushN=now+rnd(5,9);}
-        runStock++;spAdd(1,1);
+        runStock++;spAdd(1,1);fxStocked();
         if(SHIFT.on){SHIFT.score+=pts;SHIFT.cases++;SHIFT.maxc=Math.max(SHIFT.maxc,S.combo);}else coins+=bn+(rb?30:0);
         if(S.left>1)banner((rb?'急ぎの棚 OK！ ':'')+(S.combo>1?'ナイス！ ×'+S.combo:'並べた'),(SHIFT.on?'+'+pts+'点':'+'+(bn+(rb?30:0))+'コイン')+'　残り '+(S.left-1),1.3);
         sClick(0,1400,0.3);sClick(0.09,1100,0.22);sClick(0.2,1500,0.2);if(S.combo>1)tone({f:660+Math.min(8,S.combo)*110,dur:0.14,v:0.05,type:'triangle',t0:0.2});if(rb)tone({f:1568,dur:0.25,v:0.06,type:'triangle',t0:0.32});}}
@@ -4040,7 +4040,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -5150,7 +5150,7 @@ function showResult(w,k){ // what the game that just ended came to
   var rs=runStats(w),row2=document.createElement('div');row2.className='r';resEl.appendChild(row2);
   [['命中率',rs.acc+'%'],['ヘッドショット',rs.hd+' 回'],['生存',rs.t],['評価',rs.g]].forEach(function(q){var c=document.createElement('div'),a=document.createElement('span'),b=document.createElement('b');a.textContent=q[0];b.textContent=q[1];if(q[0]==='評価')b.style.color=rs.g==='S'?'#ffd24a':(rs.g==='A'?'#7ee06a':'#fff');c.appendChild(a);c.appendChild(b);row2.appendChild(c);});
   if(w>resBest&&resBest>0){var nb=document.createElement('p');nb.textContent='自己ベスト更新！';resEl.appendChild(nb);}resBest=Math.max(resBest,w);
-  resEl.classList.remove('off');clearTimeout(showResult.h);showResult.h=setTimeout(function(){resEl.classList.add('off');},8000);
+  fxResult();resEl.classList.remove('off');clearTimeout(showResult.h);showResult.h=setTimeout(function(){resEl.classList.add('off');},8000);
 }
 (function(){
   var st=document.createElement('style');
@@ -6063,6 +6063,479 @@ function vsPopMode(cp){ // the room window serves co-op and versus; versus adds 
   if(VS.rp)VS.rp.classList.toggle('off',!VS.pick);
 }
 
+/* ---------- feel: a held breath when a robot goes down, a number that lifts off each hit, pieces that fly, a wider view behind the big guns ---------- */
+var FX={on:true,stop:0,slow:0,fov:0,num:[],ni:0,lastTgt:null,lastEl:null,lastT:-9,sum:0,head:false,pingT:0,v:new THREE.Vector3(),yen:0,
+  CN:40,ci:0,cS:[],cM:null,cC:new THREE.Color(),m4:new THREE.Matrix4(),q:new THREE.Quaternion(),e:new THREE.Euler(),p:new THREE.Vector3(),s:new THREE.Vector3()};
+try{FX.on=localStorage.getItem('ic_fx')!=='0';}catch(e){}
+function fxCalm(){return !FX.on||reduceMotion;}
+function fxTime(dt){ // real time in, game time out
+  if(paused)return dt;
+  if(FX.stop>0){FX.stop-=dt;return dt*0.08;}
+  if(FX.slow>0){FX.slow-=dt;return dt*(FX.slow>0.2?0.3:1-0.7*FX.slow/0.2);}
+  return dt;
+}
+function fxNum(x,y,z,txt,cls,key){
+  if(!FX.on||INTRO.t>0||!FX.num.length)return;
+  var e,same=key!==undefined&&key===FX.lastTgt&&now-FX.lastT<0.32&&FX.lastEl;
+  if(same)e=FX.lastEl;
+  else{
+    FX.v.set(x,y,z).project(camera);if(FX.v.z>1||Math.abs(FX.v.x)>1.05||Math.abs(FX.v.y)>1.05)return;
+    e=FX.num[FX.ni++%FX.num.length];
+    e.style.left=Math.round((FX.v.x*0.5+0.5)*window.innerWidth+rnd(-12,12))+'px';e.style.top=Math.round((-FX.v.y*0.5+0.5)*window.innerHeight-18)+'px';
+  }
+  e.textContent=txt;e.className='dn'+(cls?' '+cls:'');
+  if(key!==undefined){FX.lastEl=e;FX.lastTgt=key;FX.lastT=now;}
+  if(e.animate)e.animate([{opacity:1,transform:'translate(-50%,0) scale(1.3)'},{opacity:1,transform:'translate(-50%,-12px) scale(1)',offset:0.22},{opacity:1,transform:'translate(-50%,-22px) scale(1)',offset:0.7},{opacity:0,transform:'translate(-50%,-34px) scale(.95)'}],{duration:cls==='big'?1500:680,easing:'ease-out'});
+}
+function fxHit(ray,dm,ex,ey,ez){
+  var id=ray.v.id,same=id===FX.lastTgt&&now-FX.lastT<0.32;
+  FX.sum=same?FX.sum+dm:dm;FX.head=same?(FX.head||ray.head):ray.head;
+  var n=Math.max(1,Math.round(FX.sum));
+  fxNum(ex,ey+0.25,ez,FX.yen>0?'¥'+n*4:String(n),FX.head?'h':'',id);
+  if(ray.head&&now-FX.pingT>0.07){FX.pingT=now;tone({f:2350,f1:3100,dur:0.05,v:0.035,type:'sine'});}
+  if(typeof fxHit2==='function')fxHit2(ray,dm,ex,ey,ez);
+}
+function fxShot(W){
+  if(W.rec>0.03)FX.fov=Math.max(FX.fov,1.6);
+  var lim=Math.max(3,Math.round(MAG*0.2));                    // the last few rounds of a magazine ring thinner and higher
+  if(me.ammo<lim&&W.pel===1&&W.rate<0.5&&!KIDS.water)sClick(0,2300+(lim-me.ammo)*260,0.1);
+}
+function fxFov(dt){FX.fov*=Math.exp(-dt*9);return fxCalm()?0:FX.fov*(1-0.7*me.ads);}
+function fxChunk(x,y,z,vx,vy,vz,s,col){
+  var c=FX.cS[FX.ci],i=FX.ci;FX.ci=(FX.ci+1)%FX.CN;
+  c.on=true;c.x=x;c.y=y;c.z=z;c.vx=vx;c.vy=vy;c.vz=vz;c.s=s;c.a=rnd(0,6);c.b=rnd(0,6);c.va=rnd(-14,14);c.life=rnd(2.6,4.2);
+  FX.cC.setHex(col).convertSRGBToLinear();if(Math.random()<0.5)FX.cC.multiplyScalar(0.35);FX.cM.setColorAt(i,FX.cC);FX.cM.instanceColor.needsUpdate=true;
+}
+function fxKill(v,T,d){ // called for every robot that goes down, whoever did it
+  var mine=!!dmgTime['e'+v.id]&&now-dmgTime['e'+v.id]<4,dx=v.x-me.x,dz=v.z-me.z,l=Math.hypot(dx,dz)||1,n=d<70?(T.scale>1.5?12:7):0,i;
+  dx/=l;dz/=l;
+  for(i=0;i<n;i++)fxChunk(v.x+rnd(-0.3,0.3)*T.scale,rnd(0.6,T.h*0.9),v.z+rnd(-0.3,0.3)*T.scale,dx*rnd(1,6)+rnd(-3,3),rnd(3,8.5),dz*rnd(1,6)+rnd(-3,3),rnd(0.07,0.19)*T.scale,T.col);
+  if(mine&&!fxCalm()){
+    if(hs&&hs.st==='fight'&&hs.left<=0&&views.size===0&&others.length===0&&!practice)FX.slow=0.8;      // the last one of a wave falls slowly
+    else FX.stop=Math.max(FX.stop,T.scale>1.5?0.085:0.04);
+    FX.fov=Math.max(FX.fov,T.scale>1.5?2.4:0.9);
+  }
+  if(typeof fxKill2==='function')fxKill2(v,T,d,mine);
+}
+function fxTick(dt){
+  var any=false,k,c;
+  for(k=0;k<FX.CN;k++){
+    c=FX.cS[k];if(!c.on)continue;any=true;
+    c.life-=dt;c.vy-=14*dt;c.x+=c.vx*dt;c.y+=c.vy*dt;c.z+=c.vz*dt;c.a+=c.va*dt;c.b+=c.va*0.7*dt;
+    if(c.y<c.s*0.5){c.y=c.s*0.5;if(Math.abs(c.vy)>1.2){c.vy*=-0.38;c.vx*=0.55;c.vz*=0.55;c.va*=0.5;if(c.vy>1.5&&Math.random()<0.5)sparks.emit(c.x,0.05,c.z,0,1,0,0.2,0.05,0,6,3,0.8,1,9,1);}else{c.vy=0;c.vx=c.vz=0;c.va=0;}}
+    var sc=c.s*Math.min(1,c.life*2);
+    if(c.life<=0){c.on=false;sc=0;}
+    FX.e.set(c.a,c.b,0);FX.q.setFromEuler(FX.e);FX.m4.compose(FX.p.set(c.x,c.y,c.z),FX.q,FX.s.set(sc,sc*0.6,sc*1.4));FX.cM.setMatrixAt(k,FX.m4);
+  }
+  if(any||FX.cDirty)FX.cM.instanceMatrix.needsUpdate=true;
+  FX.cDirty=any;
+  if(typeof fxTick2==='function')fxTick2(dt);
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent=[
+  '.dn{position:fixed;left:0;top:0;z-index:4;pointer-events:none;opacity:0;font:700 15px/1 var(--num);color:#fff;text-shadow:0 1px 2px #000,0 0 4px rgba(0,0,0,.8);white-space:nowrap;transform:translate(-50%,0)}',
+  '.dn.h{color:#ffd24a;font-size:19px}','.dn.y{color:#9be36a}','.dn.big{font:700 14px/1.2 var(--body);color:#ffe9a8;letter-spacing:.04em}',
+  'html.intro .dn{display:none}'].join('\n');
+  document.head.appendChild(st);
+  for(var i=0;i<7;i++){var e=document.createElement('div');e.className='dn';document.body.appendChild(e);FX.num.push(e);}
+  FX.cM=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.55,metalness:0.5}),FX.CN);
+  FX.m4.makeScale(0,0,0);FX.cC.setRGB(0.3,0.3,0.3);
+  for(i=0;i<FX.CN;i++){FX.cM.setMatrixAt(i,FX.m4);FX.cM.setColorAt(i,FX.cC);FX.cS.push({on:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,s:0.1,a:0,b:0,va:0,life:0});}
+  FX.cM.frustumCulled=false;FX.cM.castShadow=true;scene.add(FX.cM);
+})();
+
+/* ---------- more kinds of trouble: a bomber that runs at you, a boss every fifth wave, waves with a theme, red drums that take a crowd with them ---------- */
+var FXV,DRUM={a:[],m:null,built:false,q:[],m4:new THREE.Matrix4(),tipT:0},FXM={},elBoss,elBossB,elBossN,bossBeep=0,bombBeep=0;
+TYPES.push({name:'ボマー',hp:38,sp:6.3,r:0.6,h:1.8,scale:0.85,col:0xd8262c,base:0});
+TYPES.push({name:'メガ・ヘビー',hp:2400,sp:2.4,r:1.9,h:5.4,scale:2.55,col:0x30333a,base:2});
+TYPES.push({name:'ゴールドロボ',hp:170,sp:6.4,r:0.7,h:2.1,scale:1,col:0xd4a017,base:0});
+function waveMod(w,gen){ // the same answer on every phone in the room: 1 rush, 2 gunners, 3 bombers, 4 heavies, 5 boss
+  if(KIDS.on||w<4)return 0;if(w%5===0)return 5;
+  var h=((gen>>>0)+Math.imul(w,2654435761))>>>0;h=Math.imul(h^(h>>>13),1274126177)>>>0;var q=(h>>>8)%100;
+  return q<14?1:(q<26?2:(q<38?3:(q<46?4:0)));
+}
+function fxType(w,r){
+  var base=(w>=3&&r<0.12)?2:((w>=2&&r<0.38)?1:0);
+  if(KIDS.on||practice)return base;
+  var m=waveMod(w,hs.gen);
+  if(typeof fxRare==='function'&&fxRare(w))return 5;
+  if(m===5&&!sim.boss){sim.boss=1;return 4;}
+  if(m===1)return r<0.86?0:3;
+  if(m===2)return r<0.75?1:0;
+  if(m===3)return r<0.6?3:0;
+  if(m===4)return r<0.4?2:(r<0.72?1:0);
+  if(w>=4&&r>0.9)return 3;
+  return base;
+}
+function fxWave(nP){
+  sim.boss=0;sim.rare=0;
+  var m=waveMod(hs.w,hs.gen);
+  if(m===1)hs.left=Math.min(48,Math.round(hs.left*1.4));
+  else if(m===4)hs.left=Math.max(6,Math.round(hs.left*0.6));
+  else if(m===5)hs.left=Math.max(7,Math.round(hs.left*0.55));
+}
+function fxWaveNote(w){
+  if(!hs)return '';
+  var m=waveMod(w,hs.gen);
+  if(m===5)return 'ボス出現：メガ・ヘビー。頭を狙え';
+  if(m===1)return 'ラッシュ！ ランナーの大群';
+  if(m===2)return 'ガンナー小隊。遮蔽物を使おう';
+  if(m===3)return 'ボマー接近。近づく前に撃て';
+  if(m===4)return '重装部隊。ヘビーが多い';
+  return w===4?'赤いボマーは近づくと自爆する':'';
+}
+function fxSp(e,dt){ // host: the boss lowers its head and charges for two seconds in every eight
+  if(e.t!==4)return 1;
+  e.ch=(e.ch||0)+dt;return (e.ch%8)>6?2.7:1;
+}
+function fxSkin(g,t){
+  var m=FXM[t],u=g.userData;
+  if(!m){m=FXM[t]=robotMat.clone();
+    if(t===3){m.color.setRGB(1.9,0.42,0.36);}
+    else if(t===4){m.color.setRGB(0.5,0.52,0.62);m.metalness=0.6;m.roughness=0.45;}
+    else{m.color.setRGB(2.6,1.75,0.42);m.metalness=0.95;m.roughness=0.28;}}
+  g.traverse(function(o){if(o.isMesh&&o.material===robotMat)o.material=m;});
+  if(t===3){var bl=new THREE.Mesh(BOX,eyeMats[0]);bl.scale.set(0.1,0.1,0.1);bl.position.set(0,0.36,0);u.head.add(bl);u.bl=bl;
+    var pk=new THREE.Mesh(BOX,m);pk.scale.set(0.5,0.42,0.26);pk.position.set(0,0.42,-0.22);u.hips.add(pk);}
+  if(t===4){[-1,1].forEach(function(s){var an=new THREE.Mesh(BOX,m);an.scale.set(0.05,0.5,0.05);an.position.set(0.22*s,0.5,-0.05);u.head.add(an);var tip=new THREE.Mesh(BOX,eyeMats[0]);tip.scale.set(0.09,0.09,0.09);tip.position.set(0.22*s,0.78,-0.05);u.head.add(tip);});}
+}
+function fxSplash(x,z,rad,dmg,skip){ // my explosion: what it does to the robots near it
+  var n=0;
+  views.forEach(function(v){if(v===skip)return;var q=Math.hypot(v.x-x,v.z-z);if(q<rad){var key='e'+v.id;myDmg[key]=(myDmg[key]||0)+Math.round(dmg*(1-q/rad)*(1+0.25*lv));dmgTime[key]=now;v.flinch=1;n++;}});
+  return n;
+}
+function fxAtk(v,d,T){ // the new machines' own ways of hurting you; true when it has been dealt with
+  if(v.t<3)return false;
+  if(v.t===5)return true;
+  if(v.t===3){
+    if(d<2.7&&meAlt<3){var key='e'+v.id;myDmg[key]=(myDmg[key]||0)+9999;dmgTime[key]=now;v.cd=3;v.self=1;hurt(24,v.x,v.z);}
+    return true;
+  }
+  if(d<T.r+1.7&&meAlt<3){v.cd=1.6;v.atk=0.4;hurt(36,v.x,v.z);shake=Math.max(shake,1);}
+  return true;
+}
+function fxKill2(v,T,d,mine){
+  var u=v.g.userData;if(u.bl)u.bl.visible=false;
+  if(v.t===3){
+    fxExplode(v.x,0.9,v.z,true);decal(v.x,0,v.z,0,1,0,4.4);
+    if(mine){fxSplash(v.x,v.z,6,150,v);if(!v.self&&d<4.5&&meAlt<3)hurt(30*(1-d/4.5),v.x,v.z);}
+    if(d<30)shake=Math.max(shake,0.8*(1-d/30));
+  }
+  if(v.t===4){
+    for(var i=0;i<5;i++)fxExplode(v.x+rnd(-2,2),rnd(1,4.5),v.z+rnd(-2,2),true);
+    sBoom(1.2,panOf(v.x,v.z));shake=Math.max(shake,1.1);
+    if(!fxCalm())FX.slow=Math.max(FX.slow,0.9);
+    if(mine){coins+=150;banner('ボス撃破','メガ・ヘビーを倒した　+150 コイン',3.5);[523,659,784,1047].forEach(function(f,i){tone({f:f,dur:i===3?0.5:0.13,v:0.07,type:'triangle',t0:i*0.12,rv:0.3});});}
+  }
+  if(typeof fxKill3==='function')fxKill3(v,T,d,mine);
+}
+function fxDrumBuild(){
+  DRUM.built=true;
+  if(!FXV||!FXV.length)return;
+  var step=Math.max(1,Math.floor(FXV.length/70)),i,k,v,x,z;
+  for(i=0;i<FXV.length&&DRUM.a.length<70;i+=step){
+    v=FXV[i];
+    for(k=0;k<2;k++){x=v[0]+Math.cos(v[2])*(1.25+k*0.72);z=v[1]-Math.sin(v[2])*(1.25+k*0.72);
+      if(inBox(x,z,0.45)||!inIsland(x,z,3))break;
+      DRUM.a.push({x:x,z:z,t:0,r:(i*7+k*3)%6});if((i/step)%3!==0)break;}
+  }
+  var c=cvs(128,64),g=c.getContext('2d');
+  g.fillStyle='#b3261e';g.fillRect(0,0,128,64);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(0,20,128,2);g.fillRect(0,42,128,2);g.fillStyle='rgba(255,255,255,.14)';g.fillRect(0,18,128,2);g.fillRect(0,40,128,2);
+  for(i=0;i<2;i++){g.save();g.translate(32+i*64,32);g.rotate(Math.PI/4);g.fillStyle='#f4d21f';g.fillRect(-9,-9,18,18);g.fillStyle='#161616';g.fillRect(-5,-5,10,10);g.restore();}
+  for(i=0;i<40;i++){g.fillStyle='rgba(30,10,5,'+(0.05+Math.random()*0.12)+')';g.fillRect(Math.random()*128,Math.random()*64,2+Math.random()*10,1);}
+  var tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;tx.anisotropy=4;
+  var geo=new THREE.CylinderGeometry(0.3,0.3,0.92,14);geo.translate(0,0.46,0);
+  DRUM.m=new THREE.InstancedMesh(geo,new THREE.MeshStandardMaterial({map:tx,roughness:0.5,metalness:0.45}),Math.max(1,DRUM.a.length));
+  DRUM.m.castShadow=true;DRUM.m.receiveShadow=true;DRUM.m.frustumCulled=false;scene.add(DRUM.m);
+  for(i=0;i<DRUM.a.length;i++)fxDrumSet(i,1);
+}
+function fxDrumSet(i,s){var D=DRUM.a[i];DRUM.m4.makeRotationY(D.r);DRUM.m4.scale(FX.s.set(s,s,s));DRUM.m4.setPosition(D.x,0,D.z);DRUM.m.setMatrixAt(i,DRUM.m4);DRUM.m.instanceMatrix.needsUpdate=true;}
+function fxRay(ray){ // a drum in the way of this shot
+  if(!DRUM.m||KIDS.on)return;
+  for(var i=0;i<DRUM.a.length;i++){var D=DRUM.a[i];if(D.t>0)continue;
+    var ax=D.x-ray.ox,az=D.z-ray.oz,al=ax*ray.dx+az*ray.dz;if(al<0||al>ray.t+1||ax*ax+az*az-al*al>1)continue;
+    var t=rayCyl(ray.ox,ray.oy,ray.oz,ray.dx,ray.dy,ray.dz,D.x,D.z,0.33,0.94);
+    if(t<ray.t){ray.t=t;ray.v=null;ray.k=0;DRUM.q.push([i,0.02]);}}
+  if(ray.k&&ray.k!==1&&!ray.v&&typeof fxVend==='function')fxVend(ray);
+}
+function fxDrum(i){
+  var D=DRUM.a[i];if(D.t>0)return;D.t=80;fxDrumSet(i,0);
+  var d=Math.hypot(D.x-me.x,D.z-me.z);
+  fxExplode(D.x,0.7,D.z,true);fxExplode(D.x,1.8,D.z,false);sBoom(clamp(1.25-d/90,0,1.2),panOf(D.x,D.z));decal(D.x,0,D.z,0,1,0,5);
+  for(var k=0;k<5;k++)fxChunk(D.x,0.5,D.z,rnd(-5,5),rnd(5,11),rnd(-5,5),rnd(0.12,0.24),0x8a1d17);
+  var n=fxSplash(D.x,D.z,7.5,240,null);DRUM.hitN=n;DRUM.hitT=now;DRUM.killN=0;
+  if(d<5.5&&meAlt<3&&!KIDS.on)hurt(42*(1-d/5.5),D.x,D.z);
+  if(d<40)shake=Math.max(shake,1-d/40);
+  for(var j=0;j<DRUM.a.length;j++){var E=DRUM.a[j];if(j!==i&&E.t<=0&&Math.hypot(E.x-D.x,E.z-D.z)<6)DRUM.q.push([j,0.16]);}
+}
+function fxTick2(dt){
+  var i,D;
+  if(!DRUM.built&&me.inGame)fxDrumBuild();
+  for(i=DRUM.q.length-1;i>=0;i--){DRUM.q[i][1]-=dt;if(DRUM.q[i][1]<=0){var id=DRUM.q[i][0];DRUM.q.splice(i,1);fxDrum(id);}}
+  DRUM.tipT-=dt;
+  if(DRUM.m&&DRUM.tipT<=0){DRUM.tipT=0.5;
+    for(i=0;i<DRUM.a.length;i++){D=DRUM.a[i];
+      if(D.t>0){D.t-=0.5;if(D.t<=0){if(Math.hypot(D.x-me.x,D.z-me.z)<30)D.t=5;else fxDrumSet(i,1);}}
+      else if(!TIPS.drum&&hs&&hs.st==='fight'&&!KIDS.on&&Math.hypot(D.x-me.x,D.z-me.z)<14)tipOnce('drum','赤いドラム缶は撃つと爆発する。ロボットをまとめて巻き込もう',7);}
+  }
+  // the boss's bar, the bomber's blink
+  var boss=null,nb=1e9;
+  views.forEach(function(v){
+    if(v.t===4)boss=v;
+    else if(v.t===3){var d=Math.hypot(v.x-me.x,v.z-me.z),u=v.g.userData;if(u.bl)u.bl.visible=Math.sin(now*(d<10?34:12)+v.id)>0;if(d<nb)nb=d;}
+  });
+  if(nb<16&&!me.down){bombBeep-=dt;if(bombBeep<=0){bombBeep=clamp(nb/22,0.09,0.6);sClick(0,3100,clamp(0.3-nb*0.012,0.06,0.28));}}
+  if(boss&&hs){
+    var k=clamp(boss.hp/maxHp(4,hs.w),0,1);elBoss.classList.remove('off');elBossB.style.transform='scaleX('+k.toFixed(3)+')';
+    var sp=Math.hypot(boss.tx-boss.x,boss.tz-boss.z),bd=Math.hypot(boss.x-me.x,boss.z-me.z),chg=boss.amp>1.05&&sp>0.25;
+    boss.cg=(boss.cg||0)+((chg?1:0)-(boss.cg||0))*Math.min(1,dt*4);
+    elBoss.classList.toggle('chg',boss.cg>0.5);
+    if(boss.cg>0.5){fxDust(boss.x+rnd(-1,1),0.2,boss.z+rnd(-1,1),0,1,0,0.42,0.38,0.3,1);if(bd<45)shake=Math.max(shake,0.35*(1-bd/45));
+      bossBeep-=dt;if(bossBeep<=0){bossBeep=0.34;tone({f:240,f1:420,dur:0.22,v:0.05*clamp(1.2-bd/80,0,1),type:'sawtooth'});}}
+  }else if(!elBoss.classList.contains('off'))elBoss.classList.add('off');
+  if(typeof fxTick3==='function')fxTick3(dt);
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent=[
+  '#bossb{position:fixed;left:50%;top:calc(48px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(300px,38vw);z-index:5;pointer-events:none;text-align:center}',
+  '#bossb b{display:block;font:700 12px/1 var(--body);letter-spacing:.14em;color:#fff;text-shadow:0 1px 3px #000,0 0 8px rgba(255,40,20,.9);margin-bottom:4px}',
+  '#bossb div{height:8px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.6);border-radius:4px;overflow:hidden}',
+  '#bossb i{display:block;height:100%;transform-origin:left center;background:linear-gradient(#ff7a5c,#d92a17);transition:transform .15s}',
+  '#bossb.chg b{color:#ffd24a}','#bossb.off{display:none}','html.intro #bossb{display:none}'].join('\n');
+  document.head.appendChild(st);
+  elBoss=document.createElement('div');elBoss.id='bossb';elBoss.className='off';elBossN=document.createElement('b');elBossN.textContent='BOSS　メガ・ヘビー';elBoss.appendChild(elBossN);
+  var w=document.createElement('div');elBossB=document.createElement('i');w.appendChild(elBossB);elBoss.appendChild(w);document.body.appendChild(elBoss);
+})();
+
+/* ---------- a build of your own: after each wave, one of three things off the shop shelf. They last until the game ends ---------- */
+var PK={dmg:1,rate:1,rel:1,mag:1,head:2,heal:0,spd:1,def:1,coin:1,boom:0,nade:0,n:{},cnt:0,boomN:0,offer:null,els:[],box:null,st:'',gen:null,w:0};
+var PERKS=[
+  {k:'dmg',n:'半額シール',d:'ロボットの装甲が実質お安く。ダメージ +15%',max:5,f:function(){PK.dmg+=0.15;}},
+  {k:'rate',n:'フルオート増量中',d:'連射がはやくなる（+12%）',max:4,f:function(){PK.rate*=0.89;}},
+  {k:'rel',n:'研修済み',d:'リロードが手早くなる（−18%）',max:3,f:function(){PK.rel*=0.82;}},
+  {k:'mag',n:'大容量パック',d:'マガジンの弾数 +30%',max:3,f:function(){PK.mag+=0.3;}},
+  {k:'head',n:'ヘッドハンター',d:'頭に当てたときの倍率 +0.6',max:3,f:function(){PK.head+=0.6;}},
+  {k:'heal',n:'ホットスナック',d:'1台倒すたびに体力 +6',max:3,f:function(){PK.heal+=6;}},
+  {k:'spd',n:'エナジードリンク',d:'足がはやくなる（+8%）',max:3,f:function(){PK.spd+=0.08;}},
+  {k:'def',n:'厚手のエプロン',d:'受けるダメージ −12%',max:4,f:function(){PK.def*=0.88;}},
+  {k:'coin',n:'ポイント2倍デー',d:'撃って手に入るコインが増える',max:2,f:function(){PK.coin+=1;}},
+  {k:'boom',n:'炸裂弾サービス',d:'何発か当てるごとに小さな爆発',max:3,f:function(){PK.boom++;}},
+  {k:'nade',n:'おまけの1個',d:'ウェーブごとにグレネード +1',max:2,f:function(){PK.nade++;}},
+  {k:'life',n:'有給休暇',d:'ライフを1つ取り戻す',max:9,ok:function(){return lives<LIVES;},f:function(){lives=Math.min(LIVES,lives+1);}}
+];
+function pkv(k){return (typeof PK==='object'&&PK)?PK[k]:(k==='head'?2:1);}
+function fxBuff(){return FX.yen>0?1.2:1;}
+function pkReset(){
+  PK.dmg=1;PK.rate=1;PK.rel=1;PK.mag=1;PK.head=2;PK.heal=0;PK.spd=1;PK.def=1;PK.coin=1;PK.boom=0;PK.nade=0;PK.n={};PK.cnt=0;PK.boomN=0;pkHide();
+  applyLv();if(me.ammo>MAG)me.ammo=MAG;
+}
+function pkHide(){PK.offer=null;if(PK.box)PK.box.classList.add('off');}
+function pkOffer(){
+  var pool=PERKS.filter(function(p){return (PK.n[p.k]||0)<p.max&&(!p.ok||p.ok());}),pick=[],i;
+  while(pick.length<3&&pool.length){i=(Math.random()*pool.length)|0;pick.push(pool[i]);pool.splice(i,1);}
+  if(!pick.length)return;
+  PK.offer=pick;
+  for(i=0;i<3;i++){var e=PK.els[i],p=pick[i];e.style.display=p?'':'none';if(!p)continue;
+    e.children[0].textContent=(isTouch?'':['Z','X','C'][i]+'　')+p.n+((PK.n[p.k]||0)>0?'　Lv'+((PK.n[p.k]||0)+1):'');e.children[1].textContent=p.d;}
+  PK.box.classList.remove('off');
+  if(PK.box.animate&&!reduceMotion)PK.box.animate([{opacity:0,transform:'translate(-50%,-10px)'},{opacity:1,transform:'translate(-50%,0)'}],{duration:260,easing:'ease-out'});
+  tone({f:880,dur:0.08,v:0.05,type:'triangle'});tone({f:1319,dur:0.16,v:0.05,type:'triangle',t0:0.07});
+  tipOnce('perk',isTouch?'ウェーブを越えるごとに、強化を1つ選べる。上のカードをタップ':'ウェーブを越えるごとに、強化を1つ選べる。Z・X・C キーで選ぶ',7);
+}
+function pkTake(i){
+  if(!PK.offer||!PK.offer[i]||!me.inGame)return;
+  var p=PK.offer[i];PK.n[p.k]=(PK.n[p.k]||0)+1;PK.cnt++;p.f();pkHide();
+  applyLv();if(me.ammo>MAG)me.ammo=MAG;
+  toast('強化「'+p.n+'」を手に入れた'+(PK.n[p.k]>1?'（Lv'+PK.n[p.k]+'）':''),3);
+  sClick(0,1500,0.3);tone({f:1047,dur:0.1,v:0.06,type:'triangle',t0:0.05});tone({f:1568,dur:0.22,v:0.06,type:'triangle',t0:0.14,rv:0.3});
+  if(typeof ach==='function'&&PK.cnt>=5)ach('perk');
+}
+function fxHit2(ray,dm,ex,ey,ez){
+  if(PK.coin>1)coins+=dm*0.05*(PK.coin-1);
+  if(PK.boom>0){PK.boomN++;if(PK.boomN>=11-PK.boom*2){PK.boomN=0;fxExplode(ex,ey,ez,false);fxSplash(ex,ez,4.2,70,null);sBoom(0.35,0);}}
+  if(typeof fxHit3==='function')fxHit3(ray,dm,ex,ey,ez);
+}
+function fxTick3(dt){
+  if(hs){
+    if(hs.gen!==PK.gen){PK.gen=hs.gen;PK.st=hs.st;PK.w=hs.w;pkReset();}
+    if(hs.st!==PK.st){
+      var was=PK.st;PK.st=hs.st;
+      if(was==='fight'&&hs.st==='break'&&hs.w>=1&&!practice&&!KIDS.on&&!VS.on)pkOffer();
+    }
+    if(hs.w!==PK.w){PK.w=hs.w;if(PK.nade>0&&!practice)nades+=PK.nade;}
+  }
+  if(PK.offer){
+    if(KIDS.on||VS.on||practice)pkHide();
+    else if(keys.KeyZ)pkTake(0);else if(keys.KeyX)pkTake(1);else if(keys.KeyC)pkTake(2);
+  }
+  if(typeof fxTick4==='function')fxTick4(dt);
+  if(typeof fxTick5==='function')fxTick5(dt);
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent=[
+  '#pk{position:fixed;left:50%;top:calc(46px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;gap:8px;z-index:6;width:min(640px,94vw);pointer-events:none}','#pk.off{display:none}','html.intro #pk{display:none}',
+  '#pk button{flex:1;min-width:0;pointer-events:auto;touch-action:manipulation;text-align:left;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,210,74,.75);background:rgba(14,24,34,.88);color:#fff;cursor:pointer;font:inherit;box-shadow:0 2px 10px rgba(0,0,0,.4)}',
+  '#pk button:active{background:rgba(255,176,0,.3)}',
+  '#pk b{display:block;font:700 13px/1.25 var(--body);color:#ffd24a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}','#pk span{display:block;margin-top:3px;font:400 11px/1.3 var(--body);color:rgba(255,255,255,.86)}',
+  '@media (orientation:landscape) and (max-height:540px){#pk{top:calc(40px + env(safe-area-inset-top,0px));width:min(500px,52vw)}#pk button{padding:5px 8px}#pk b{font-size:12px}#pk span{font-size:10px;line-height:1.2}}'].join('\n');
+  document.head.appendChild(st);
+  PK.box=document.createElement('div');PK.box.id='pk';PK.box.className='off';
+  for(var i=0;i<3;i++)(function(i){var b=document.createElement('button');b.type='button';b.appendChild(document.createElement('b'));b.appendChild(document.createElement('span'));
+    b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();pkTake(i);});PK.box.appendChild(b);PK.els.push(b);})(i);
+  document.body.appendChild(PK.box);
+})();
+
+/* ---------- small things to find: what a robot says as it falls, a gold one that runs, juice from a shot vending machine, the till helping in a fight, titles for odd deeds ---------- */
+var JK={ach:{},vT:{},vN:0,st:0,stT:-9,idle:0,idleSaid:false,regiK:0,gold:{},inS:false,buffEl:null,goldT:0,run:null};
+try{var ja0=JSON.parse(localStorage.getItem('ic_ach')||'{}');if(ja0&&typeof ja0==='object')JK.ach=ja0;}catch(e){}
+var ACH={head:['頭上注意','1ゲームでヘッドショット10回'],domino:['ドミノ倒し','ドラム缶1つで3台まとめて倒す'],gold:['金の亡者','ゴールドロボを倒す'],vend:['自販機荒らし','自販機を5台撃ってジュースを出す'],regi:['レジ打ちの鬼','レジ応援中に10台倒す'],boss:['店長、やりました','ボスを倒す'],idle:['サボり魔','戦闘中に40秒じっとしている'],w10:['皆勤賞','WAVE 10 に到達'],perk:['買い物上手','1ゲームで強化を5つ取る'],atari:['あたり付き','自販機であたりを引く']};
+var LASTW=['残業…確定…','有給…申請…','定時で…帰りたかった…','再起動…したい…','保証期間…外…','それ…労災…','レジ応援…お願いします…','ポイントカードは…お持ち…で…','いらっしゃい…ませ…','シフト…代わって…','袋は…ご利用…','アップデート…中…'];
+function achCount(){var n=0;for(var k in ACH)if(JK.ach[k])n++;return n;}
+function ach(k){
+  if(JK.ach[k]||!ACH[k]||KIDS.on||practice)return;
+  JK.ach[k]=1;try{localStorage.setItem('ic_ach',JSON.stringify(JK.ach));}catch(e){}
+  toast('称号獲得：「'+ACH[k][0]+'」　'+ACH[k][1]+'（'+achCount()+'/'+Object.keys(ACH).length+'）',5.5);
+  [784,988,1175,1568].forEach(function(f,i){tone({f:f,dur:i===3?0.4:0.09,v:0.055,type:'triangle',t0:i*0.08,rv:0.3});});
+}
+function fxRare(w){ // host: now and then a gold one, once a wave at most
+  if(sim.rare||w<2||Math.random()>0.014)return false;
+  sim.rare=1;return true;
+}
+function fxCull(){ // host: the gold one gets away if nobody catches it
+  for(var i=sim.enemies.length-1;i>=0;i--){var e=sim.enemies[i];if(e.t===5&&e.age>32)sim.enemies.splice(i,1);}
+}
+function fxGone(v,T,d){ // a robot that left without being destroyed
+  if(v.t!==5||!(v.age>31.5)||v.hp<=12)return false;
+  scene.remove(v.g);fxSmoke(v.x,1,v.z,6,1.2,false);
+  if(d<90)toast('ゴールドロボに逃げられた…',3);
+  return true;
+}
+function fxStocked(){ // a case on the shelf: the till lends a hand for a while
+  if(KIDS.on)return;
+  FX.yen=Math.min(60,FX.yen+25);
+  tone({f:1975,dur:0.06,v:0.06,type:'square'});
+  if(!tipOnce('regi','品出しをすると「レジ応援」がかかる。しばらくダメージ +20%、ロボットにお会計',7))toast('レジ応援 +25秒',2);
+}
+function fxHit3(ray,dm,ex,ey,ez){
+  if(FX.yen>0&&now-JK.goldT>0.1){JK.goldT=now;tone({f:1975,dur:0.035,v:0.03,type:'square'});}
+}
+function fxVend(ray){ // called with a shot that ended on something solid
+  if(!FXV||KIDS.on)return;
+  var x=ray.ox+ray.dx*ray.t,z=ray.oz+ray.dz*ray.t,y=ray.oy+ray.dy*ray.t,i,v;
+  if(y>2)return;
+  for(i=0;i<FXV.length;i++){v=FXV[i];if(Math.abs(v[0]-x)<0.75&&Math.abs(v[1]-z)<0.75)break;}
+  if(i>=FXV.length||(JK.vT[i]&&now-JK.vT[i]<25))return;
+  JK.vT[i]=now;JK.vN++;
+  var d=Math.hypot(v[0]-me.x,v[1]-me.z),win=Math.random()<0.1,n=win?3:1,k;
+  burst({dur:0.12,type:'lowpass',f:260,f1:90,v:0.5*clamp(1.2-d/40,0,1)});sClick(0.1,900,0.25);sClick(0.22,1300,0.2);
+  for(k=0;k<n;k++)fxChunk(x-ray.dx*0.3,0.5,z-ray.dz*0.3,-ray.dx*rnd(1,3)+rnd(-1,1),rnd(2,4),-ray.dz*rnd(1,3)+rnd(-1,1),0.09,[0x2f7fd8,0xd83a2f,0x3aa856,0xe8c21e][(Math.random()*4)|0]);
+  if(d<7&&!me.down){me.hp=Math.min(100,me.hp+(win?24:8));fxNum(x,1.5,z,win?'あたり！ もう2本　体力 +24':'ジュース　体力 +8','big');}
+  else fxNum(x,1.5,z,win?'あたり！':'ガコン','big');
+  if(win){[1047,1319,1568,2093].forEach(function(f,q){tone({f:f,dur:0.09,v:0.05,type:'square',t0:q*0.08});});ach('atari');}
+  tipOnce('vend','自販機を撃つとジュースが出る。近くにいれば体力が少し戻る',6);
+  if(JK.vN>=5)ach('vend');
+}
+function fxKill3(v,T,d,mine){
+  var txt='';
+  if(mine){
+    JK.st=(now-JK.stT<3.5)?JK.st+1:1;JK.stT=now;
+    var sn={4:['4連続！','手際がいい'],7:['7連続！','ベテランの風格'],10:['10連続！','店長「時給、上げとくわ」'],15:['15連続！','もはや一人で回る店'],20:['20連続！','本部から表彰状が届きます']}[JK.st];
+    if(sn&&!KIDS.on)banner(sn[0],sn[1],1.8);
+    if(PK.heal>0&&!me.down)me.hp=Math.min(100,me.hp+PK.heal);
+    if(FX.yen>0&&!KIDS.on){JK.regiK++;fxNum(v.x,T.h+0.9,v.z,'お会計 ¥'+(Math.round(maxHp(v.t,hs?hs.w:1)*4/10)*10).toLocaleString()+'　ありがとうございました','big');coins+=8;tone({f:1319,dur:0.07,v:0.05,type:'square'});tone({f:1760,dur:0.12,v:0.05,type:'square',t0:0.08});if(JK.regiK>=10)ach('regi');}
+    if(now-(DRUM.hitT||-9)<1.3){DRUM.killN=(DRUM.killN||0)+1;if(DRUM.killN>=3)ach('domino');}
+    if(v.t===4)ach('boss');
+    if(v.t===5){coins+=200;banner('ゴールドロボ撃破','+200 コイン',2.6);for(var i=0;i<26;i++)sparks.emit(v.x,1.2,v.z,rnd(-5,5),rnd(3,10),rnd(-5,5),rnd(0.6,1.3),rnd(0.06,0.12),0,7,5,1,1,12,0.6);[1319,1568,2093,2637].forEach(function(f,q){tone({f:f,dur:0.1,v:0.055,type:'triangle',t0:q*0.07,rv:0.3});});ach('gold');}
+  }
+  if(KIDS.on||d>45||FX.yen>0&&mine)return;
+  if(v.t===4)txt='わ、わが社の…最高傑作が…';
+  else if(v.t===5)txt='ポイント…還元…';
+  else if(v.t===3&&v.self)txt='お先に…失礼します…';
+  else if(Math.random()<0.2)txt=LASTW[(Math.random()*LASTW.length)|0];
+  if(txt)fxNum(v.x,T.h+0.5,v.z,txt,'big');
+}
+function fxTick4(dt){
+  if(FX.yen>0){FX.yen-=dt;if(FX.yen<=0){FX.yen=0;JK.buffEl.classList.add('off');}
+    else{var t='レジ応援中　ダメージ +20%　'+Math.ceil(FX.yen)+'秒';if(JK.buffEl.textContent!==t)JK.buffEl.textContent=t;JK.buffEl.classList.remove('off');}}
+  if(!hs||KIDS.on)return;
+  if(JK.run!==hs.gen){JK.run=hs.gen;JK.regiK=0;JK.vN=0;JK.st=0;JK.idle=0;JK.idleSaid=false;FX.yen=0;JK.buffEl.classList.add('off');}
+  // a gold one has turned up
+  views.forEach(function(v){if(v.t===5)v.age=(v.age||0)+dt;if(v.t===5&&!JK.gold[v.id]){JK.gold={};JK.gold[v.id]=1;toast('金色のロボが現れた！ 逃げる前に倒せ',4.5);[2093,2637,3136].forEach(function(f,q){tone({f:f,dur:0.12,v:0.045,type:'sine',t0:q*0.09,rv:0.4});});}
+    if(v.t===5&&Math.random()<dt*9)sparks.emit(v.x+rnd(-0.4,0.4),rnd(0.6,2),v.z+rnd(-0.4,0.4),0,0.6,0,0.5,0.05,0,7,5,1,1,0,0);});
+  if(RSTAT.hd>=10)ach('head');
+  if(hs.w>=10&&hs.st==='fight')ach('w10');
+  // standing about while there is work to do
+  if(hs.st==='fight'&&!practice&&!me.down&&!myVeh&&Math.hypot(me.vx,me.vz)<0.2&&now-JK.stT>6&&!mouseDown&&!firing)JK.idle+=dt;else{JK.idle=0;JK.idleSaid=false;}
+  if(JK.idle>40&&!JK.idleSaid){JK.idleSaid=true;toast('（無線）休憩は15分までです',4);sRadio(700,0);ach('idle');}
+  // the door chime of a C Mart
+  var inS=!!insideS;
+  if(inS&&!JK.inS){[1319,1047,784,1047,1175,1568].forEach(function(f,q){tone({f:f,dur:q===5?0.4:0.16,v:0.04,type:'sine',t0:q*0.17,rv:0.35});});
+    if(hs.st==='fight'&&Math.random()<0.5)toast(['（店内放送）ただいまロボット、全品半額です','（店内放送）お客様、店内での発砲はご遠慮ください','（店内放送）レジ応援お願いします。至急です','（店内放送）ホットスナック、揚げたてです'][(Math.random()*4)|0],4);}
+  JK.inS=inS;
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent='#buff{position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;pointer-events:none;padding:4px 12px;border-radius:13px;background:rgba(20,60,20,.82);border:1px solid #9be36a;font:700 12px/1.3 var(--body);color:#d6ffb8;white-space:nowrap}#buff.off{display:none}html.intro #buff{display:none}\n#bossb:not(.off)~#pk{top:calc(86px + env(safe-area-inset-top,0px))}';
+  document.head.appendChild(st);
+  JK.buffEl=document.createElement('div');JK.buffEl.id='buff';JK.buffEl.className='off';document.body.appendChild(JK.buffEl);
+})();
+
+/* ---------- finish: a ring of light off every blast, a beam where a robot arrives, a pulse in the ears when nearly down, and the switches and lists that go with the new things ---------- */
+var RING=[],ringI=0,beatT=0,achEl=null;
+function fxRing(x,y,z,big){
+  if(!RING.length)return;
+  var r=RING[ringI++%RING.length];r.t=0;r.big=big?1:0;r.m.position.set(x,Math.max(0.09,Math.min(y,0.4)),z);r.m.visible=true;r.m.scale.setScalar(0.5);
+}
+function fxTick5(dt){
+  for(var i=0;i<RING.length;i++){var r=RING[i];if(!r.m.visible)continue;r.t+=dt;var k=r.t/(r.big?0.5:0.36);
+    if(k>=1){r.m.visible=false;continue;}
+    var e=1-(1-k)*(1-k);r.m.scale.setScalar(0.5+e*(r.big?12:6.5));r.m.material.opacity=(1-k)*(1-k)*0.75;}
+  if(!hs||KIDS.on)return;
+  views.forEach(function(v){
+    if(v.bf)return;v.bf=1;
+    if(hs.st!=='fight'||INTRO.t>0)return;
+    var d=Math.hypot(v.x-me.x,v.z-me.z),h=TYPES[v.t].h;if(d>130)return;
+    for(var q=0;q<9;q++)sparks.emit(v.x+rnd(-0.2,0.2),q*h/7,v.z+rnd(-0.2,0.2),0,rnd(2,5),0,rnd(0.25,0.5),0.55,-0.9,0.5,2.2,5,0.85,0,0);
+    flashLight(v.x,1.4,v.z,4,16,0.4,0.7,1);
+    if(d<70)tone({f:1500,f1:260,dur:0.2,v:0.035*(1-d/70),type:'sawtooth',pan:panOf(v.x,v.z)});
+  });
+  if(me.inGame&&!me.down&&me.hp<30&&me.hp>0){beatT-=dt;if(beatT<=0){beatT=0.42+me.hp*0.016;burst({dur:0.09,type:'lowpass',f:70,f1:40,v:0.5});burst({dur:0.07,type:'lowpass',f:60,f1:40,v:0.35,t0:0.16});}}
+}
+function fxResult(){
+  if(KIDS.on)return;
+  var p=document.createElement('p');p.style.color='#fff';p.style.fontWeight='600';
+  p.textContent='強化 '+PK.cnt+'個　称号 '+achCount()+' / '+Object.keys(ACH).length;resEl.appendChild(p);
+}
+function achShow(){
+  if(!achEl){achEl=document.createElement('div');achEl.id='achl';document.body.appendChild(achEl);achEl.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();achEl.classList.add('off');});}
+  achEl.textContent='';
+  var h=document.createElement('b');h.textContent='称号　'+achCount()+' / '+Object.keys(ACH).length;achEl.appendChild(h);
+  for(var k in ACH){var r=document.createElement('div'),a=document.createElement('span'),c=document.createElement('i');r.className=JK.ach[k]?'on':'';a.textContent=(JK.ach[k]?'★ ':'☆ ')+(JK.ach[k]?ACH[k][0]:'？？？');c.textContent=ACH[k][1];r.appendChild(a);r.appendChild(c);achEl.appendChild(r);}
+  var s=document.createElement('small');s.textContent='タップで閉じる';achEl.appendChild(s);
+  achEl.classList.remove('off');
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent=[
+  '#achl{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(460px,92vw);max-height:88vh;overflow:auto;z-index:30;padding:14px 16px;border-radius:10px;background:rgba(10,20,30,.96);border:1px solid rgba(255,210,74,.7);color:#fff;cursor:pointer}','#achl.off{display:none}',
+  '#achl b{display:block;font:700 15px/1.2 var(--body);color:#ffd24a;margin-bottom:8px;letter-spacing:.08em}','#achl div{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid rgba(255,255,255,.12);opacity:.6}','#achl div.on{opacity:1}',
+  '#achl span{flex:0 0 46%;font:700 13px/1.3 var(--body)}','#achl div.on span{color:#ffe9a8}','#achl i{flex:1;font:400 11.5px/1.35 var(--body);font-style:normal;color:rgba(255,255,255,.8)}','#achl small{display:block;margin-top:8px;text-align:center;font:400 11px var(--body);color:rgba(255,255,255,.6)}'].join('\n');
+  document.head.appendChild(st);
+  var geo=new THREE.RingGeometry(0.8,1,48);geo.rotateX(-Math.PI/2);
+  for(var i=0;i<5;i++){var mt=new THREE.MeshBasicMaterial({transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide});mt.color.setRGB(2.6,1.7,0.9);
+    var m=new THREE.Mesh(geo,mt);m.visible=false;m.frustumCulled=false;m.renderOrder=5;scene.add(m);RING.push({m:m,t:0,big:0});}
+  var q=document.getElementById('pzQuit');
+  if(q&&q.parentNode){
+    var b1=document.createElement('button');b1.type='button';b1.id='pzFx';b1.textContent='演出（数字・スロー）：'+(FX.on?'あり':'ひかえめ');
+    b1.addEventListener('click',function(){FX.on=!FX.on;try{localStorage.setItem('ic_fx',FX.on?'1':'0');}catch(e){}b1.textContent='演出（数字・スロー）：'+(FX.on?'あり':'ひかえめ');});
+    var b2=document.createElement('button');b2.type='button';b2.id='pzAch';b2.textContent='称号を見る';b2.addEventListener('click',function(){achShow();});
+    q.parentNode.insertBefore(b1,q);q.parentNode.insertBefore(b2,q);
+  }
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){INLOOT={};
   if(myVeh)leaveVeh();
@@ -6077,16 +6550,16 @@ function hurt(d,sx,sz){
   if(sx!==undefined)dmgDir(sx,sz);
   if(myVeh)d*=0.6;
   if(defT>0)d*=0.5;
-  if(KIDS.on)d*=0.4;
+  if(KIDS.on)d*=0.4;d*=pkv('def');
   if(armor>0){var ab=Math.min(armor,d*0.65);armor-=ab;d-=ab;}          // the vest takes most of each hit until it is used up
   me.hp-=d;me.lastHurt=now;hurtA=0.7;shake=Math.max(shake,0.35+d*0.02);recP+=rnd(-0.02,0.03);recY+=rnd(-0.03,0.03);sHurt();
   if(me.hp<=0){me.hp=0;me.down=true;me.downT=10;firing=false;adsTog=false;}
 }
 function killView(v){ // the machine blows out and its hulk stays where it fell
   if(dmgTime['e'+v.id]&&now-dmgTime['e'+v.id]<4){myKills++;killPop();}       // yours, if you (or your partner) hit it in its last moments
-  var T=TYPES[v.t],d=Math.hypot(v.x-me.x,v.z-me.z);
+  var T=TYPES[v.t],d=Math.hypot(v.x-me.x,v.z-me.z);if(fxGone(v,T,d))return;
   if(KIDS.water){kidsBreak(v,T,d);return;}
-  fxExplode(v.x,T.h*0.55,v.z,v.t===2);sBoom((v.t===2?1:0.55)*clamp(1-d/150,0,1),panOf(v.x,v.z));
+  fxKill(v,T,d);fxExplode(v.x,T.h*0.55,v.z,v.t===2);sBoom((v.t===2?1:0.55)*clamp(1-d/150,0,1),panOf(v.x,v.z));
   if(d<25)shake=Math.max(shake,(v.t===2?0.9:0.4)*(1-d/25));
   decal(v.x,0,v.z,0,1,0,v.t===2?5.5:3.2);
   v.g.userData.head.children[1].visible=false;v.g.userData.core.visible=false;
@@ -6139,7 +6612,7 @@ function enemyAttacks(dt){
           if(KIDS.water)sSplash(clamp(1-d/60,0.15,0.85),pan);else sGun(clamp(1-d/60,0.15,0.85)*0.6,pan,true);
           if(hit)hurt(5+Math.min(6,w*0.5),v.x,v.z);else if(!KIDS.water)sWhiz(pan);
         }}
-    }else if(d<T.r+1.3&&meAlt<3){v.cd=v.t===2?1.4:0.8;v.atk=0.4;hurt(v.t===2?28:9,v.x,v.z);if(v.t===2)shake=Math.max(shake,0.9);}
+    }else if(fxAtk(v,d,T)){}else if(d<T.r+1.3&&meAlt<3){v.cd=v.t===2?1.4:0.8;v.atk=0.4;hurt(v.t===2?28:9,v.x,v.z);if(v.t===2)shake=Math.max(shake,0.9);}
   });
 }
 var dirV=new THREE.Vector3(),tmpV=new THREE.Vector3(),tmpV2=new THREE.Vector3();
@@ -6169,14 +6642,14 @@ function fire(){
   if(me.down||me.reload>0||now<nextShot)return;
   var W=curW(),WG=KIDS.water;
   if(me.ammo<=0){nextShot=now+0.3;sClick(0,2400,0.18);startReload();return;}
-  nextShot=now+W.rate*(1-0.05*lv);me.ammo--;runShot();
+  nextShot=now+W.rate*(1-0.05*lv)*pkv('rate');me.ammo--;runShot();fxShot(W);
   var a=me.ads,sc=useScope()?a:0,sprd=(W.sp+0.007*me.amp+0.014*me.spread)*(1-0.78*a)*(1-0.9*sc)+(W.pel>1?W.sp*0.55*a:0),ex=0,ey=0,ez=0,ray=null,p;
   for(p=0;p<W.pel;p++){
-    ray=aimRay(sprd);ex=ray.ox+ray.dx*ray.t;ey=ray.oy+ray.dy*ray.t;ez=ray.oz+ray.dz*ray.t;
+    ray=aimRay(sprd);fxRay(ray);ex=ray.ox+ray.dx*ray.t;ey=ray.oy+ray.dy*ray.t;ez=ray.oz+ray.dz*ray.t;
     if(VS.on){var vh=vsShot(ray,W);if(vh){ex=ray.ox+ray.dx*vh;ey=ray.oy+ray.dy*vh;ez=ray.oz+ray.dz*vh;continue;}}
     if(ray.v){
-      var key='e'+ray.v.id,dm=(ray.head?W.dmg*2:W.dmg)*(1+0.25*lv);if(W.pel>1)dm*=clamp(1.25-ray.t/28,0.25,1);
-      myDmg[key]=(myDmg[key]||0)+Math.round(dm);coins+=dm*0.05;dmgTime[key]=now;ray.v.flinch=1;ray.v.fz=Math.random()<0.5?1:-1;hitT=0.12;hitMark(ray.head?1:0);tgtHit(ray.v);runHit(ray.head);
+      var key='e'+ray.v.id,dm=(ray.head?W.dmg*pkv('head'):W.dmg)*(1+0.25*lv)*pkv('dmg')*fxBuff();if(W.pel>1)dm*=clamp(1.25-ray.t/28,0.25,1);
+      myDmg[key]=(myDmg[key]||0)+Math.round(dm);coins+=dm*0.05;dmgTime[key]=now;ray.v.flinch=1;ray.v.fz=Math.random()<0.5?1:-1;hitT=0.12;hitMark(ray.head?1:0);tgtHit(ray.v);runHit(ray.head);fxHit(ray,dm,ex,ey,ez);
       if(WG){if(p<3){if(p===0)sSplash(1,0);fxWater(ex,ey,ez,5,-ray.dx,0.3,-ray.dz);}}else if(p<3){if(p===0)sMetal(1,ray.head);fxSparks(ex,ey,ez,ray.head?10:6,-ray.dx,0.3,-ray.dz,0.7);if(Math.random()<0.4)fxDust(ex,ey,ez,-ray.dx,0,-ray.dz,0.05,0.05,0.05,1);}
     }else if(ray.k&&p<5){
       if(WG){fxWater(ex,ey,ez,3,ray.nx,ray.k===1?1:0.2,ray.nz);if(p===0&&ray.t<70)sSplash(0.6*(1-ray.t/70),panOf(ex,ez));continue;}
@@ -6672,7 +7145,7 @@ function drawScene(withGun){
 }
 function frame(tms,manual){
   if(manual!==true)requestAnimationFrame(frame);
-  var dt=Math.min(0.05,(tms-last)/1000),i;last=tms;if(!(dt>0))dt=0.016;now+=dt;
+  var dt=Math.min(0.05,(tms-last)/1000),i;last=tms;if(!(dt>0))dt=0.016;dt=fxTime(dt);now+=dt;
   skyU.uTime.value=seaU.uTime.value=windU.value=now;
   if(paused&&me.inGame&&NET.mode!=='coop'){now-=dt;drawScene(true);return;}
   readPeers();
@@ -6697,7 +7170,7 @@ function frame(tms,manual){
     if(!first){if(wiped)banner('全滅',lastBest>0?('WAVE '+lastBest+' まで到達。最初からやり直します'):'最初からやり直します',3.5);else banner('合流','仲間のゲームに参加しました',2.5);}
   }
   if(hs){
-    if(hs.w>lastWave&&!VS.on){lastWave=hs.w;if(KIDS.on)banner('ウェーブ '+hs.w,hs.w===1?'ロボットが きたよ':'',3);else banner('WAVE '+hs.w,hs.w===1?'ロボットを撃退せよ':(hs.w===2?'ガンナー出現。遮蔽物を使おう':(hs.w===3?'大型のヘビーに注意':'')));sRadio(660,0);sRadio(880,0.14);}
+    if(hs.w>lastWave&&!VS.on){lastWave=hs.w;if(KIDS.on)banner('ウェーブ '+hs.w,hs.w===1?'ロボットが きたよ':'',3);else banner('WAVE '+hs.w,hs.w===1?'ロボットを撃退せよ':(hs.w===2?'ガンナー出現。遮蔽物を使おう':(hs.w===3?'大型のヘビーに注意':fxWaveNote(hs.w))));sRadio(660,0);sRadio(880,0.14);}
     lastBest=hs.w;
   }
   // player
@@ -6720,7 +7193,7 @@ function frame(tms,manual){
     var jl=Math.hypot(jx,jy);if(jl>1){jx/=jl;jy/=jl;jl=1;}
     var run=(keys.ShiftLeft||keys.ShiftRight||Math.hypot(joy.x,joy.y)>0.93)&&jy>0.4&&!wantFire&&!(adsHeld||adsTog)&&!carry;
     me.sprint+=((run?1:0)-me.sprint)*Math.min(1,dt*9);
-    var sn=Math.sin(me.yaw),cs=Math.cos(me.yaw),spd=run?8.2:(carry?4.95-0.45*held.length:5.2-2.2*me.ads),acc=Math.min(1,dt*(jl>0.05?9:12));
+    var sn=Math.sin(me.yaw),cs=Math.cos(me.yaw),spd=(run?8.2:(carry?4.95-0.45*held.length:5.2-2.2*me.ads))*pkv('spd'),acc=Math.min(1,dt*(jl>0.05?9:12));
     me.vx+=((cs*jx-sn*jy)*spd-me.vx)*acc;me.vz+=((-sn*jx-cs*jy)*spd-me.vz)*acc;
     var ox=me.x,oz=me.z;
     me.x+=me.vx*dt;me.z+=me.vz*dt;
@@ -6745,7 +7218,7 @@ function frame(tms,manual){
   var gyT=SHIP&&!myVeh?SHIP.hMe(me.x,me.z):0;meGy+=(gyT-meGy)*Math.min(1,dt*12);if(ZIP.on)meGy=ZIP.y;if(!myVeh)meAlt=meGy;
   camera.position.set(me.x,(me.down?0.45:EYE+bobY)+meGy,me.z);
   camera.rotation.set(clamp(me.pitch+headPitch,-1.4,1.4)+recP+Math.sin(now*47)*0.012*sk,me.yaw+headYaw+recY+Math.sin(now*39+1)*0.012*sk,(me.down?0.5:-jx*0.008*me.amp)+Math.sin(now*31)*0.01*sk+Math.sin(me.bob)*0.0035*me.amp);
-  var fov=baseFov*(1-(1-zoomNow())*me.ads)+me.sprint*4;
+  var fov=baseFov*(1-(1-zoomNow())*me.ads)+me.sprint*4+fxFov(dt);
   if(Math.abs(fov-camera.fov)>0.01){camera.fov=fov;camera.updateProjectionMatrix();}
   if(myVeh)vehCamera(dt);
   tpsCamera();updBody(dt);var inI=introCam(dt);
@@ -6769,7 +7242,7 @@ function frame(tms,manual){
   updateRemotePlayers(dt);
   for(i=0;i<tracers.length;i++)if(tracers[i].on)moveTracer(tracers[i],dt);
   if(KIDS.water)jetTick(dt);
-  sparks.update(dt);smoke.update(dt);updShells(dt);
+  sparks.update(dt);smoke.update(dt);updShells(dt);fxTick(dt);
   if(fLife>0){fLife-=dt;fLight.intensity=fLife>0?fPeak*(fLife/0.07):0;}
   sendPresence(dt);
   drawHud(dt);
