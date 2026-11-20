@@ -2216,11 +2216,16 @@ var GCI=[
 ];
 var GCN=GCI.map(function(L){return L.map(function(x){return x[0];});});
 var GCSLOT=['あたま','かお','せなか','コスチューム'],GCR=['ノーマル','レア','スーパーレア','ウルトラレア'],GCRS=['N','R','SR','UR'],GCW=[10,5,2,1],GCC=[10,25,60,200];
-var GCS={d:'',n:0,own:{}};
-try{var gc0=JSON.parse(localStorage.getItem('ic_gc')||'null');if(gc0&&typeof gc0==='object'){GCS.d=String(gc0.d||'');GCS.n=gc0.n|0;if(Array.isArray(gc0.own))gc0.own.forEach(function(k){GCS.own[k|0]=1;});}}catch(e){}
-function gcSave(){try{localStorage.setItem('ic_gc',JSON.stringify({d:GCS.d,n:GCS.n,own:Object.keys(GCS.own).map(Number)}));}catch(e){}}
-function gcToday(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
-function gcLeft(){var t=gcToday();if(GCS.d!==t){GCS.d=t;GCS.n=0;gcSave();}return Math.max(0,3-GCS.n);}
+/* tickets: one arrives at 6:00, 11:00 and 17:00 (the phone's own clock), and each is gone 24 hours after it arrived. u = arrival times of the ones already spent */
+var GCS={u:[],own:{}},GCH=[6,11,17],GCLIFE=864e5;
+try{var gc0=JSON.parse(localStorage.getItem('ic_gc')||'null');if(gc0&&typeof gc0==='object'){if(Array.isArray(gc0.u))GCS.u=gc0.u.map(Number).filter(function(x){return x>0&&isFinite(x);}).slice(-12);if(Array.isArray(gc0.own))gc0.own.forEach(function(k){GCS.own[k|0]=1;});}}catch(e){}
+function gcSave(){try{localStorage.setItem('ic_gc',JSON.stringify({u:GCS.u,own:Object.keys(GCS.own).map(Number)}));}catch(e){}}
+function gcSlots(now){var d=new Date(now),A=[],k,j;for(k=-1;k<=1;k++)for(j=0;j<GCH.length;j++)A.push(new Date(d.getFullYear(),d.getMonth(),d.getDate()+k,GCH[j]).getTime());return A;}
+function gcTix(){var now=Date.now();return gcSlots(now).filter(function(g){return g<=now&&g>now-GCLIFE&&GCS.u.indexOf(g)<0;});}
+function gcLeft(){return gcTix().length;}
+function gcNext(){var now=Date.now(),S=gcSlots(now),i;for(i=0;i<S.length;i++)if(S[i]>now)return S[i];return now+GCLIFE;}
+function gcNextH(){return new Date(gcNext()).getHours();}
+function gcSpan(ms){var m=Math.max(1,Math.ceil(ms/6e4));return m>=60?Math.floor(m/60)+'時間'+(m%60?m%60+'分':''):m+'分';}
 function gcHas(i,v){return !v||!!GCS.own[(i-15)*100+v];}
 function gcCount(s){var n=0,k;for(k in GCS.own)if(s===undefined||Math.floor(k/100)===s)n++;return n;}
 function gcTotal(){var n=0;GCI.forEach(function(L){n+=L.length-1;});return n;}
@@ -2230,10 +2235,11 @@ function gcParse(s){if(typeof s!=='string'||!/^[0-9,]{1,160}$/.test(s))return nu
 function gcPick(){var pool=[],tot=0,s,i,r;for(s=0;s<4;s++)for(i=1;i<GCI[s].length;i++){tot+=GCW[GCI[s][i][1]];pool.push([s,i,tot]);}
   r=Math.random()*tot;for(i=0;i<pool.length;i++)if(r<pool[i][2])return pool[i];return pool[pool.length-1];}
 function gcPull(){ // one turn of the handle: a new thing, or coins for one you already have
-  if(gcLeft()<=0)return null;
+  var T=gcTix(),now=Date.now();if(!T.length)return null;
+  GCS.u.push(T[0]);GCS.u=GCS.u.filter(function(g){return g>now-GCLIFE*2;}); // the oldest ticket goes first
   var p=gcPick();if(GCS.own[p[0]*100+p[1]]&&Math.random()<0.5)p=gcPick();
   var id=p[0]*100+p[1],it=GCI[p[0]][p[1]],isNew=!GCS.own[id],c=0;
-  GCS.n++;if(isNew)GCS.own[id]=1;else{c=GCC[it[1]];coins+=c;saveMeta();}
+  if(isNew)GCS.own[id]=1;else{c=GCC[it[1]];coins+=c;saveMeta();}
   gcSave();return {s:p[0],i:p[1],it:it,isNew:isNew,coin:c};
 }
 function gcHatCovers(F){return [0,1,1,0,1,1,0,1,0,0,0,0,1][F[15]]===1;}
@@ -4136,7 +4142,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -6636,13 +6642,15 @@ function achShow(){
 var GCU={ov:null,cv:null,tryF:null,busy:false,res:null,go:null,put:null,list:null,cap:null,btn:null,last:null},GTH={c:{},q:[],t:0},gvEl=null,gvF=null;
 function gcFace(){return GCU.tryF||myFace;}
 function gcKeep(){try{localStorage.setItem('ic_face',JSON.stringify(myFace));}catch(e){}}
-function gcBtnText(){if(!GCU.btn)return;var n=gcLeft();GCU.btn.lastChild.textContent=n>0?'まいにちガチャ　きょう あと'+n+'回':'まいにちガチャ（あした また3回）';GCU.btn.classList.toggle('has',n>0);}
+function gcBtnText(){if(!GCU.btn)return;var n=gcLeft();GCU.btn.lastChild.textContent=n>0?'ガチャ　チケット '+n+'枚':'ガチャ　つぎのチケットは '+gcNextH()+'時';GCU.btn.classList.toggle('has',n>0);
+  if(GCU.ov&&!GCU.ov.classList.contains('off')&&!GCU.busy&&GCU.n!==n)gcDraw();}
 function gcDraw(){
-  var n=gcLeft(),s,i;
-  GCU.go.textContent=n>0?GCU.go.dataset.a+n+GCU.go.dataset.b:GCU.go.dataset.c;GCU.go.disabled=n<=0||GCU.busy;
+  var T=gcTix(),n=T.length,s,i;GCU.n=n;
+  GCU.go.textContent=n>0?GCU.go.dataset.a+n+GCU.go.dataset.b:'つぎは '+gcNextH()+'時';GCU.go.disabled=n<=0||GCU.busy;
   var L=GCU.last;GCU.put.style.display=(L&&!GCU.busy&&myFace[15+L.s]!==L.i)?'':'none';
   GCU.list.textContent='';
   var hd=document.createElement('div');hd.className='gt';hd.textContent='コレクション　'+gcCount()+' / '+gcTotal()+'　　コイン '+Math.floor(coins)+' 枚';GCU.list.appendChild(hd);
+  var tk=document.createElement('div');tk.className='gn';tk.style.marginTop='0';tk.textContent='チケット '+n+'枚'+(n?'（いちばん古い1枚は あと'+gcSpan(T[0]+GCLIFE-Date.now())+'で消える）':'')+'　つぎは '+gcNextH()+'時にとどく';GCU.list.appendChild(tk);
   for(s=0;s<4;s++){
     var h=document.createElement('div');h.className='gh';h.textContent=GCSLOT[s]+'　'+gcCount(s)+' / '+(GCI[s].length-1);GCU.list.appendChild(h);
     var w=document.createElement('div');w.className='gw';GCU.list.appendChild(w);
@@ -6676,7 +6684,7 @@ function gcSpin(){
     gcDraw();
   },wait);
 }
-function gcOpen(){GCU.tryF=null;GCU.last=null;GCU.res.className='';GCU.res.textContent='1日3回まで。日付が変わると、また3回まわせます。かぶったらコインになります。';GCU.ov.classList.remove('off');gcDraw();pvStart(GCU.cv,gcFace);}
+function gcOpen(){GCU.tryF=null;GCU.last=null;GCU.res.className='';GCU.res.textContent='チケットは 6時・11時・17時に1枚ずつとどき、24時間たつと消えます。かぶったらコインになります。';GCU.ov.classList.remove('off');gcDraw();pvStart(GCU.cv,gcFace);}
 function gcClose(){GCU.ov.classList.add('off');pvStop();GCU.tryF=null;var c=document.querySelector('#avBtn canvas');if(c)try{preview3d(c,myFace,0.3,true);}catch(e){}gcBtnText();}
 /* other people's avatars: a small face on each ranking line, and the whole figure when the line is tapped */
 function gcPump(){
@@ -6738,7 +6746,7 @@ function gcView(n,f){
   var box=el('div','gcBox','',null,ov),side=el('div','gcSide','',null,box),stage=el('div','gcStage','',null,side);
   var cv=document.createElement('canvas');cv.width=340;cv.height=400;stage.appendChild(cv);GCU.cv=cv;GCU.cap=el('div','gcCap','',null,stage);
   GCU.res=el('div','gcRes','',null,side);
-  GCU.go=el('button','gcGo','avb go','',side);GCU.go.type='button';GCU.go.dataset.a='まわす（あと';GCU.go.dataset.b='回）';GCU.go.dataset.c='あした また3回';GCU.put=el('button','gcPut','avb','これを着る',side);GCU.put.type='button';
+  GCU.go=el('button','gcGo','avb go','',side);GCU.go.type='button';GCU.go.dataset.a='まわす（チケット';GCU.go.dataset.b='枚）';GCU.put=el('button','gcPut','avb','これを着る',side);GCU.put.type='button';
   var dn=el('button','gcDone','avb','とじる',side);dn.type='button';
   GCU.list=el('div','gcList','',null,box);
   gb.addEventListener('click',gcOpen);dn.addEventListener('click',gcClose);GCU.go.addEventListener('click',gcSpin);
