@@ -1012,7 +1012,33 @@ function cpRing(mb,cx,cz,r0,r1,y,col,n,a0,a1){
   for(var i=0;i<n;i++){var a=a0+(a1-a0)*i/n,b=a0+(a1-a0)*(i+1)/n,q=[[r0,a],[r1,a],[r1,b],[r0,b]].map(function(e){var x=cx+Math.cos(e[1])*e[0],z=cz+Math.sin(e[1])*e[0];return mb.v(x,y,z,0,1,0,col,x*0.2,z*0.2);});
     mb.t(q[0],q[1],q[2]);mb.t(q[0],q[2],q[3]);}
 }
+function cparkNew(){ // buildings the map data lacks or has flat, taken from current aerial imagery; they go through the normal pipeline, so they get walls, doors and interiors like the rest
+  var BC=D.b.map(function(f){var p=P2(f,1),cx=0,cz=0,r=0;p.forEach(function(v){cx+=v[0];cz+=v[1];});cx/=p.length;cz/=p.length;p.forEach(function(v){r=Math.max(r,Math.hypot(v[0]-cx,v[1]-cz));});return [cx,cz,r];}),NEW=[];
+  var RD=D.r.filter(function(f){return f[0]>=2;}).map(function(f){return {hw:f[1]/20,p:P2(f,2)};});
+  function setH(x,z,h,bt){for(var i=0;i<BC.length;i++)if(Math.hypot(BC[i][0]-x,BC[i][1]-z)<8){D.b[i][0]=Math.round(h*10);if(bt!==undefined&&D.bt)D.bt[i]=bt;return;}}
+  function addB(cx,cz,w,d,ang,h,bt){var p=rectP(cx,cz,d/2,w/2,ang),f=[Math.round(h*10)];p.forEach(function(v){f.push(Math.round(v[0]*10),Math.round(v[1]*10));});D.b.push(f);if(D.bt)D.bt.push(bt||0);BC.push([cx,cz,Math.hypot(w,d)/2]);NEW.push(p);}
+  function roadGap(x,z){var b=1e9;for(var i=0;i<RD.length;i++){var p=RD[i].p;for(var e=1;e<p.length;e++){var ax=p[e-1][0],az=p[e-1][1],ex=p[e][0]-ax,ez=p[e][1]-az,l2=ex*ex+ez*ez,t=l2>0?clamp(((x-ax)*ex+(z-az)*ez)/l2,0,1):0,d=Math.hypot(x-ax-ex*t,z-az-ez*t)-RD[i].hw;if(d<b)b=d;}}return b;}
+  function houses(poly,ang,seed){ // fill a block with detached houses, keeping clear of streets and of what already stands
+    var r=mulberry(seed),x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,C=[],i,k,q;poly.forEach(function(v){x0=Math.min(x0,v[0]);x1=Math.max(x1,v[0]);z0=Math.min(z0,v[1]);z1=Math.max(z1,v[1]);});
+    var all=RD;RD=all.filter(function(R){return R.p.some(function(v){return v[0]>x0-40&&v[0]<x1+40&&v[1]>z0-40&&v[1]<z1+40;});});
+    for(var x=x0;x<=x1;x+=4)for(var z=z0;z<=z1;z+=4)if(inP(x,z,poly))C.push([x,z]);
+    for(i=C.length-1;i>0;i--){k=Math.floor(r()*(i+1));q=C[i];C[i]=C[k];C[k]=q;}
+    C.forEach(function(c){
+      var ok=inP(c[0],c[1],ISL)&&roadGap(c[0],c[1])>5.8;
+      for(i=0;ok&&i<BC.length;i++)if(Math.hypot(BC[i][0]-c[0],BC[i][1]-c[1])<BC[i][2]+5.8)ok=false;
+      if(ok)addB(c[0],c[1],8+r()*2,7+r()*1.6,ang+(r()<0.5?0:Math.PI/2)+(r()-0.5)*0.5,6.2+r()*1.6,1);
+    });
+    RD=all;
+  }
+  setH(894,-619,45,2);                               // Ocean Stage, east block: a full-height block of flats, not a slab
+  addB(846.5,-585.3,23,44,0,45,2);                   // Ocean Stage, west block
+  setH(917,-573,7,3);addB(947.4,-589.2,20,17,0.42,7,3);   // the nursery and the hall beside it
+  setH(936,-501,6,4);                                // the decked car park by the tower
+  houses([[641,-884],[700,-893],[800,-888],[868,-848],[928,-788],[983,-718],[1005,-688],[985,-650],[900,-645],[860,-690],[835,-755],[745,-760],[735,-780],[641,-780]],0,311);   // Kashii Teriha 7-chome: the streets are on the map but most of the houses were missing
+  D.t=D.t.filter(function(t){var x=t[0]/10,z=t[1]/10;for(var i=0;i<NEW.length;i++)if(Math.hypot(NEW[i][0][0]-x,NEW[i][0][1]-z)<60&&(inP(x,z,NEW[i])||nearP(x,z,NEW[i])<2))return false;return true;});
+}
 function cparkPrep(){ // runs before buildings and trees are placed: take over the park's own buildings, clear trees where things will stand
+  cparkNew();
   var T=[[751.3,174.8,1],[794.5,233.7,1],[774.1,217.8,1],[735.4,110.4,1],[782.9,275.8,2],[960.6,46.2,3]];
   D.b.forEach(function(f,bi){
     var p=P2(f,1),cx=0,cz=0;p.forEach(function(v){cx+=v[0];cz+=v[1];});cx/=p.length;cz/=p.length;
@@ -4399,7 +4425,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -7164,7 +7190,7 @@ function uxBuzz(ms){if(!UX.vib)return;try{if(navigator.vibrate)navigator.vibrate
 })();
 
 /* ---------- stance: jump, crouch, prone crawl ---------- */
-var ST={pose:0,cr:0,pr:0,drop:0,jy:0,jv:0,air:false,bJ:null,bS:null,hT:0,hOn:false,hDone:false};   // pose: 0 standing, 1 crouching, 2 prone
+var ST={pose:0,cr:0,pr:0,drop:0,jy:0,jv:0,air:false,bJ:null,bS:null,bP:null,shown:-1};   // pose: 0 standing, 1 crouching, 2 prone
 function stSet(p){if(!me.inGame||me.down||myVeh||ZIP.on)return;if(ST.air&&p)return;if(ST.pose===p)return;ST.pose=p;sStep(p===2?0.7:0.5);}
 function stJump(){
   if(!me.inGame||me.down||myVeh||ZIP.on||ST.air)return;
@@ -7182,11 +7208,10 @@ function stTick(dt,on){
   if(ST.air){ST.jv-=15*dt;ST.jy+=ST.jv*dt;if(ST.jy<=0){ST.jy=0;ST.jv=0;ST.air=false;sStep(1.3);shake=Math.max(shake,0.25);}}
   var k=Math.min(1,dt*9);
   ST.cr+=((ST.pose===1?1:0)-ST.cr)*k;ST.pr+=((ST.pose===2?1:0)-ST.pr)*k;ST.drop=0.6*ST.cr+1.25*ST.pr;
-  if(ST.hOn&&!ST.hDone){ST.hT+=dt;if(ST.hT>0.38){ST.hDone=true;stSet(ST.pose===2?0:2);}}   // holding the button goes prone
   if(ST.bJ){
     var show=isTouch&&me.inGame&&!myVeh&&!me.down;
-    ST.bJ.classList.toggle('off',!show);ST.bS.classList.toggle('off',!show);
-    if(show&&ST.bS._p!==ST.pose){ST.bS._p=ST.pose;ST.bS.textContent=ST.pose===2?'ふせ':(ST.pose===1?'しゃがみ':'立ち');ST.bS.classList.toggle('on',ST.pose>0);}
+    ST.bJ.classList.toggle('off',!show);ST.bS.classList.toggle('off',!show);ST.bP.classList.toggle('off',!show);
+    if(show&&ST.shown!==ST.pose){ST.shown=ST.pose;ST.bS.textContent=ST.pose===1?'立つ':'しゃがむ';ST.bP.textContent=ST.pose===2?'立つ':'ふせる';ST.bS.classList.toggle('on',ST.pose===1);ST.bP.classList.toggle('on',ST.pose===2);}
   }
 }
 function stPose(v,cr,pr,jy,gy,x,z){ // bend an avatar into the stance (after its walk cycle has been set)
@@ -7204,17 +7229,16 @@ function stRemote(v,o,dt){ // other players: ease toward the stance they report
 }
 (function(){
   var st=document.createElement('style');
-  st.textContent='#bJump,#bStance{position:fixed;z-index:6;width:52px;height:52px;font-size:11px;line-height:1.15;padding:0}'+
-    '#bJump{right:calc(22px + env(safe-area-inset-right,0px));top:282px}#bStance{right:calc(80px + env(safe-area-inset-right,0px));top:282px}#bStance.on{border-color:var(--signal);color:var(--signal)}'+   // under the map and the look stick
-    '@media (orientation:landscape) and (max-height:540px){#bJump{right:calc(10px + env(safe-area-inset-right,0px));top:140px;width:46px;height:46px}#bStance{right:calc(64px + env(safe-area-inset-right,0px));top:140px;width:46px;height:46px}}'+
-    'html.m-kids #bStance{display:none}';
+  st.textContent='#bJump,#bStance,#bProne{position:fixed;z-index:6;width:52px;height:52px;font-size:11px;line-height:1.15;padding:0}'+
+    '#bJump{right:calc(22px + env(safe-area-inset-right,0px));top:282px}#bStance{right:calc(80px + env(safe-area-inset-right,0px));top:282px}#bProne{right:calc(138px + env(safe-area-inset-right,0px));top:282px}'+   // under the map and the look stick
+    '#bStance.on,#bProne.on{border-color:var(--signal);color:var(--signal)}'+
+    '@media (orientation:landscape) and (max-height:540px){#bJump,#bStance,#bProne{top:140px;width:46px;height:46px}#bJump{right:calc(10px + env(safe-area-inset-right,0px))}#bStance{right:calc(62px + env(safe-area-inset-right,0px))}#bProne{right:calc(114px + env(safe-area-inset-right,0px))}}'+
+    'html.m-kids #bStance,html.m-kids #bProne{display:none}';
   document.head.appendChild(st);
-  function mk(id,txt,lab){var b=document.createElement('button');b.id=id;b.type='button';b.className='btn off';b.textContent=txt;b.setAttribute('aria-label',lab);document.body.appendChild(b);return b;}
-  ST.bJ=mk('bJump','ジャンプ','ジャンプ');ST.bS=mk('bStance','立ち','姿勢：押すとしゃがむ、長押しでふせる');
-  ST.bJ.addEventListener('pointerdown',function(e){e.preventDefault();stJump();});
-  ST.bS.addEventListener('pointerdown',function(e){e.preventDefault();ST.hOn=true;ST.hT=0;ST.hDone=false;try{ST.bS.setPointerCapture(e.pointerId);}catch(_){}});
-  function up(){if(ST.hOn&&!ST.hDone)stSet(ST.pose?0:1);ST.hOn=false;}                    // a short tap: crouch, or stand up
-  ST.bS.addEventListener('pointerup',up);ST.bS.addEventListener('pointercancel',function(){ST.hOn=false;});
+  function mk(id,txt,fn){var b=document.createElement('button');b.id=id;b.type='button';b.className='btn off';b.textContent=txt;document.body.appendChild(b);b.addEventListener('pointerdown',function(e){e.preventDefault();fn();});return b;}
+  ST.bP=mk('bProne','ふせる',function(){stSet(ST.pose===2?0:2);});
+  ST.bS=mk('bStance','しゃがむ',function(){stSet(ST.pose===1?0:1);});
+  ST.bJ=mk('bJump','ジャンプ',stJump);
   window.addEventListener('keydown',function(e){
     if(e.repeat||(e.target&&(e.target.id==='nm'||e.target.id==='rid'))||!me.inGame||paused||(typeof PK!=='undefined'&&PK&&PK.offer))return;
     if(e.code==='KeyX')stJump();else if(e.code==='KeyC')stSet(ST.pose===1?0:1);else if(e.code==='KeyZ')stSet(ST.pose===2?0:2);
@@ -7700,7 +7724,7 @@ var FOGD=0.00021;
   sec('そのほか',[['キッズモード','あそぶ時間を決めて始める。時間になると「おしまい」と出て止まる。みずでっぽう（ロボットを故障させるだけ）か、じゅうを選べる。まなびモードにすると、乗り物に乗る前に かず・てんき・いろ・かたち のクイズが出る。ひとり用'],['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
   grid=grids[1];
   if(isTouch){
-    sec('動く・見る',[['画面の左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面の右をドラッグ','向きを変える'],['右上の丸いスティック','首だけ振って周りや後ろを見る'],['ジャンプ','その場でとぶ'],['姿勢のボタン','押すとしゃがむ・立つ。長押しでふせる（匍匐前進）。低いほどねらいが安定し、撃たれにくい']]);
+    sec('動く・見る',[['画面の左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面の右をドラッグ','向きを変える'],['右上の丸いスティック','首だけ振って周りや後ろを見る'],['ジャンプ','その場でとぶ'],['しゃがむ / ふせる','地図の下のボタン。ふせたまま動くと匍匐前進。もう一度押すと立つ。低いほどねらいが安定し、撃たれにくい']]);
     sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['AUTO','照準が敵に合うと自動で撃つ'],['銃のアイコン','押すたびに持ち替え'],['グレネードのアイコン','投げる']]);
     sec('そのほか',[['中央下のボタン','拾う・乗る・降りる・ワープ・品出し・買い物'],['リュック','持ち物を見る。包帯と応急処置セットはここから使う'],['右上の地図','タップで全体マップ（ピンチで拡大）'],['上の3つのボタン','視点・ポーズ・全画面'],['ポーズメニュー','視点の速さ、音、戦闘中の音楽を変えられる']]);
   }else{
