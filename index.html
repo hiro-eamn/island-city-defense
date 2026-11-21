@@ -4142,7 +4142,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -6752,6 +6752,158 @@ function gcView(n,f){
   gb.addEventListener('click',gcOpen);dn.addEventListener('click',gcClose);GCU.go.addEventListener('click',gcSpin);
   GCU.put.addEventListener('click',function(){var L=GCU.last;if(!L||GCU.busy)return;myFace[15+L.s]=L.i;GCU.tryF=null;gcKeep();gcDraw();});
   gcBtnText();setInterval(gcBtnText,30000);
+})();
+
+/* ---------- experience pass, five rounds: (1) a leaner, more legible battle screen with bigger touch targets, (2) every press answers back, (3) the first minute is played, not read, (4) menus sorted by what they are for, (5) small screens, larger text, and nothing told by colour alone ---------- */
+var UX={vib:true,big:false,hp:100,coach:null,cDone:false,t:0};
+try{UX.vib=localStorage.getItem('ic_vib')!=='0';UX.big=localStorage.getItem('ic_big')==='1';UX.cDone=localStorage.getItem('ic_coach')==='1';}catch(e){}
+function uxBuzz(ms){if(!UX.vib)return;try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
+(function(){
+  function el(tag,id,cls,txt,parent){var e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(txt)e.textContent=txt;(parent||document.body).appendChild(e);return e;}
+  var $=function(id){return document.getElementById(id);},root=document.documentElement;
+  var st=document.createElement('style');
+  st.textContent=[
+  /* round 1: the top-left block reads on a bright sky; while robots are about it carries only what you need to stay alive */
+  '#tl::before{content:"";position:absolute;left:-14px;top:-10px;right:-46px;bottom:-10px;z-index:-1;border-radius:0 0 22px 0;background:linear-gradient(90deg,rgba(4,10,16,.58),rgba(4,10,16,.36) 62%,rgba(4,10,16,0));pointer-events:none}',
+  '#goal .cn{font-size:11.5px;color:#cfd9e0;transition:opacity .3s}','#wave small{transition:opacity .3s}',
+  'html.fight #goal .cn{display:none}','html.fight #net{opacity:0}','html.fight #zone{opacity:.75}',
+  '#zone,#net{font-size:11px!important}','#net{transition:opacity .3s}','.btn .lb{font-size:10px}',
+  /* small buttons keep their look and get a finger-sized place to land */
+  '#bView::after,#bPause::after,#bFull::after,#bChat::after,#bMic::after{content:"";position:absolute;left:-2px;right:-2px;top:-8px;bottom:-12px}',
+  '#bAuto::after{content:"";position:absolute;left:0;right:0;top:-8px;bottom:-6px}',
+  '#bSwap::after,#bNade::after,#bPack::after{content:"";position:absolute;inset:-3px}',
+  '#icap i{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:15px;font:700 13px/1.2 var(--body);color:#fff;background:rgba(6,14,22,.62);border:1px solid rgba(255,255,255,.45)}',
+  '.pop .x{height:44px;min-width:92px}','#pack h2 button{height:44px;min-width:92px}'
+  ].join('\n');
+  document.head.appendChild(st);
+  setInterval(function(){
+    var fight=!!(typeof hs!=='undefined'&&hs&&hs.st==='fight'&&me.inGame&&!practice);
+    root.classList.toggle('fight',fight);
+  },250);
+
+  /* round 2: a press lights the button and (where the phone can) taps the hand; the reload and backpack buttons ask for attention when they are the answer */
+  var st2=document.createElement('style');
+  st2.textContent=[
+  '.btn.pr{filter:brightness(1.5)}',
+  '#start button:active,.pop button:active,#pause button:active,#gacha button:active,#pack button:active,#gview button:active{filter:brightness(1.3)}',
+  '@keyframes uxNeed{0%,100%{box-shadow:0 0 0 0 rgba(255,176,0,0),0 4px 12px rgba(0,0,0,.42)}50%{box-shadow:0 0 0 7px rgba(255,176,0,.6),0 4px 12px rgba(0,0,0,.42)}}',
+  '.btn.need{border-color:var(--signal)!important;color:#ffd24a!important;animation:uxNeed .9s ease-in-out infinite}',
+  '@media (prefers-reduced-motion:reduce){.btn.need{animation:none;box-shadow:0 0 0 5px rgba(255,176,0,.55)}}'
+  ].join('\n');
+  document.head.appendChild(st2);
+  var held={};
+  document.addEventListener('pointerdown',function(e){var b=e.target&&e.target.closest?e.target.closest('.btn'):null;if(!b)return;held[e.pointerId]=b;b.classList.add('pr');uxBuzz(b.id==='bFire'?14:9);},true);
+  function rel(e){var b=held[e.pointerId];if(b){b.classList.remove('pr');delete held[e.pointerId];}}
+  document.addEventListener('pointerup',rel,true);document.addEventListener('pointercancel',rel,true);
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('button'):null;if(!b||b.classList.contains('btn')||b.disabled)return;try{tone({f:1180,dur:0.03,v:0.028,type:'triangle'});}catch(x){}uxBuzz(7);},true);
+  var bRe=$('bReload'),bFi=$('bFire');
+  setInterval(function(){
+    if(!me.inGame){UX.hp=100;return;}
+    if(me.hp<UX.hp-0.5&&!paused)uxBuzz(me.hp<=0?140:35);UX.hp=me.hp;
+    var live=!me.down&&!paused;
+    if(bRe)bRe.classList.toggle('need',live&&!(me.reload>0)&&me.ammo<=Math.max(1,Math.floor(MAG*0.2)));
+    var bp=$('bPack');if(bp)bp.classList.toggle('need',live&&me.hp<45&&(bands+kits)>0);
+  },200);
+
+  /* round 3: the first minute is played, not read. Three things to do, each ticked off as it is done, and a few coins at the end */
+  if(TIPS.move)UX.cDone=true; // someone who has played before already knows
+  var st3=document.createElement('style');
+  st3.textContent=[
+  '#coach{position:fixed;left:50%;top:calc(140px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:10px;padding:6px 7px 6px 14px;border-radius:22px;background:linear-gradient(180deg,rgba(24,44,62,.96),rgba(8,18,28,.96));border:1px solid var(--signal);box-shadow:0 6px 18px rgba(0,0,0,.5);font:700 14px/1.3 var(--body);color:#fff;max-width:min(92vw,540px);white-space:nowrap}',
+  '#coach.off,#chand.off{display:none}','#coach i{flex:none;font:700 12px/1 var(--num);font-style:normal;letter-spacing:.06em;color:var(--signal)}','#coach span{white-space:normal}',
+  '#coach button{position:relative;flex:none;height:30px;padding:0 12px;border-radius:15px;font:700 12px var(--body);color:#cfd9e0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3)}','#coach button::after{content:"";position:absolute;inset:-8px -4px}',
+  '#coach.ok{border-color:#7ee06a;color:#b6f5a8}','#coach.ok button{display:none}','#coach.ok{padding-right:14px}',
+  '#chand{position:fixed;z-index:5;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;border:3px solid rgba(255,255,255,.92);background:rgba(255,255,255,.2);box-shadow:0 0 0 7px rgba(255,176,0,.35);pointer-events:none}',
+  '@keyframes uxMv{0%{transform:translate(0,26px);opacity:0}15%{opacity:1}75%{transform:translate(0,-56px);opacity:1}100%{transform:translate(0,-56px);opacity:0}}',
+  '@keyframes uxLk{0%{transform:translate(-56px,0);opacity:0}15%{opacity:1}75%{transform:translate(56px,0);opacity:1}100%{transform:translate(56px,0);opacity:0}}',
+  '#chand.mv{left:19%;top:66%;animation:uxMv 1.5s ease-in-out infinite}','#chand.lk{left:56%;top:56%;animation:uxLk 1.5s ease-in-out infinite}',
+  '@media (prefers-reduced-motion:reduce){#chand{animation:none!important}}',
+  'html.intro #coach,html.intro #chand{display:none}',
+  '@media (orientation:portrait){#coach{top:calc(190px + env(safe-area-inset-top,0px))}}'
+  ].join('\n');
+  document.head.appendChild(st3);
+  var cEl=el('div','coach','off'),cN=el('i','','','',cEl),cT=el('span','','','',cEl),cX=el('button','','','スキップ',cEl),cH=el('div','chand','off');cX.type='button';
+  var CT=isTouch?['画面の左側をドラッグして歩こう','画面の右側をドラッグして、まわりを見よう','右下の「射撃」ボタンで撃ってみよう']:['W A S D キーで歩こう','マウスを動かして、まわりを見よう（画面をクリックで固定）','クリックか Space で撃ってみよう'];
+  function cOk(){return me.inGame&&INTRO.t<=0&&!paused&&!me.down&&!KIDS.on&&!SHIFT.on&&!myVeh&&NET.mode!=='coop'&&!VS.on;}
+  function cShow(){var C=UX.coach;cEl.className='';cN.textContent=(C.i+1)+' / 3';cT.textContent=CT[C.i];cH.className=isTouch&&C.i<2?(C.i===0?'mv':'lk'):'off';if(bFi)bFi.classList.toggle('need',C.i===2);}
+  function cHide(){cEl.className='off';cH.className='off';if(bFi)bFi.classList.remove('need');}
+  function cEnd(reward){
+    UX.cDone=true;UX.coach=null;try{localStorage.setItem('ic_coach','1');}catch(e){}cH.className='off';if(bFi)bFi.classList.remove('need');
+    if(!reward){cHide();return;}
+    coins+=50;saveMeta();cEl.className='ok';cN.textContent='✓';cT.textContent='操作をおぼえた！　コイン +50';
+    try{[784,1047,1319,1568].forEach(function(f,k){tone({f:f,dur:k===3?0.35:0.09,v:0.06,type:'triangle',t0:k*0.09,rv:0.3});});}catch(e){}uxBuzz(60);
+    setTimeout(function(){if(!UX.coach)cEl.className='off';},3200);
+  }
+  cX.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();cEnd(false);});
+  setInterval(function(){
+    if(UX.cDone)return;var C=UX.coach;
+    if(!C){if(!cOk())return;C=UX.coach={i:0,x:me.x,z:me.z,d:0,yaw:me.yaw,a:0,s:me.shots,w:0};TIPS.move=1;cShow();return;}
+    if(!me.inGame){UX.coach=null;cHide();return;}
+    if(!cOk()){cHide();C.x=me.x;C.z=me.z;C.yaw=me.yaw;return;}
+    if(C.w>0){C.w-=0.1;if(C.w<=0){if(C.i>2)cEnd(true);else cShow();}return;}
+    if(cEl.className==='off')cShow();
+    var dx=me.x-C.x,dz=me.z-C.z,dd=Math.sqrt(dx*dx+dz*dz),da=Math.abs(Math.atan2(Math.sin(me.yaw-C.yaw),Math.cos(me.yaw-C.yaw)));
+    C.x=me.x;C.z=me.z;C.yaw=me.yaw;
+    var done=false;
+    if(C.i===0){if(dd<4)C.d+=dd;done=C.d>5;}
+    else if(C.i===1){if(da<1)C.a+=da;done=C.a>1.1;}
+    else{done=me.shots>C.s;}
+    if(C.i<2)C.s=me.shots;
+    if(done){C.i++;C.w=C.i>2?0.2:0.9;cEl.className='ok';cN.textContent='✓';cT.textContent='できた！';cH.className='off';if(bFi)bFi.classList.remove('need');try{tone({f:1319,dur:0.08,v:0.05,type:'triangle'});tone({f:1760,dur:0.14,v:0.05,type:'triangle',t0:0.07});}catch(e){}uxBuzz(20);}
+  },100);
+
+  /* round 4: the pause menu sorted by what things are for (carry on / settings / look something up / leave), switches that show their state, and a pointer for a first-time player on the title */
+  var st4=document.createElement('style');
+  st4.textContent=[
+  '#pause .box{display:grid!important;grid-template-columns:1fr 1fr;gap:7px!important;width:min(390px,100%)!important;text-align:center}',
+  '#pause h2,#pause .n,#pzSens,#pzResume,#pause .sep{grid-column:1/-1}','#pzHero{grid-column:1/-1}',
+  '#pause button{height:44px;font-size:13.5px;min-width:0;padding:0 6px}','#pause #pzResume{height:50px;font-size:17px}',
+  '#pause .sep{display:flex;align-items:center;gap:8px;margin-top:3px;font:700 11px/1 var(--body);letter-spacing:.14em;color:var(--dim)}','#pause .sep::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.2)}',
+  '#pause .tog{position:relative;padding-left:24px}','#pause .tog::before{content:"";position:absolute;left:11px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#7ee06a;box-shadow:0 0 6px rgba(126,224,106,.9)}',
+  '#pause .tog.isoff{color:var(--dim)}','#pause .tog.isoff::before{background:rgba(255,255,255,.28);box-shadow:none}',
+  '#pause #pzQuit{color:#ffb3a3;border-color:rgba(255,106,77,.55)!important;background:rgba(255,90,60,.08)!important}',
+  '@media (orientation:landscape) and (max-height:540px){#pause .box{width:min(680px,100%)!important;grid-template-columns:1fr 1fr 1fr!important;padding:10px 12px!important}#pause h2{grid-column:1;text-align:left;font-size:22px}#pause .n{grid-column:2/-1;align-self:center;text-align:right}#pzSens{grid-column:1/3}#pzHero{grid-column:auto}#pzQuit{grid-column:1/-1}#pause button{height:38px;font-size:12.5px}#pause #pzResume{height:44px;font-size:16px}#pause #pzQuit{height:34px}}',
+  '@media (orientation:landscape) and (max-height:400px){#pause{padding:8px!important}#pause .box{gap:5px!important;padding:8px 10px!important}#pause button{height:36px}#pause #pzResume{height:40px}#pause #pzQuit{height:32px}#pause .sep{margin-top:1px}}',
+  /* larger text, for whoever wants it */
+  'html.big #tl{zoom:1.16}','html.big #zone,html.big #net{font-size:13px!important}','html.big #prompt{font-size:16px}','html.big #toast{font-size:15px!important}','html.big #banner small{font-size:15px}','html.big #coach{font-size:16px}','html.big .hg,html.big #helpGrid{font-size:15px}','html.big #gcList .gn,html.big #gcRes{font-size:13.5px}','html.big .gi{font-size:13.5px;height:36px}','html.big .pt span{font-size:13px}','html.big #kp{font-size:17px}',
+  /* title: the four small buttons are finger-sized where there is room, and a newcomer is shown where to start */
+  '@media (min-height:400px){#card .g2.q .sbtn.sbtn{height:40px!important;font-size:12px!important}}',
+  '#goNew{position:absolute;right:8px;top:-9px;padding:3px 9px;border-radius:10px;font:700 10.5px/1.2 var(--body);letter-spacing:.04em;color:#fff;background:#e2452f;box-shadow:0 2px 8px rgba(0,0,0,.4);pointer-events:none}','#go{overflow:visible}'
+  ].join('\n');
+  document.head.appendChild(st4);
+  if(UX.big)root.classList.add('big');
+  var box=elPause&&elPause.querySelector('.box');
+  if(box){
+    var mk=function(id,txt,fn){var b=document.createElement('button');b.type='button';b.id=id;b.addEventListener('click',fn);b.textContent=txt();b.uxT=txt;return b;};
+    var bV=mk('pzVib',function(){return '振動：'+(UX.vib?'ON':'OFF');},function(){UX.vib=!UX.vib;try{localStorage.setItem('ic_vib',UX.vib?'1':'0');}catch(e){}bV.textContent=bV.uxT();if(UX.vib)uxBuzz(30);});
+    var bB=mk('pzBig',function(){return '文字：'+(UX.big?'大きめ':'ふつう');},function(){UX.big=!UX.big;root.classList.toggle('big',UX.big);try{localStorage.setItem('ic_big',UX.big?'1':'0');}catch(e){}bB.textContent=bB.uxT();});
+    var sep=function(t){var d=document.createElement('div');d.className='sep';d.textContent=t;return d;};
+    var order=['pzResume',sep('設定'),'pzSens','pzSnd','pzMus','pzMix','pzFx',bB,(navigator.vibrate?bV:null),'pzHero',sep('見る'),'pzHelp','pzSoc','pzAch','pzQuit'];
+    order.forEach(function(o){if(!o)return;var e=typeof o==='string'?$(o):o;if(e)box.appendChild(e);});
+    var TG=['pzSnd','pzMus','pzMix','pzFx','pzVib','pzHero'];
+    var paint=function(){TG.forEach(function(id){var e=$(id);if(!e)return;e.classList.add('tog');e.classList.toggle('isoff',/(OFF|ひかえめ|止める)$/.test(e.textContent));});};
+    paint();box.addEventListener('click',function(){setTimeout(paint,0);});setInterval(function(){if(paused)paint();},400);
+  }
+  setTimeout(function(){var goB=$('go');if(goB&&!UX.cDone&&!$('goNew')){var gn=document.createElement('span');gn.id='goNew';gn.textContent='はじめての人はここから';goB.appendChild(gn);}},0);
+  setInterval(function(){var g=$('goNew');if(g&&UX.cDone)g.remove();},2000);
+
+  /* round 5: a warning is a mark as well as a colour; and the opening flight really ends when it is skipped, however slow the phone (it used to run on in slow motion at a low frame rate) */
+  var st5=document.createElement('style');
+  st5.textContent=['#gasl.w{font-weight:700}#gasl.w::before{content:"⚠ "}',
+  /* the button that starts a kids game stays in reach on a short screen instead of sitting below the fold */
+  '#kidsGo{position:sticky;bottom:0;z-index:2;flex:none;box-shadow:0 -10px 14px rgba(11,24,36,.96)}',
+  /* the coach line takes the width it needs instead of half the screen */
+  '#coach{left:12px!important;right:12px;margin:0 auto;transform:none!important;width:max-content;max-width:min(calc(100vw - 24px),540px);white-space:normal!important}','#coach span{flex:1 1 auto;min-width:0}',
+  /* held upright: the three top buttons no longer sit on the health bar, and the headline no longer runs over the status lines */
+  '@media (orientation:portrait){#tl{margin-top:50px!important}#banner{top:calc(max(27vh,238px) + env(safe-area-inset-top,0px))!important;font-size:20px!important;line-height:1.25!important;padding:0 12px}#banner small{font-size:12.5px!important}#coach{top:calc(max(37vh,300px) + env(safe-area-inset-top,0px))!important}#pause button{font-size:12.5px}#pause .tog{padding-left:20px}#pause .tog::before{left:8px}}',
+  '@media (orientation:landscape) and (max-width:720px){#banner{font-size:18px!important}#banner small{font-size:12px!important}}'].join('\n');
+  document.head.appendChild(st5);
+  var iT=0,iF=0;
+  setInterval(function(){
+    if(!(INTRO.t>0)){iT=0;iF=0;return;}
+    var n=Date.now();if(!iT)iT=n;if(INTRO.fast&&!iF)iF=n;
+    if((iF&&n-iF>700)||n-iT>9000)introEnd();
+  },100);
 })();
 
 /* ---------- per-client logic ---------- */
