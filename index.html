@@ -2742,7 +2742,7 @@ function readPeers(){
     if(p.isMe&&p.sameTab){myPeer=String(p.peer);continue;}
     var pr=p.presence;if(!pr||pr.g!==1)continue;
     var pos=pr.p;if(!Array.isArray(pos)||!fin(pos[0])||!fin(pos[1]))continue;
-    others.push({peer:String(p.peer),x:clamp(pos[0],-20000,20000),z:clamp(pos[1],-20000,20000),yaw:fin(pos[2])?pos[2]:0,
+    others.push({peer:String(p.peer),x:clamp(pos[0],-20000,20000),z:clamp(pos[1],-20000,20000),yaw:fin(pos[2])?pos[2]:0,po:(pos[3]===1||pos[3]===2||pos[3]===3)?pos[3]:0,
       hp:fin(pr.hp)?clamp(pr.hp,0,100):0,n:(typeof pr.n==='string'&&pr.n)?pr.n.slice(0,10):'なかま',
       d:(pr.d&&typeof pr.d==='object')?pr.d:null,s:Array.isArray(pr.s)?pr.s:null,h:(pr.h&&typeof pr.h==='object')?pr.h:null,
       k:Array.isArray(pr.k)?pr.k:null,v:Array.isArray(pr.v)?pr.v:null,t:Array.isArray(pr.t)?pr.t:null,f:Array.isArray(pr.f)?pr.f:null,c:Array.isArray(pr.c)?pr.c:null,q:Array.isArray(pr.q)?pr.q:null,vs:(pr.vs&&typeof pr.vs==='object')?pr.vs:null});
@@ -2760,7 +2760,7 @@ function sendPresence(dt){
   if(!room)return;
   sendT-=dt;if(sendT>0)return;sendT=0.1;
   var d={},k;for(k in myDmg)d[k]=myDmg[k];
-  var pr={g:1,vs:VS.on?vsOut():null,c:chatOut(),q:[myKills,runStock,danOf(STATS.sp)],k:stockOut(),v:vehOut(),t:lootOut(),f:myFace,n:me.name,p:[r1(me.x),r1(me.z),r2(me.yaw)],hp:Math.max(0,Math.round(me.hp)),d:d,s:[me.shots,me.hit[0],me.hit[1],me.hit[2]],
+  var pr={g:1,vs:VS.on?vsOut():null,c:chatOut(),q:[myKills,runStock,danOf(STATS.sp)],k:stockOut(),v:vehOut(),t:lootOut(),f:myFace,n:me.name,p:[r1(me.x),r1(me.z),r2(me.yaw),stCode()],hp:Math.max(0,Math.round(me.hp)),d:d,s:[me.shots,me.hit[0],me.hit[1],me.hit[2]],
     h:(amHost&&hs)?{gen:hs.gen,w:hs.w,k:hs.k,st:hs.st,t:r1(hs.t),left:hs.left,e:hs.e,g:hs.g?hs.g.map(function(v){return r1(v);}):null,f:hs.f||null}:null};
   try{room.presence(pr).catch(function(){});}catch(e){}
 }
@@ -4398,7 +4398,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは右下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -4630,7 +4630,7 @@ function updBody(dt){
   myBody.up.rotation.set((aim+kick*0.035-rl*0.32)*(1-Math.min(1,Math.abs(tw)*3))+me.sprint*0.1,clamp(headYaw,-0.9,0.9)*0.55+s*0.07*a+tw,-s*0.03*a);
   myBody.flash.visible=flashT>0;if(myBody.flash.visible)myBody.flash.rotation.z=Math.random()*6.28;
   myBody.g.position.set(me.x,meGy,me.z);myBody.g.rotation.set(0,myBody.by,0);myBody.g.rotateX(-0.16*me.sprint-0.04*a);
-  if(me.down){myBody.g.rotation.x=-Math.PI/2;myBody.g.position.y=meGy+0.25;}
+  if(me.down){myBody.g.rotation.x=-Math.PI/2;myBody.g.position.y=meGy+0.25;}else stPose(myBody,ST.cr,ST.pr,ST.jy,meGy,me.x,me.z);
 }
 function tpsCamera(){ // pull the camera back over the right shoulder; come in close when a wall is behind
   if(!tps||myVeh||scopedNow())return;
@@ -6330,7 +6330,7 @@ function vsHost(dt,players){ // COM robots: keep the agreed number in the field
 }
 function vsShot(ray,W){ // does this shot meet another player before it meets anything else?
   if(VS.over)return 0;var best=ray.t,tg=null,i,t;
-  for(i=0;i<others.length;i++){var o=others[i];if(o.hp<=0||!o.vs)continue;t=rayCyl(ray.ox,ray.oy,ray.oz,ray.dx,ray.dy,ray.dz,o.x,o.z,0.42,1.82);if(t<best){best=t;tg=o;}}
+  for(i=0;i<others.length;i++){var o=others[i];if(o.hp<=0||!o.vs)continue;t=rayCyl(ray.ox,ray.oy,ray.oz,ray.dx,ray.dy,ray.dz,o.x,o.z,0.42,stH(o));if(t<best){best=t;tg=o;}}
   if(!tg)return 0;
   var y=ray.oy+ray.dy*best,head=y>1.46,dm=(head?W.dmg*1.6:W.dmg)*0.8;if(W.pel>1)dm*=clamp(1.25-best/28,0.25,1);
   VS.out[tg.peer]=(VS.out[tg.peer]||0)+Math.max(1,Math.round(dm));hitT=0.12;hitMark(head?1:0);runHit(head);
@@ -6338,7 +6338,7 @@ function vsShot(ray,W){ // does this shot meet another player before it meets an
   return best;
 }
 function vsAim(ray){ // is another player under the crosshair, within auto-fire range?
-  if(VS.over)return false;for(var i=0;i<others.length;i++){var o=others[i];if(o.hp<=0||!o.vs)continue;var t=rayCyl(ray.ox,ray.oy,ray.oz,ray.dx,ray.dy,ray.dz,o.x,o.z,0.42,1.82);if(t<ray.t&&t<70)return true;}return false;
+  if(VS.over)return false;for(var i=0;i<others.length;i++){var o=others[i];if(o.hp<=0||!o.vs)continue;var t=rayCyl(ray.ox,ray.oy,ray.oz,ray.dx,ray.dy,ray.dz,o.x,o.z,0.42,stH(o));if(t<ray.t&&t<70)return true;}return false;
 }
 function vsDown(dt){
   me.downT-=dt;me.vx=me.vz=0;me.amp=0;me.sprint=0;
@@ -7162,6 +7162,65 @@ function uxBuzz(ms){if(!UX.vib)return;try{if(navigator.vibrate)navigator.vibrate
   },100);
 })();
 
+/* ---------- stance: jump, crouch, prone crawl ---------- */
+var ST={pose:0,cr:0,pr:0,drop:0,jy:0,jv:0,air:false,bJ:null,bS:null,hT:0,hOn:false,hDone:false};   // pose: 0 standing, 1 crouching, 2 prone
+function stSet(p){if(!me.inGame||me.down||myVeh||ZIP.on)return;if(ST.air&&p)return;if(ST.pose===p)return;ST.pose=p;sStep(p===2?0.7:0.5);}
+function stJump(){
+  if(!me.inGame||me.down||myVeh||ZIP.on||ST.air)return;
+  if(ST.pose===2){stSet(0);return;}                              // from the ground you first get up
+  ST.pose=0;ST.air=true;ST.jv=5.4;sStep(1.1);
+}
+function stSpd(){return ST.pose===2?0.3:(ST.pose===1?0.55:1);}                 // how fast you move in this stance
+function stAcc(){return ST.air?1.7:(ST.pose===2?0.5:(ST.pose===1?0.72:1));}    // spread: steadier the lower you are, wild in the air
+function stRec(){return ST.pose===2?0.6:(ST.pose===1?0.8:1);}                  // recoil
+function stHit(){return ST.pose===2?0.5:(ST.pose===1?0.75:1);}                 // how easily a gunner hits you
+function stCode(){return ST.air?3:ST.pose;}
+function stH(o){return 1.82-(o.po===1?0.6:(o.po===2?1.3:0));}                  // height of another player's body for hits
+function stTick(dt,on){
+  if(!on){ST.pose=0;ST.air=false;ST.jv=0;ST.jy=0;}
+  if(ST.air){ST.jv-=15*dt;ST.jy+=ST.jv*dt;if(ST.jy<=0){ST.jy=0;ST.jv=0;ST.air=false;sStep(1.3);shake=Math.max(shake,0.25);}}
+  var k=Math.min(1,dt*9);
+  ST.cr+=((ST.pose===1?1:0)-ST.cr)*k;ST.pr+=((ST.pose===2?1:0)-ST.pr)*k;ST.drop=0.6*ST.cr+1.25*ST.pr;
+  if(ST.hOn&&!ST.hDone){ST.hT+=dt;if(ST.hT>0.38){ST.hDone=true;stSet(ST.pose===2?0:2);}}   // holding the button goes prone
+  if(ST.bJ){
+    var show=isTouch&&me.inGame&&!myVeh&&!me.down;
+    ST.bJ.classList.toggle('off',!show);ST.bS.classList.toggle('off',!show);
+    if(show&&ST.bS._p!==ST.pose){ST.bS._p=ST.pose;ST.bS.textContent=ST.pose===2?'ふせ':(ST.pose===1?'しゃがみ':'立ち');ST.bS.classList.toggle('on',ST.pose>0);}
+  }
+}
+function stPose(v,cr,pr,jy,gy,x,z){ // bend an avatar into the stance (after its walk cycle has been set)
+  var a=Math.min(1,jy/0.5)*(1-pr),c=cr*(1-pr);
+  v.hips.position.y-=0.39*c+0.1*a;
+  v.lL.th.rotation.x=v.lL.th.rotation.x*(1-0.5*c)+1.1*c+0.5*a;v.lR.th.rotation.x=v.lR.th.rotation.x*(1-0.5*c)+1.1*c+0.5*a;
+  v.lL.sh.rotation.x-=1.75*c+0.8*a;v.lR.sh.rotation.x-=1.75*c+0.8*a;
+  if(pr>0.01){var by=v.g.rotation.y;v.g.rotation.x=-1.45*pr;v.g.position.set(x+Math.sin(by)*1.15*pr,gy+0.24*pr,z+Math.cos(by)*1.15*pr);}
+  v.g.position.y+=jy;
+}
+function stRemote(v,o,dt){ // other players: ease toward the stance they report
+  var k=Math.min(1,dt*9),po=o.po||0;
+  if(v.cr===undefined){v.cr=0;v.prn=0;v.jy=0;}
+  v.cr+=((po===1?1:0)-v.cr)*k;v.prn+=((po===2?1:0)-v.prn)*k;v.jy+=((po===3?0.75:0)-v.jy)*k;
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent='#bJump,#bStance{position:fixed;z-index:6;width:52px;height:52px;font-size:11px;line-height:1.15;padding:0}'+
+    '#bJump{right:252px;bottom:128px}#bStance{right:314px;bottom:66px}#bStance.on{border-color:var(--signal);color:var(--signal)}'+
+    '@media (orientation:portrait){#bJump{right:22px;bottom:238px}#bStance{right:84px;bottom:238px}}'+
+    '@media (orientation:landscape) and (max-height:540px){#bJump{right:calc(256px + env(safe-area-inset-right,0px));bottom:70px;width:44px;height:44px}#bStance{right:calc(308px + env(safe-area-inset-right,0px));bottom:18px;width:44px;height:44px}}'+
+    'html.m-kids #bStance{display:none}';
+  document.head.appendChild(st);
+  function mk(id,txt,lab){var b=document.createElement('button');b.id=id;b.type='button';b.className='btn off';b.textContent=txt;b.setAttribute('aria-label',lab);document.body.appendChild(b);return b;}
+  ST.bJ=mk('bJump','ジャンプ','ジャンプ');ST.bS=mk('bStance','立ち','姿勢：押すとしゃがむ、長押しでふせる');
+  ST.bJ.addEventListener('pointerdown',function(e){e.preventDefault();stJump();});
+  ST.bS.addEventListener('pointerdown',function(e){e.preventDefault();ST.hOn=true;ST.hT=0;ST.hDone=false;try{ST.bS.setPointerCapture(e.pointerId);}catch(_){}});
+  function up(){if(ST.hOn&&!ST.hDone)stSet(ST.pose?0:1);ST.hOn=false;}                    // a short tap: crouch, or stand up
+  ST.bS.addEventListener('pointerup',up);ST.bS.addEventListener('pointercancel',function(){ST.hOn=false;});
+  window.addEventListener('keydown',function(e){
+    if(e.repeat||(e.target&&(e.target.id==='nm'||e.target.id==='rid'))||!me.inGame||paused||(typeof PK!=='undefined'&&PK&&PK.offer))return;
+    if(e.code==='KeyX')stJump();else if(e.code==='KeyC')stSet(ST.pose===1?0:1);else if(e.code==='KeyZ')stSet(ST.pose===2?0:2);
+  });
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){INLOOT={};
   if(myVeh)leaveVeh();
@@ -7231,8 +7290,8 @@ function enemyAttacks(dt){
     if(v.t===1){
       if(d<24){v.cd=rnd(1.0,1.6);
         if(los(v.x,v.z,me.x,me.z)){
-          var hit=Math.random()<0.55,sy=Math.sin(v.yaw),cy=Math.cos(v.yaw),mx=v.x+cy*0.45+sy*0.78,mz=v.z-sy*0.45+cy*0.78,my=1.36,pan=panOf(v.x,v.z);
-          var tx=me.x+(hit?0:rnd(-1,1)),ty=hit?1.25:rnd(1.7,2.4),tz=me.z+(hit?0:rnd(-1,1));
+          var hit=Math.random()<0.55*stHit(),sy=Math.sin(v.yaw),cy=Math.cos(v.yaw),mx=v.x+cy*0.45+sy*0.78,mz=v.z-sy*0.45+cy*0.78,my=1.36,pan=panOf(v.x,v.z);
+          var tx=me.x+(hit?0:rnd(-1,1)),ty=hit?1.25-ST.drop*0.8+ST.jy:rnd(1.7,2.4),tz=me.z+(hit?0:rnd(-1,1));
           if(!hit){var ex=tx-mx,ez=tz-mz,el2=Math.hypot(ex,ez)||1;tx+=ex/el2*25;tz+=ez/el2*25;}
           if(KIDS.water){fxStream(mx,my,mz,tx,ty,tz);if(hit)fxWater(tx,ty,tz,4,0,0.5,0);}else{tracer(mx,my,mz,tx,ty,tz,true);sparks.emit(mx,my,mz,0,0,0,0.07,1.1,0,8,5,2,1,0,0);}v.kick=1;
           if(KIDS.water)sSplash(clamp(1-d/60,0.15,0.85),pan);else sGun(clamp(1-d/60,0.15,0.85)*0.6,pan,true);
@@ -7269,7 +7328,7 @@ function fire(){
   var W=curW(),WG=KIDS.water;
   if(me.ammo<=0){nextShot=now+0.3;sClick(0,2400,0.18);startReload();return;}
   nextShot=now+W.rate*(1-0.05*lv)*pkv('rate');me.ammo--;runShot();fxShot(W);
-  var a=me.ads,sc=useScope()?a:0,sprd=(W.sp+0.007*me.amp+0.014*me.spread)*(1-0.78*a)*(1-0.9*sc)+(W.pel>1?W.sp*0.55*a:0),ex=0,ey=0,ez=0,ray=null,p;
+  var a=me.ads,sc=useScope()?a:0,sprd=(W.sp+0.007*me.amp+0.014*me.spread)*(1-0.78*a)*(1-0.9*sc)*stAcc()+(W.pel>1?W.sp*0.55*a:0),ex=0,ey=0,ez=0,ray=null,p;
   for(p=0;p<W.pel;p++){
     ray=aimRay(sprd);fxRay(ray);ex=ray.ox+ray.dx*ray.t;ey=ray.oy+ray.dy*ray.t;ez=ray.oz+ray.dz*ray.t;
     if(VS.on){var vh=vsShot(ray,W);if(vh){ex=ray.ox+ray.dx*vh;ey=ray.oy+ray.dy*vh;ez=ray.oz+ray.dz*vh;continue;}}
@@ -7284,7 +7343,7 @@ function fire(){
       if(p===0&&ray.t<70)sImpact(1-ray.t/70,panOf(ex,ez));
     }
   }
-  muzzleWorld(tmpV,1.3);if(myVeh&&ray)tmpV.set(ray.ox+ray.dx*1.7,ray.oy+ray.dy*1.7,ray.oz+ray.dz*1.7);else if(tps&&!scopedNow())tmpV.set(me.x-Math.sin(me.yaw)*0.8,meGy+1.3,me.z-Math.cos(me.yaw)*0.8);
+  muzzleWorld(tmpV,1.3);if(myVeh&&ray)tmpV.set(ray.ox+ray.dx*1.7,ray.oy+ray.dy*1.7,ray.oz+ray.dz*1.7);else if(tps&&!scopedNow())tmpV.set(me.x-Math.sin(me.yaw)*0.8,meGy+1.3-ST.drop+ST.jy,me.z-Math.cos(me.yaw)*0.8);
   if(WG)fxStream(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez);else if(W.pel>1||W.scope||me.shots%2===0)tracer(tmpV.x,tmpV.y,tmpV.z,ex,ey,ez,false);
   if(WG)fxWater(tmpV.x,tmpV.y,tmpV.z,1,ray.dx*2,ray.dy*2,ray.dz*2);else flashLight(tmpV.x,tmpV.y,tmpV.z,W.rec>0.03?7:4.5,16,1,0.72,0.4);
   if(!WG&&(Math.random()<0.5||W.rec>0.03))smoke.emit(tmpV.x,tmpV.y,tmpV.z,ray.dx*1.5,0.3,ray.dz*1.5,0.5,0.08,0.5,0.5,0.5,0.5,0.16,0,2);
@@ -7293,7 +7352,7 @@ function fire(){
   tmpV2.set(0.16*(1-a)+0.05,-0.13,-0.5);camera.localToWorld(tmpV2);
   if(!myVeh&&!WG)shell(tmpV2.x,tmpV2.y,tmpV2.z,m[0]*sr+m[4]*su+me.vx,m[1]*sr+m[5]*su,m[2]*sr+m[6]*su+me.vz);
   me.shots++;me.hit=[r1(ex),r1(ey),r1(ez)];
-  recP+=W.rec*(1-0.35*a)*rnd(0.85,1.2);recY+=rnd(-1,1)*W.rec*0.4*(1-0.4*a);kick=W.rec>0.03?2.2:1;boltT=0.06;flashT=WG?0:(W.rec>0.03?0.07:0.05);
+  recP+=W.rec*(1-0.35*a)*rnd(0.85,1.2)*stRec();recY+=rnd(-1,1)*W.rec*0.4*(1-0.4*a);kick=W.rec>0.03?2.2:1;boltT=0.06;flashT=WG?0:(W.rec>0.03?0.07:0.05);
   muzzle.rotation.z=Math.random()*6.283;muzzle.scale.setScalar(rnd(0.7,1.25)*(W.rec>0.03?1.5:1));muzzle2.scale.set(rnd(0.7,1.2),rnd(0.7,1.3),1);
   me.spread=Math.min(1,me.spread+(W.rate>0.5?0.6:0.2));
   if(WG)sSquirt(W.rec>0.03?1.6:1);else sGun(W.vol,0,false);
@@ -7641,11 +7700,11 @@ var FOGD=0.00021;
   sec('そのほか',[['キッズモード','あそぶ時間を決めて始める。時間になると「おしまい」と出て止まる。みずでっぽう（ロボットを故障させるだけ）か、じゅうを選べる。まなびモードにすると、乗り物に乗る前に かず・てんき・いろ・かたち のクイズが出る。ひとり用'],['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
   grid=grids[1];
   if(isTouch){
-    sec('動く・見る',[['画面の左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面の右をドラッグ','向きを変える'],['右上の丸いスティック','首だけ振って周りや後ろを見る']]);
+    sec('動く・見る',[['画面の左をドラッグ','移動'],['前へ大きく振り切って離す','走り続ける（左をもう一度触ると止まる）'],['画面の右をドラッグ','向きを変える'],['右上の丸いスティック','首だけ振って周りや後ろを見る'],['ジャンプ','その場でとぶ'],['姿勢のボタン','押すとしゃがむ・立つ。長押しでふせる（匍匐前進）。低いほどねらいが安定し、撃たれにくい']]);
     sec('戦う',[['射撃','長押しで連射'],['照準','サイトやスコープを覗く'],['リロード','弾を込める'],['AUTO','照準が敵に合うと自動で撃つ'],['銃のアイコン','押すたびに持ち替え'],['グレネードのアイコン','投げる']]);
     sec('そのほか',[['中央下のボタン','拾う・乗る・降りる・ワープ・品出し・買い物'],['リュック','持ち物を見る。包帯と応急処置セットはここから使う'],['右上の地図','タップで全体マップ（ピンチで拡大）'],['上の3つのボタン','視点・ポーズ・全画面'],['ポーズメニュー','視点の速さ、音、戦闘中の音楽を変えられる']]);
   }else{
-    sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（画面をクリックで固定）'],['V','一人称 / 三人称']]);
+    sec('動く・見る',[['W A S D','移動'],['Shift','ダッシュ'],['マウス','向きを変える（画面をクリックで固定）'],['V','一人称 / 三人称'],['X','ジャンプ'],['C','しゃがむ・立つ'],['Z','ふせる（匍匐前進）・立つ']]);
     sec('戦う',[['左クリック / Space','射撃'],['右クリック','サイトやスコープを覗く'],['R','リロード'],['Q','銃の持ち替え'],['G','グレネード'],['T','自動射撃の切り替え']]);
     sec('そのほか',[['E','拾う・乗る・降りる・ワープ・品出し・買い物'],['1 2 3','補給箱の中身を選んで拾う'],['H / J','包帯 / 応急処置セット'],['B','リュック'],['M','全体マップ（ホイールで拡大）'],['P','ポーズ'],['Tab','ランキング'],['Y / N','定型文チャット / マイク（協力プレイ中）'],['ポーズメニュー','視点の速さ、音、戦闘中の音楽を変えられる']]);
   }
@@ -7744,7 +7803,7 @@ function updateRemotePlayers(dt){
     v.hips.position.y=0.95-0.03*a+Math.abs(c)*0.03*a;
     var gy=SHIP?SHIP.h(v.x,v.z):0;if(v.bt>0)v.bt-=dt;var tw=runFace(v,v.yaw,(v.x-px)/Math.max(dt,1e-3),(v.z-pz)/Math.max(dt,1e-3),v.bt>0||o.hp<=0,dt);if(v.up)v.up.rotation.y=tw;
     v.g.position.set(v.x,gy,v.z);v.g.rotation.set(0,v.by,0);v.g.visible=!o.v;
-    if(o.hp<=0){v.g.rotation.x=-Math.PI/2;v.g.position.y=gy+0.25;}
+    if(o.hp<=0){v.g.rotation.x=-Math.PI/2;v.g.position.y=gy+0.25;}else{stRemote(v,o,dt);stPose(v,v.cr,v.prn,v.jy,gy,v.x,v.z);}
     if(o.s&&fin(o.s[0])){
       if(v.shots!==null&&o.s[0]!==v.shots&&fin(o.s[1])&&fin(o.s[2])&&fin(o.s[3])){
         var mxx=v.x-Math.sin(v.yaw)*0.9,mzz=v.z-Math.cos(v.yaw)*0.9;
@@ -7817,9 +7876,9 @@ function frame(tms,manual){
     wantFire=firing||mouseDown||!!keys.Space;
     jx=joy.x+((keys.KeyD||keys.ArrowRight)?1:0)-((keys.KeyA||keys.ArrowLeft)?1:0);jy=joy.y+((keys.KeyW||keys.ArrowUp)?1:0)-((keys.KeyS||keys.ArrowDown)?1:0);
     var jl=Math.hypot(jx,jy);if(jl>1){jx/=jl;jy/=jl;jl=1;}
-    var run=(keys.ShiftLeft||keys.ShiftRight||Math.hypot(joy.x,joy.y)>0.93)&&jy>0.4&&!wantFire&&!(adsHeld||adsTog)&&!carry;
+    var run=(keys.ShiftLeft||keys.ShiftRight||Math.hypot(joy.x,joy.y)>0.93)&&jy>0.4&&!wantFire&&!(adsHeld||adsTog)&&!carry&&!ST.pose;
     me.sprint+=((run?1:0)-me.sprint)*Math.min(1,dt*9);
-    var sn=Math.sin(me.yaw),cs=Math.cos(me.yaw),spd=(run?8.2:(carry?4.95-0.45*held.length:5.2-2.2*me.ads))*pkv('spd'),acc=Math.min(1,dt*(jl>0.05?9:12));
+    var sn=Math.sin(me.yaw),cs=Math.cos(me.yaw),spd=(run?8.2:(carry?4.95-0.45*held.length:5.2-2.2*me.ads))*pkv('spd'),acc=Math.min(1,dt*(jl>0.05?9:12));spd*=stSpd();
     me.vx+=((cs*jx-sn*jy)*spd-me.vx)*acc;me.vz+=((-sn*jx-cs*jy)*spd-me.vz)*acc;
     var ox=me.x,oz=me.z;
     me.x+=me.vx*dt;me.z+=me.vz*dt;
@@ -7832,6 +7891,7 @@ function frame(tms,manual){
     if(me.reload>0){me.reload-=dt;if(me.reload<=0)me.ammo=MAG;}
     for(i=0;i<others.length;i++){var o=others[i];if(!VS.on&&o.hp<=0&&Math.hypot(o.x-me.x,o.z-me.z)<4.5){banner('蘇生中',o.n+' を助けています',0.3);break;}}
   }
+  stTick(dt,!me.down&&!myVeh&&!ZIP.on);
   var hq=Math.min(1,dt*(lookPid===null?7:11));                 // head follows the stick, and swings back when it is let go
   headYaw+=(-lookV.x*3.0-headYaw)*hq;headPitch+=(-lookV.y*0.95-headPitch)*hq;
   if(me.down&&autoRun){autoRun=false;joy.x=joy.y=0;joyEl.classList.add('off');joyEl.classList.remove('lock');}
@@ -7842,7 +7902,7 @@ function frame(tms,manual){
   recP*=Math.exp(-dt*6.5);recY*=Math.exp(-dt*6.5);shake=Math.max(0,shake-dt*2.6);
   var bobY=Math.cos(me.bob*2)*0.022*me.amp*(1-0.6*me.ads),sk=shake*shake;
   var gyT=SHIP&&!myVeh?SHIP.hMe(me.x,me.z):0;meGy+=(gyT-meGy)*Math.min(1,dt*12);if(ZIP.on)meGy=ZIP.y;if(!myVeh)meAlt=meGy;
-  camera.position.set(me.x,(me.down?0.45:EYE+bobY)+meGy,me.z);
+  camera.position.set(me.x,(me.down?0.45:EYE+bobY-ST.drop+ST.jy)+meGy,me.z);
   camera.rotation.set(clamp(me.pitch+headPitch,-1.4,1.4)+recP+Math.sin(now*47)*0.012*sk,me.yaw+headYaw+recY+Math.sin(now*39+1)*0.012*sk,(me.down?0.5:-jx*0.008*me.amp)+Math.sin(now*31)*0.01*sk+Math.sin(me.bob)*0.0035*me.amp);
   var fov=baseFov*(1-(1-zoomNow())*me.ads)+me.sprint*4+fxFov(dt);
   if(Math.abs(fov-camera.fov)>0.01){camera.fov=fov;camera.updateProjectionMatrix();}
