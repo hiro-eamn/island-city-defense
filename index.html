@@ -1204,6 +1204,7 @@ function cparkBuild(AOP,W,roofM){
   /* Green Belt 2: the red running path that curves between the arena and the lawns */
   var RP9=[[655,-392],[665,-366],[667,-329],[686,-288],[711,-263],[723,-232]],RC9=rgb(0xa8483a);
   for(i=1;i<RP9.length;i++){var A9=RP9[i-1],B9=RP9[i],dx9=B9[0]-A9[0],dz9=B9[1]-A9[1],l9b=Math.hypot(dx9,dz9),nx9=-dz9/l9b*1.6,nz9=dx9/l9b*1.6,q9=[[A9[0]+nx9,A9[1]+nz9],[B9[0]+nx9,B9[1]+nz9],[B9[0]-nx9,B9[1]-nz9],[A9[0]-nx9,A9[1]-nz9]].map(function(e){return gB.v(e[0],0.075,e[1],0,1,0,RC9,e[0]*0.2,e[1]*0.2);});gB.t(q9[0],q9[1],q9[2]);gB.t(q9[0],q9[2],q9[3]);cpRing(gB,B9[0],B9[1],0,1.6,0.075,RC9,10);CPK.clr.push([[A9[0]+nx9,A9[1]+nz9],[B9[0]+nx9,B9[1]+nz9],[B9[0]-nx9,B9[1]-nz9],[A9[0]-nx9,A9[1]-nz9]]);}
+  [[1233,130],[1215,138],[1250,120],[1225,118]].forEach(function(q){var B=bAt(q[0],q[1]);if(B&&B.h<16&&!B.tl){B.tl=1;try{cap(roofM,cpGrow(B.p,0.96).p,B.h+0.3,[0.28,0.85,0.7],0.25);}catch(e){}}});   // the teal roofs north of the first-chome flats, as in the aerial imagery
   /* the arena forecourt: red paving and the big basketball mound */
   cpRing(gB,545,-147,0,9,0.07,rgb(0xa8483a),28);gw.add(SPH,rgb(0xc8401c),545,0,-147,0,0,0,4.2,2.3,4.2);
   [0,1.05,2.1].forEach(function(a5){for(var q5=0;q5<14;q5++){var t0=q5/14*Math.PI,t1=(q5+1)/14*Math.PI;gw.tube([545+Math.cos(a5)*Math.cos(t0)*4.25,Math.sin(t0)*2.33,-147+Math.sin(a5)*Math.cos(t0)*4.25],[545+Math.cos(a5)*Math.cos(t1)*4.25,Math.sin(t1)*2.33,-147+Math.sin(a5)*Math.cos(t1)*4.25],0.05,0.05,DK,4);}});
