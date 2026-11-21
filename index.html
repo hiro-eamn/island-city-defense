@@ -1012,6 +1012,13 @@ function cpRing(mb,cx,cz,r0,r1,y,col,n,a0,a1){
   for(var i=0;i<n;i++){var a=a0+(a1-a0)*i/n,b=a0+(a1-a0)*(i+1)/n,q=[[r0,a],[r1,a],[r1,b],[r0,b]].map(function(e){var x=cx+Math.cos(e[1])*e[0],z=cz+Math.sin(e[1])*e[0];return mb.v(x,y,z,0,1,0,col,x*0.2,z*0.2);});
     mb.t(q[0],q[1],q[2]);mb.t(q[0],q[2],q[3]);}
 }
+CPK.sw=[];CPK.sl=[];
+function cpSwing(wx,wz,barY,th,L,col){ // a seat on chains that really swings; the player can sit on it
+  var b=new GB(),DKc=[0.05,0.05,0.055];b.tube([-0.22,0,0],[-0.22,-L,0],0.015,0.015,DKc,4);b.tube([0.22,0,0],[0.22,-L,0],0.015,0.015,DKc,4);b.box(0.5,0.05,0.22,0,-L,0,col||rgb(0xc8322a));
+  var piv=new THREE.Group(),arm=new THREE.Mesh(b.geo(),stdMat({roughness:0.6}));arm.castShadow=true;piv.position.set(wx,barY,wz);piv.rotation.y=th;piv.add(arm);scene.add(piv);
+  CPK.sw.push({x:wx,z:wz,y:barY,th:th,L:L,arm:arm});
+}
+function cpFrame(n,kind,base,top,ty,lad,exits){CPK.sl.push({n:n,kind:kind,bx:base[0],bz:base[1],tx:top[0],tz:top[1],ty:ty,lx:lad?lad[0]:base[0],lz:lad?lad[1]:base[1],ex:exits});}
 function cparkEarly(){ // runs before anything is built: ground-level things the map lacks (open car parks with their bays)
   var NB=[];
   function lot(p,rows){ // p: corner, far corner along the rows, then round; rows: distances of each row of bays from the first edge
@@ -1308,7 +1315,7 @@ function cparkBuild(AOP,W,roofM){
     var sx0=-5.7,sx1=-2.5,sz=38.8;
     gp.tube([sx0,2.4,sz],[sx1,2.4,sz],0.06,0.06,SV,6);
     [sx0,sx1].forEach(function(x){gp.tube([x,2.4,sz],[x,0,sz-1.1],0.05,0.05,SV,6);gp.tube([x,2.4,sz],[x,0,sz+1.1],0.05,0.05,SV,6);});
-    [-4.9,-3.3].forEach(function(x){gp.tube([x-0.22,2.4,sz],[x-0.22,0.55,sz],0.015,0.015,DK,4);gp.tube([x+0.22,2.4,sz],[x+0.22,0.55,sz],0.015,0.015,DK,4);gp.box(0.5,0.05,0.2,x,0.53,sz,DK);});
+    [-4.9,-3.3].forEach(function(x){var w=cpL(x,sz);cpSwing(w[0],w[1],2.46,0.8727,1.9,DK);});
 
     /* zip line down the red strip */
     var zx=-9.4;
@@ -1360,7 +1367,7 @@ function cparkBuild(AOP,W,roofM){
     var wR0=7.6,wR1=13.2,wD=4;cap(gA,[gL(wR0-1,wD-3),gL(wR1+1,wD-3),gL(wR1+1,wD+3),gL(wR0-1,wD+3)],0.045,[1.2,1.08,0.84],0.2);CPK.clr.push([gL(wR0-1,wD-3),gL(wR1+1,wD-3),gL(wR1+1,wD+3),gL(wR0-1,wD+3)]);
     gq.tube([wR0,2.4,wD],[wR1,2.4,wD],0.06,0.06,B2,6);
     [wR0,(wR0+wR1)/2,wR1].forEach(function(x,q){if(q===1){gq.tube([x,2.4,wD],[x,2.4,wD],0.05,0.05,B2,6);return;}gq.tube([x,2.4,wD],[x,0,wD-1.2],0.055,0.055,B2,6);gq.tube([x,2.4,wD],[x,0,wD+1.2],0.055,0.055,B2,6);});
-    [wR0+1.1,wR0+2.3,wR1-2.3,wR1-1.1].forEach(function(x,q){var sw=(q%2?0.25:-0.18);gq.tube([x-0.22,2.4,wD],[x-0.22,0.55,wD+sw],0.015,0.015,DK,4);gq.tube([x+0.22,2.4,wD],[x+0.22,0.55,wD+sw],0.015,0.015,DK,4);gq.box(0.5,0.05,0.2,x,0.53,wD+sw,q<2?RD:YL);});
+    [wR0+1.1,wR0+2.3,wR1-2.3,wR1-1.1].forEach(function(x,q){var w=gL(x,wD);cpSwing(w[0],w[1],2.45,0.364,1.9,q<2?RD:YL);});
     [[wR0-0.8,wD-2.6,wR1+0.8,wD-2.6],[wR0-0.8,wD+2.6,wR1+0.8,wD+2.6]].forEach(function(f){gq.tube([f[0],0.5,f[1]],[f[2],0.5,f[3]],0.04,0.04,YL,5);[0,0.5,1].forEach(function(t){gq.box(0.08,0.5,0.08,f[0]+(f[2]-f[0])*t,0.25,f[1],YL);});});
     var qm=new THREE.Mesh(gq.geo(),stdMat({roughness:0.72}));qm.position.set(GS[0],0.05,GS[1]);qm.rotation.y=0.364;qm.castShadow=true;qm.receiveShadow=true;scene.add(qm);
 
@@ -1379,11 +1386,18 @@ function cparkBuild(AOP,W,roofM){
       var p0=L(0,0,1.35);gw.box(1.9,0.12,1.9,p0[0],1.35,p0[2],WD,0,q[2],0);gw.cyl(0.05,1.7,0.9,4,p0[0],3.4,p0[2],rgb(0x2f9a4a),0,q[2]+0.785,0);
       chute([L(0.9,0,1.35),L(2.2,0,0.8),L(3.8,0,0.2)],0.75,YL,YL);
       var a1=L(-0.9,0,1.35),b1=L(-2.6,0,0.1);beam(a1[0],a1[1],a1[2],b1[0],b1[1],b1[2],0.9,0.1,BL);
-      var cc5=addCol(rectP(x,z,1,1,q[2]),2.8);cc5.nn=true;
+      var cc5=addCol(rectP(x,z,1,1,q[2]),2.8);cc5.nn=true;var b6=L(-3.2,0,0),t6=L(0,0,0);cpFrame('すべり台の遊具','stairs',[b6[0],b6[2]],[t6[0],t6[2]],1.47,null,[{n:'黄色いすべり台',p:[L(0.9,0,1.45),L(2.2,0,0.9),L(3.8,0,0.3)]}]);
       if(q[3]){gw.tube(L(-2.6,4.6,2.3),L(2.6,4.6,2.3),0.06,0.06,BL,6);
         [-2.6,2.6].forEach(function(u5){gw.tube(L(u5,4.6,2.3),L(u5,3.5,0),0.05,0.05,BL,6);gw.tube(L(u5,4.6,2.3),L(u5,5.7,0),0.05,0.05,BL,6);});
-        [-1.3,0,1.3].forEach(function(u5){var t5=L(u5,4.6,2.3),b5=L(u5,4.6,0.55);gw.tube(t5,b5,0.02,0.02,DK,4);gw.box(0.5,0.05,0.2,b5[0],0.53,b5[2],RD,0,q[2],0);});}
+        [-1.3,0,1.3].forEach(function(u5){var t5=L(u5,4.6,2.3);cpSwing(t5[0],t5[2],2.3,q[2],1.75,RD);});}
     });
+    /* things you can ride: ladders on the big frame, and every slide registered with the way up and the way down */
+    var W3=function(f,P,dy){return P.map(function(q){var w=f(q[0],q[2]);return [w[0],q[1]+dy,w[1]];});};
+    [[tx,tz+1.62,0,2.3],[ux-1.02,uz,1.5708,3.1]].forEach(function(q){for(var r5=0.3;r5<q[3];r5+=0.3)gp.box(0.5,0.04,0.04,q[0],r5,q[1],SV,0,q[2],0);[-0.25,0.25].forEach(function(o){gp.box(0.05,q[3]+0.5,0.05,q[0]+(q[2]?0:o),(q[3]+0.5)/2,q[1]+(q[2]?o:0),YL);});});
+    cpFrame('六角の塔','ladder',cpL(tx,tz+2.5),cpL(tx,tz),2.34,cpL(tx,tz+1.75),[{n:'青いすべり台',p:W3(cpL,[[tx+1.2,2.2,tz+0.9],[5.9,0.25,34.6]],0.1)},{n:'赤いトンネル',p:W3(cpL,[[tx-1.3,2.3,tz+0.7],[-5.6,0.4,34.8]],0)}]);
+    cpFrame('高い台','ladder',cpL(ux-1.9,uz),cpL(ux,uz),3.14,cpL(ux-1.15,uz),[{n:'ローラーすべり台',roll:1,p:W3(cpL,[[-7.9,3,20.4],[-6.5,2.4,18.2],[-3.5,1.7,17.2],[0,1,16.8],[2.9,0.35,17.1]],0.1)}]);
+    cpFrame('小さい遊具','stairs',cpL(-20.5,12),cpL(-17.5,12),1.24,null,[{n:'赤いすべり台',p:W3(cpL,[[-16.5,1.1,12],[-15.3,0.6,12],[-14,0.15,12]],0.1)}]);
+    cpFrame('青いすべり台の遊具','stairs',gL(3.1,2),gL(-0.5,-0.5),1.42,null,[{n:'曲がったすべり台',p:W3(gL,[[-0.2,1.3,-1.4],[0.6,0.95,-2.6],[1.8,0.55,-3.2],[3.1,0.2,-3]],0.1)},{n:'まっすぐなすべり台',p:W3(gL,[[-1.2,1.3,0.4],[-2.4,0.15,3.4]],0.1)}]);
     var pm=new THREE.Mesh(gp.geo(),stdMat({roughness:0.72}));pm.position.set(CPK.O[0],0.06,CPK.O[1]);pm.rotation.y=0.8727;pm.castShadow=true;pm.receiveShadow=true;scene.add(pm);
   }
   gA.mesh(lvl(mGround(),2),0);
@@ -2506,7 +2520,7 @@ function headGeo(fs){ // a head, not a ball: pushed and pulled from a sphere so 
   for(i=0;i<37;i++){var a=i*W,b=a+W-1,nx=N.getX(a)+N.getX(b),ny=N.getY(a)+N.getY(b),nz=N.getZ(a)+N.getZ(b),l=Math.hypot(nx,ny,nz)||1;N.setXYZ(a,nx/l,ny/l,nz/l);N.setXYZ(b,nx/l,ny/l,nz/l);}
   return g;
 }
-function makePlayer(peer,name,face){ // the figure others see (and you, in third person and in the editor): faces -z
+function makePlayer(peer,name,face,pz){ // the figure others see (and you, in third person and in the editor): faces -z
   var F=cleanFace(face),hsh=0;for(var k=0;k<peer.length;k++)hsh=(hsh*31+peer.charCodeAt(k))>>>0;
   function hx(h){return rgb(parseInt(h.slice(1),16));}
   var TC=rgb(PCOL[hsh%PCOL.length]),SK=hx(skinHex(F)),TOP=hx(TOPC[F[10]]),BOT=hx(BOTC[F[11]]),of=F[9],WHT=[0.8,0.8,0.78],GN=[0.03,0.03,0.034],H=Math.PI/2;
@@ -2535,7 +2549,7 @@ function makePlayer(peer,name,face){ // the figure others see (and you, in third
   if(of===8){for(i=-3;i<=3;i++)b.box(0.006,0.5,0.006,i*0.055,0.36,-0.122,[0.05,0.08,0.2]);if(!F[8]&&!F[15]){b.add(SPH,TC,0,0.8,0,0,0,0,0.106,0.066,0.115);b.box(0.16,0.012,0.09,0,0.785,-0.14,TC);}}
   if(of===9){L([[-0.5,0.2,0.14],[-0.2,0.185,0.13],[0.1,0.172,0.12]],top,lo);b.oct(0.36,0.1,0.24,0,0.2,0,[0.5,0.08,0.08]);b.box(0.05,0.3,0.012,0.05,0.44,-0.122,dk,0,0,0.45);b.box(0.05,0.3,0.012,-0.05,0.44,-0.122,dk,0,0,-0.45);}
   // arms, in a ready hold on the rifle
-  var S1=[0.215,0.52,0],E1=[0.2,0.3,-0.14],W1=[0.06,0.3,-0.36],S2=[-0.215,0.52,0],E2=[-0.2,0.32,-0.2],W2=[0.03,0.3,-0.52];
+  var S1=[0.215,0.52,0],E1=[0.2,0.3,-0.14],W1=[0.06,0.3,-0.36],S2=[-0.215,0.52,0],E2=[-0.2,0.32,-0.2],W2=[0.03,0.3,-0.52];if(pz){E1=[0.5,0.66,0];W1=[0.8,0.86,-0.03];E2=[-0.5,0.66,0];W2=[-0.8,0.86,-0.03];}   // pz: both arms flung out and up, no rifle
   [[S1,E1,W1],[S2,E2,W2]].forEach(function(A){
     var s=A[0],e=A[1],w=A[2],m=[(s[0]+e[0])/2,(s[1]+e[1])/2,(s[2]+e[2])/2],f=[(e[0]+w[0])/2,(e[1]+w[1])/2-0.004,(e[2]+w[2])/2];
     if(short){M([s,m],[0.05,0.048],top);M([m,e],[0.044,0.038],SK,skb);}else M([s,m,e],[0.05,0.048,0.04],top);
@@ -2549,10 +2563,10 @@ function makePlayer(peer,name,face){ // the figure others see (and you, in third
     b.cyl(0.04,0.04,0.25,10,0,0.548,0.165,[0.11,0.095,0.07],0,0,H);
     [-1,1].forEach(function(d){b.box(0.04,0.4,0.014,d*0.105,0.4,-0.124,PK2,0.05);b.box(0.04,0.03,0.25,d*0.105,0.598,0.02,PK2);});}
   var GX=0.06,GY=0.335,G2=[0.07,0.072,0.078],G3=[0.012,0.012,0.014];                                      // the rifle: receiver, handguard, barrel, rail and sight, magazine, grip, stock
-  b.box(0.05,0.075,0.3,GX,GY,-0.3,GN);b.box(0.046,0.056,0.27,GX,GY+0.004,-0.585,G2);b.cyl(0.011,0.011,0.24,8,GX,GY+0.008,-0.83,G3,H);b.cyl(0.017,0.017,0.06,8,GX,GY+0.008,-0.96,G3,H);
+  if(!pz){b.box(0.05,0.075,0.3,GX,GY,-0.3,GN);b.box(0.046,0.056,0.27,GX,GY+0.004,-0.585,G2);b.cyl(0.011,0.011,0.24,8,GX,GY+0.008,-0.83,G3,H);b.cyl(0.017,0.017,0.06,8,GX,GY+0.008,-0.96,G3,H);
   b.box(0.02,0.014,0.5,GX,GY+0.045,-0.42,G3);b.box(0.034,0.045,0.075,GX,GY+0.075,-0.33,G3);b.box(0.012,0.03,0.012,GX,GY+0.065,-0.7,G3);
-  b.box(0.034,0.15,0.06,GX,GY-0.1,-0.36,G3,0.2);b.box(0.034,0.1,0.045,GX,GY-0.075,-0.2,G3,-0.3);b.box(0.04,0.06,0.2,GX+0.005,GY-0.005,-0.06,GN);b.box(0.046,0.11,0.03,GX+0.008,GY-0.02,0.05,G3);
-  if(of===0)[[0.2,0.3,-0.14],[-0.2,0.32,-0.2]].forEach(function(e){b.add(SPH,[0.04,0.045,0.032],e[0],e[1],e[2],0,0,0,0.05,0.05,0.05);});
+  b.box(0.034,0.15,0.06,GX,GY-0.1,-0.36,G3,0.2);b.box(0.034,0.1,0.045,GX,GY-0.075,-0.2,G3,-0.3);b.box(0.04,0.06,0.2,GX+0.005,GY-0.005,-0.06,GN);b.box(0.046,0.11,0.03,GX+0.008,GY-0.02,0.05,G3);}
+  if(of===0&&!pz)[[0.2,0.3,-0.14],[-0.2,0.32,-0.2]].forEach(function(e){b.add(SPH,[0.04,0.045,0.032],e[0],e[1],e[2],0,0,0,0.05,0.05,0.05);});
   if(F[8]){sp=new THREE.SphereGeometry(0.125,20,10,0,6.283,0,1.7);b.add(sp,of===0?[0.11,0.13,0.08]:TC,0,0.75,0.005,0,0,0,1,0.98,1.1);sp.dispose();b.box(0.012,0.14,0.012,0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);b.box(0.012,0.14,0.012,-0.1,0.66,-0.02,[0.03,0.03,0.03],0.3);}
   gcWear(F,b,TC,SK);if(GC&&GC.deco)GC.deco(b,lo);
   var hairM=hair3d(F,!!F[8]||gcHatCovers(F));if(hairM)inner.add(hairM);
@@ -4550,7 +4564,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年12月5日','公園の遊具で遊べるようになった：ブランコは近づくと「乗る」が出て、降りるまでギーコギーコとこぐ。「飛ぶ」でとびおりると、着地で両手を広げてポーズ／すべり台は、はしごや階段を登って（はしごは登る動きつき）、上から好きなすべり台をすべれる。中央公園・グリーンベルト3・香椎照葉北公園・照葉の森公園'],['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -4769,7 +4783,7 @@ function runFace(o,yaw,vx,vz,busy,dt){ // the body turns to where the feet are g
   d=yaw-o.by;return clamp(Math.atan2(Math.sin(d),Math.cos(d)),-0.5,0.5)*0.5;
 }
 function updBody(dt){
-  var show=tps&&me.inGame&&!myVeh&&!scopedNow(),key=JSON.stringify(myFace);
+  var show=tps&&me.inGame&&!myVeh&&!scopedNow()&&!(PLAY.pose>0),key=JSON.stringify(myFace);
   if(show&&(!myBody||myBodyKey!==key)){if(myBody)scene.remove(myBody.g);myBody=makePlayer('me',' ',myFace);myBody.g.remove(myBody.sp);myBodyKey=key;}
   if(myBody&&!show&&myBody.g.visible){myBody.g.visible=false;return;}
   if(!myBody)return;
@@ -4782,7 +4796,7 @@ function updBody(dt){
   myBody.up.rotation.set((aim+kick*0.035-rl*0.32)*(1-Math.min(1,Math.abs(tw)*3))+me.sprint*0.1,clamp(headYaw,-0.9,0.9)*0.55+s*0.07*a+tw,-s*0.03*a);
   myBody.flash.visible=flashT>0;if(myBody.flash.visible)myBody.flash.rotation.z=Math.random()*6.28;
   myBody.g.position.set(me.x,meGy,me.z);myBody.g.rotation.set(0,myBody.by,0);myBody.g.rotateX(-0.16*me.sprint-0.04*a);
-  if(me.down){myBody.g.rotation.x=-Math.PI/2;myBody.g.position.y=meGy+0.25;}else stPose(myBody,ST.cr,ST.pr,ST.jy,meGy,me.x,me.z);
+  if(me.down){myBody.g.rotation.x=-Math.PI/2;myBody.g.position.y=meGy+0.25;}else{stPose(myBody,ST.cr,ST.pr,ST.jy,meGy,me.x,me.z);if(PLAY.sit>0)plSit(myBody,PLAY.sit);}
 }
 function tpsCamera(){ // pull the camera back over the right shoulder; come in close when a wall is behind
   if(!tps||myVeh||scopedNow())return;
@@ -7371,6 +7385,102 @@ function stRemote(v,o,dt){ // other players: ease toward the stance they report
   });
 })();
 
+/* ---------- playground: ride the swings (get off, or leap off and land with arms out), climb the frames and go down the slides ---------- */
+var PLAY={mode:'',on:null,ex:null,t:0,ph:0,amp:0,drop:0,sit:0,y:0,vx:0,vy:0,vz:0,pose:0,body:null,bkey:'',tps0:null,fly:false,bF:null,u:0,snd:0,last:0,cd:0};
+function plEnd(){PLAY.mode='';PLAY.on=null;PLAY.ex=null;PLAY.drop=0;PLAY.sit=0;PLAY.fly=false;PLAY.cd=0.6;}
+function plSeat(S,phi,o){var d=-S.L*Math.sin(phi);o[0]=S.x+Math.sin(S.th)*d;o[1]=S.y-S.L*Math.cos(phi);o[2]=S.z+Math.cos(S.th)*d;return o;}
+function plPath(P,u,o){ // point at distance u along a polyline of [x,y,z]; returns false past the end
+  for(var i=1;i<P.length;i++){var A=P[i-1],B=P[i],l=Math.hypot(B[0]-A[0],B[1]-A[1],B[2]-A[2]);if(u<=l){var f=u/l;o[0]=A[0]+(B[0]-A[0])*f;o[1]=A[1]+(B[1]-A[1])*f;o[2]=A[2]+(B[2]-A[2])*f;return true;}u-=l;}
+  return false;
+}
+var plV=[0,0,0];
+function plSit(v,s){v.hips.position.y=0.95-0.39*s;v.lL.th.rotation.x=v.lR.th.rotation.x=1.42*s;v.lL.sh.rotation.x=v.lR.sh.rotation.x=-1.3*s;}   // seated: thighs level, shins hanging
+function plPoseOn(x,z,yaw){
+  var key=JSON.stringify(myFace);
+  if(!PLAY.body||PLAY.bkey!==key){if(PLAY.body)scene.remove(PLAY.body.g);PLAY.body=makePlayer('pose',' ',myFace,1);PLAY.body.g.remove(PLAY.body.sp);PLAY.bkey=key;}
+  var b=PLAY.body;b.g.visible=true;b.g.position.set(x,0,z);b.g.rotation.set(0,yaw,0);
+  b.lL.th.rotation.set(0,0,0.2);b.lR.th.rotation.set(0,0,-0.2);b.lL.sh.rotation.x=0;b.lR.sh.rotation.x=0;b.hips.position.y=0.93;b.up.rotation.set(-0.12,0,0);
+  PLAY.pose=1.5;
+  [523,659,784,1047].forEach(function(f,i){tone({f:f,dur:0.16,v:0.05,t0:i*0.09,type:'triangle'});});
+}
+function playTick(dt,use){
+  var S,i,d,bd,P=PLAY,p=plV;
+  if(P.cd>0)P.cd-=dt;
+  if(P.pose>0){ // the landing pose: arms out, a little bounce, then back to normal
+    P.pose-=dt;var b=P.body,k=Math.max(0,P.pose-1.2)/0.3;
+    if(b){b.hips.position.y=0.93-0.25*k;b.up.rotation.x=-0.12+0.5*k;}
+    me.vx=me.vz=0;
+    if(P.pose<=0){if(b)b.g.visible=false;if(P.tps0!==null){tps=P.tps0;P.tps0=null;}}
+  }
+  if(P.mode&&(me.down||myVeh||!me.inGame)){if(P.on&&P.on.arm)P.on.arm.rotation.x=0;plEnd();if(P.tps0!==null){tps=P.tps0;P.tps0=null;}}
+  if(P.bF){var showF=P.mode==='swing'||P.mode==='top';P.bF.classList.toggle('off',!showF);if(showF&&P.bF._m!==P.mode){P.bF._m=P.mode;P.bF.textContent=P.mode==='swing'?'飛ぶ':'おりる';}}
+  if(P.mode==='swing'){
+    S=P.on;P.amp+=(0.82-P.amp)*Math.min(1,dt*0.55);P.ph+=dt*2.3;
+    var phi=P.amp*Math.sin(P.ph),w=P.amp*Math.cos(P.ph)*2.3;S.arm.rotation.x=phi;plSeat(S,phi,p);
+    me.x=p[0];me.z=p[2];me.vx=me.vz=0;me.amp=0;P.y=p[1]-0.56;P.sit=1;P.drop=0.5;
+    var n=Math.floor(P.ph/Math.PI+0.5);if(n!==P.last){P.last=n;tone({f:n%2?560:470,f1:n%2?430:380,dur:0.22,v:0.035*P.amp/0.82+0.008,type:'triangle'});burst({dur:0.25,type:'bandpass',f:1900,q:6,v:0.02});}   // creak… creak…
+    if(P.fly){ // leap: carry the seat's speed forward and up
+      P.fly=false;var sp=Math.abs(S.L*w)*Math.cos(phi),sg=w>0?-1:1;if(sp<2.4){sp=3;sg=-1;}
+      P.vx=Math.sin(S.th)*sp*sg;P.vz=Math.cos(S.th)*sp*sg;P.vy=3.6+Math.abs(S.L*w)*Math.abs(Math.sin(phi))*0.6;P.y=p[1]-0.3;
+      me.yaw=Math.atan2(-P.vx,-P.vz);P.mode='fly';P.on=null;S.arm.rotation.x=phi*0.3;P.sw=S;P.drop=0;if(P.tps0===null){P.tps0=tps;tps=true;}
+      tone({f:320,f1:900,dur:0.35,v:0.05,type:'sine'});sStep(1.2);return;
+    }
+    promptTxt='降りる';promptAct=true;
+    if(use){S.arm.rotation.x=0;plSeat(S,0,p);me.x=p[0]-Math.sin(S.th)*1.1;me.z=p[2]-Math.cos(S.th)*1.1;plEnd();sStep(0.8);}
+    return;
+  }
+  if(P.mode==='fly'){
+    if(P.sw){P.sw.arm.rotation.x*=Math.exp(-dt*3);}
+    P.vy-=13*dt;P.y+=P.vy*dt;me.x+=P.vx*dt;me.z+=P.vz*dt;me.vx=me.vz=0;P.sit=0.6;
+    if(P.y<=0){P.y=0;if(P.sw){P.sw.arm.rotation.x=0;P.sw=null;}var lx=me.x,lz=me.z;plEnd();shake=Math.max(shake,0.5);sStep(1.5);burst({dur:0.2,type:'lowpass',f:220,v:0.35});plPoseOn(lx,lz,me.yaw+Math.PI);}
+    return;
+  }
+  if(P.mode==='climb'){
+    S=P.on;var lad=S.kind==='ladder',dur=lad?0.9+S.ty*0.55:0.6+S.ty*0.45;P.t+=dt/dur;
+    var t=Math.min(1,P.t),ax=lad?S.lx:S.bx,az=lad?S.lz:S.bz,f1=lad?Math.min(1,t/0.8):t,f2=lad?Math.max(0,(t-0.8)/0.2):t;
+    me.x=ax+(S.tx-ax)*(lad?f2:t);me.z=az+(S.tz-az)*(lad?f2:t);P.y=S.ty*f1;me.vx=me.vz=0;
+    me.yaw=Math.atan2(-(S.tx-S.bx),-(S.tz-S.bz));me.amp=1;me.bob+=dt*(lad?7:9);P.sit=lad?0.25:0;
+    P.snd-=dt;if(P.snd<=0){P.snd=lad?0.32:0.27;sStep(0.9);if(lad)sClick(0,1100,0.12);}
+    promptTxt=lad?'はしごを登っている…':'階段を登っている…';
+    if(P.t>=1){P.mode='top';P.sit=0;me.amp=0;}
+    return;
+  }
+  if(P.mode==='top'){
+    S=P.on;me.x=S.tx;me.z=S.tz;me.vx=me.vz=0;me.amp=0;P.y=S.ty;P.sit=0;P.drop=0;
+    var fx=-Math.sin(me.yaw),fz=-Math.cos(me.yaw),best=null;bd=-9;
+    for(i=0;i<S.ex.length;i++){var E=S.ex[i],ex=E.p[E.p.length-1][0]-S.tx,ez=E.p[E.p.length-1][2]-S.tz,el=Math.hypot(ex,ez)||1;d=(ex*fx+ez*fz)/el;if(d>bd){bd=d;best=E;}}
+    promptTxt=best.n+'をすべる'+(S.ex.length>1?'（向いている方）':'');promptAct=true;
+    if(P.fly){P.fly=false;me.x=S.bx;me.z=S.bz;plEnd();sStep(0.8);return;}
+    if(use){P.mode='slide';P.ex=best;P.u=0;P.t=1.6;P.snd=0;me.yaw=Math.atan2(-(best.p[1][0]-best.p[0][0]),-(best.p[1][2]-best.p[0][2]));tone({f:500,f1:900,dur:0.2,v:0.04,type:'sine'});}
+    return;
+  }
+  if(P.mode==='slide'){
+    P.t=Math.min(7.5,P.t+4.5*dt);P.u+=P.t*dt;
+    if(!plPath(P.ex.p,P.u,p)){var E2=P.ex.p,A=E2[E2.length-2],B=E2[E2.length-1],hl=Math.hypot(B[0]-A[0],B[2]-A[2])||1;me.x=B[0]+(B[0]-A[0])/hl*0.9;me.z=B[2]+(B[2]-A[2])/hl*0.9;plEnd();sStep(1.1);shake=Math.max(shake,0.2);tone({f:700,f1:1000,dur:0.15,v:0.04,type:'triangle'});return;}
+    me.x=p[0];me.z=p[2];me.vx=me.vz=0;me.amp=0;P.y=Math.max(0,p[1]-0.5);P.sit=1;P.drop=0.5;
+    P.snd-=dt;if(P.snd<=0){P.snd=P.ex.roll?0.07:0.3;if(P.ex.roll)sClick(0,1500+Math.random()*500,0.1);else burst({dur:0.4,type:'bandpass',f:700+P.t*90,q:0.7,v:0.07});}
+    promptTxt='すべっている！';
+    return;
+  }
+  if(P.pose>0||P.cd>0||promptAct||carry||me.down||myVeh||ST.pose===2||INB||!CPK.sw)return;
+  bd=1.9;S=null;for(i=0;i<CPK.sw.length;i++){var Q=CPK.sw[i];d=Math.hypot(me.x-Q.x,me.z-Q.z);if(d<bd){bd=d;S=Q;}}
+  if(S){promptTxt='ブランコに乗る';promptAct=true;
+    if(use){P.mode='swing';P.on=S;P.amp=0.12;P.ph=0;P.last=0;autoRun=false;joy.x=joy.y=0;me.yaw=S.th+Math.PI;sStep(0.7);tone({f:520,f1:440,dur:0.2,v:0.03,type:'triangle'});}
+    return;}
+  bd=2.1;S=null;for(i=0;i<CPK.sl.length;i++){var R=CPK.sl[i];d=Math.hypot(me.x-R.bx,me.z-R.bz);if(d<bd){bd=d;S=R;}}
+  if(S){promptTxt=(S.kind==='ladder'?'はしごを登る':'階段を登る')+'（'+S.n+'）';promptAct=true;
+    if(use){P.mode='climb';P.on=S;P.t=0;P.snd=0;autoRun=false;joy.x=joy.y=0;}}
+}
+(function(){
+  var st=document.createElement('style');
+  st.textContent='#bFly{position:fixed;left:50%;bottom:206px;transform:translateX(-50%);z-index:6;width:auto;height:46px;border-radius:23px;padding:0 22px;font-size:14px;border-color:#7fd0ff;color:#bfe6ff}'+
+    '@media (orientation:landscape) and (max-height:540px){#bFly{bottom:128px;height:40px}}';
+  document.head.appendChild(st);
+  var b=document.createElement('button');b.id='bFly';b.type='button';b.className='btn off';b.textContent='飛ぶ';document.body.appendChild(b);PLAY.bF=b;
+  b.addEventListener('pointerdown',function(e){e.preventDefault();if(PLAY.mode==='swing'||PLAY.mode==='top')PLAY.fly=true;});
+  window.addEventListener('keydown',function(e){if(e.repeat||!me.inGame||paused)return;if(e.code==='KeyX'&&(PLAY.mode==='swing'||PLAY.mode==='top'))PLAY.fly=true;});
+})();
+
 /* ---------- per-client logic ---------- */
 function resetSelf(){INLOOT={};
   if(myVeh)leaveVeh();
@@ -7846,7 +7956,7 @@ var FOGD=0.00021;
   sec('ライフ',[['♥ 3つ','ダウンすると1つ減って、その場ですぐ復活'],['最後の1つ','ダウンするとソロは最初から。協力は仲間が近づくと蘇生']]);
   sec('毒ガス',[['約3分ごと','安全エリアが狭まる。緑の外にいると体力が減り続ける'],['次の安全エリア','地図の白い点線の円。ガスが来る前に入っておく']]);
   sec('強くなる',[['補給箱','地図の緑の四角。銃・スコープ・グレネード・防弾チョッキ・包帯'],['Cマート','世界のコーラが集まるコンビニ。品出し：納品ケース（3つまで持てる）を同じ色に光る棚へ。続けて並べるとコンボ、白く光る「急ぎの棚」はボーナス。武器強化とコイン。早いほど高ランク'],['品出しの段位','並べるほど 見習い → 10級 … 1級 → 初段 … 十段 → 名人。Sランクやチャレンジの高得点で早く上がる'],['レジ','コインでコーラ・イカフライ・弾・装備を買う'],['回復','包帯、応急処置セット、コーラ、イカフライ、バーベキュー']]);
-  sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部。乗ったまま、見ている方向へ撃てる（視点を回せば横や後ろも）'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['クルーズ船','岸壁からタラップで乗船。3階吹き抜けのプロムナードに店が並ぶ。入ってすぐのクリスタルの螺旋階段を回って上の階へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える']]);
+  sec('移動と行ける場所',[['乗り物','車・バイク・ヘリは歩いて触れると乗れる。停まっている車もほぼ全部。乗ったまま、見ている方向へ撃てる（視点を回せば横や後ろも）'],['ワープ','スタートそばのゲート → ドーム → ピースワープ → 長崎（ジップラインあり）'],['クルーズ船','岸壁からタラップで乗船。3階吹き抜けのプロムナードに店が並ぶ。入ってすぐのクリスタルの螺旋階段を回って上の階へ'],['のるーと','利用券1枚でショッピングモールへ。限定の服が買える'],['公園の遊具','ブランコは近づいて「乗る」。こいでいる間に「飛ぶ」でとびおりる（PCは X）。すべり台は、はしごや階段のそばで「登る」→ 上で「すべる」']]);
   sec('そのほか',[['キッズモード','あそぶ時間を決めて始める。時間になると「おしまい」と出て止まる。みずでっぽう（ロボットを故障させるだけ）か、じゅうを選べる。まなびモードにすると、乗り物に乗る前に かず・てんき・いろ・かたち のクイズが出る。ひとり用'],['キャラモード','相棒のガーディアンがついてきて一緒に戦う。トップかポーズで切り替え'],['視点','一人称と三人称を切り替えられる']]);
   grid=grids[1];
   if(isTouch){
@@ -8041,18 +8151,18 @@ function frame(tms,manual){
     if(me.reload>0){me.reload-=dt;if(me.reload<=0)me.ammo=MAG;}
     for(i=0;i<others.length;i++){var o=others[i];if(!VS.on&&o.hp<=0&&Math.hypot(o.x-me.x,o.z-me.z)<4.5){banner('蘇生中',o.n+' を助けています',0.3);break;}}
   }
-  stTick(dt,!me.down&&!myVeh&&!ZIP.on);
+  stTick(dt,!me.down&&!myVeh&&!ZIP.on&&!PLAY.mode);
   var hq=Math.min(1,dt*(lookPid===null?7:11));                 // head follows the stick, and swings back when it is let go
   headYaw+=(-lookV.x*3.0-headYaw)*hq;headPitch+=(-lookV.y*0.95-headPitch)*hq;
   if(me.down&&autoRun){autoRun=false;joy.x=joy.y=0;joyEl.classList.add('off');joyEl.classList.remove('lock');}
   var useNow=useReq;updStores(dt);var stAct=promptAct;updVehicles(dt,jx,jy,useNow&&!stAct);
   var vhAct=promptAct;if(BBQ)BBQ.update(dt,useNow&&!vhAct);if(defT>0)defT-=dt;
-  var bqAct=promptAct;var mtAct=promptAct;updMeta(dt,useNow&&!bqAct);inTick(dt,useNow&&!mtAct&&!promptAct);
+  var bqAct=promptAct;var mtAct=promptAct;updMeta(dt,useNow&&!bqAct);inTick(dt,useNow&&!mtAct&&!promptAct);var inAct=promptAct;playTick(dt,useNow&&!inAct);
   me.spread=Math.max(0,me.spread-dt*2.2);
   recP*=Math.exp(-dt*6.5);recY*=Math.exp(-dt*6.5);shake=Math.max(0,shake-dt*2.6);
   var bobY=Math.cos(me.bob*2)*0.022*me.amp*(1-0.6*me.ads),sk=shake*shake;
-  var gyT=SHIP&&!myVeh?SHIP.hMe(me.x,me.z):0;meGy+=(gyT-meGy)*Math.min(1,dt*12);if(ZIP.on)meGy=ZIP.y;if(!myVeh)meAlt=meGy;
-  camera.position.set(me.x,(me.down?0.45:EYE+bobY-ST.drop+ST.jy)+meGy,me.z);
+  var gyT=SHIP&&!myVeh?SHIP.hMe(me.x,me.z):0;meGy+=(gyT-meGy)*Math.min(1,dt*12);if(ZIP.on)meGy=ZIP.y;if(PLAY.mode)meGy=PLAY.y;if(!myVeh)meAlt=meGy;
+  camera.position.set(me.x,(me.down?0.45:EYE+bobY-ST.drop-PLAY.drop+ST.jy)+meGy,me.z);
   camera.rotation.set(clamp(me.pitch+headPitch,-1.4,1.4)+recP+Math.sin(now*47)*0.012*sk,me.yaw+headYaw+recY+Math.sin(now*39+1)*0.012*sk,(me.down?0.5:-jx*0.008*me.amp)+Math.sin(now*31)*0.01*sk+Math.sin(me.bob)*0.0035*me.amp);
   var fov=baseFov*(1-(1-zoomNow())*me.ads)+me.sprint*4+fxFov(dt);
   if(Math.abs(fov-camera.fov)>0.01){camera.fov=fov;camera.updateProjectionMatrix();}
