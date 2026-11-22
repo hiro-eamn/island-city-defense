@@ -4687,7 +4687,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年12月11日','画面の細かい見た目を磨き直し（タイトルのボタンの並びと文字、カジノボタンに持っているコイン数、コインの枚数に桁区切り、ゲーム中の「しゃがむ」「ジャンプ」の文字、横画面のスロットの並び、ブラックジャックのカード置き場、縦画面の案内がボタンに重ならないように、スクロールバー）／公園の遊具で遊ぶとコインがもらえる（ブランコ・スプリングカーは10回ごとに+5、ブランコから飛んで着地すると飛んだ距離に応じて、ジャングルジムやロープのやぐらはてっぺんまで登る・飛び降りると高さに応じて、すべり台は長さと高さに応じて）'],['2026年12月10日','船にカジノ（スロット・ルーレット・ブラックジャック。コインで遊べる。タイトルの「カジノ」か、船内プロムナードのCASINO前から）／ランキングに「コイン」タブ／お助けロボットが船の上の階や屋上プールにもついてくる／クルーズ船を写真をもとに作り直し（白いバルコニーの帯、船尾の煙突とウォータースライダー、プールの彫刻、レーダードーム、ステンドグラス風の天井）／公園にスプリングカー（乗ってゆらせる）とジャングルジム、ロープのやぐらに登れる／クルーズ船の屋上にヘリポート（H）。ヘリで船の上を飛んで着陸でき、降りたら屋上デッキを歩ける／新しい版が出たら、タイトル画面で自動的に読み込み直す'],['2026年12月9日','ガチャを引くと映像が流れるように（機械が回ってカプセルが割れ、出たアイテムごとの場面とセリフ。SR以上は昇格演出あり。タップで飛ばせます）／センターマークスタワー・照葉ザ・タワー・オーシャン＆フォレストタワーと、ホテル下のショッピングモール、ポンプ場、センターマークスレジデンス・パークフロント・アーバンパレスの外観を写真に合わせた／コンテナターミナルのクレーンを赤白に、1基は実物と同じキリン模様に／戸建ての屋根を実際の街並みと同じ濃いグレー中心に'],['2026年12月8日','ジャンプしても画面は上下せず、キャラクターだけがとぶようにした'],['2026年12月7日','フォレストプレイス：門を入ってすぐに、石で縁取った丸い植え込みと木、その後ろに壁、壁の真後ろに駐車スペース／シェアテラスの中庭側をガラス張りに。木の軒天、白い細い柱、ウッドデッキ／中庭の芝生に白い輪とテラコッタ色の小道／02棟・03棟の入口に、黒いひさしと打ち放しの柱'],['2026年12月6日','フォレストプレイスを写真に合わせた：棟に白い縦の壁と茶色の帯、グレーのガラスの手すり／右の棟の入口に黒いひさしとタイルの柱／左の道に黒いひさしとチェーンのゲート／立体駐車場をグレーのルーバーと鉄骨の柱に、入口はステンレスのポールとチェーン／エントランスの中は、打ち放しの壁・本棚の壁・長いテーブル・紺のいす・庭の見える窓'],['2026年12月5日','フォレストプレイスの建物を写真の姿に：濃いグレーの棟を白いバルコニーの帯が囲み、上の階が段々に下がる／公園の遊具で遊べるようになった：ブランコは近づくと「乗る」が出て、降りるまでギーコギーコとこぐ。「飛ぶ」でとびおりると、着地で両手を広げてポーズ／すべり台は、はしごや階段を登って（はしごは登る動きつき）、上から好きなすべり台をすべれる。中央公園・グリーンベルト3・香椎照葉北公園・照葉の森公園'],['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年12月11日','仲間図鑑（タイトルの「仲間図鑑」から。60人の全身イラストと、レア度・武器・役割・人物紹介。SSRの10人は金色の枠と光の演出）／画面の細かい見た目を磨き直し（タイトルのボタンの並びと文字、カジノボタンに持っているコイン数、コインの枚数に桁区切り、ゲーム中の「しゃがむ」「ジャンプ」の文字、横画面のスロットの並び、ブラックジャックのカード置き場、縦画面の案内がボタンに重ならないように、スクロールバー）／公園の遊具で遊ぶとコインがもらえる（ブランコ・スプリングカーは10回ごとに+5、ブランコから飛んで着地すると飛んだ距離に応じて、ジャングルジムやロープのやぐらはてっぺんまで登る・飛び降りると高さに応じて、すべり台は長さと高さに応じて）'],['2026年12月10日','船にカジノ（スロット・ルーレット・ブラックジャック。コインで遊べる。タイトルの「カジノ」か、船内プロムナードのCASINO前から）／ランキングに「コイン」タブ／お助けロボットが船の上の階や屋上プールにもついてくる／クルーズ船を写真をもとに作り直し（白いバルコニーの帯、船尾の煙突とウォータースライダー、プールの彫刻、レーダードーム、ステンドグラス風の天井）／公園にスプリングカー（乗ってゆらせる）とジャングルジム、ロープのやぐらに登れる／クルーズ船の屋上にヘリポート（H）。ヘリで船の上を飛んで着陸でき、降りたら屋上デッキを歩ける／新しい版が出たら、タイトル画面で自動的に読み込み直す'],['2026年12月9日','ガチャを引くと映像が流れるように（機械が回ってカプセルが割れ、出たアイテムごとの場面とセリフ。SR以上は昇格演出あり。タップで飛ばせます）／センターマークスタワー・照葉ザ・タワー・オーシャン＆フォレストタワーと、ホテル下のショッピングモール、ポンプ場、センターマークスレジデンス・パークフロント・アーバンパレスの外観を写真に合わせた／コンテナターミナルのクレーンを赤白に、1基は実物と同じキリン模様に／戸建ての屋根を実際の街並みと同じ濃いグレー中心に'],['2026年12月8日','ジャンプしても画面は上下せず、キャラクターだけがとぶようにした'],['2026年12月7日','フォレストプレイス：門を入ってすぐに、石で縁取った丸い植え込みと木、その後ろに壁、壁の真後ろに駐車スペース／シェアテラスの中庭側をガラス張りに。木の軒天、白い細い柱、ウッドデッキ／中庭の芝生に白い輪とテラコッタ色の小道／02棟・03棟の入口に、黒いひさしと打ち放しの柱'],['2026年12月6日','フォレストプレイスを写真に合わせた：棟に白い縦の壁と茶色の帯、グレーのガラスの手すり／右の棟の入口に黒いひさしとタイルの柱／左の道に黒いひさしとチェーンのゲート／立体駐車場をグレーのルーバーと鉄骨の柱に、入口はステンレスのポールとチェーン／エントランスの中は、打ち放しの壁・本棚の壁・長いテーブル・紺のいす・庭の見える窓'],['2026年12月5日','フォレストプレイスの建物を写真の姿に：濃いグレーの棟を白いバルコニーの帯が囲み、上の階が段々に下がる／公園の遊具で遊べるようになった：ブランコは近づくと「乗る」が出て、降りるまでギーコギーコとこぐ。「飛ぶ」でとびおりると、着地で両手を広げてポーズ／すべり台は、はしごや階段を登って（はしごは登る動きつき）、上から好きなすべり台をすべれる。中央公園・グリーンベルト3・香椎照葉北公園・照葉の森公園'],['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -8209,6 +8209,751 @@ function playTick(dt,use){
   var cb=document.getElementById('csBtn'),sm=null;
   function coinTxt(){if(!cb)return;if(!sm){sm=document.createElement('small');cb.appendChild(sm);}var t='コイン '+Math.floor(coins).toLocaleString()+'枚';if(sm.textContent!==t)sm.textContent=t;}
   try{coinTxt();setInterval(function(){try{if(!me.inGame)coinTxt();}catch(e){}},2000);}catch(e){}
+})();
+
+var COMPANIONS=[
+  {
+    "id": "companion_01",
+    "slug": "haijima",
+    "name": "灰島",
+    "rarity": "R",
+    "weapon": "消音拳銃",
+    "role": "守護",
+    "bio": "仕えていた一家がいなくなったあとも屋敷の食卓を整え続けた執事。戦場でも仲間の身支度を整え、帰る場所を守ろうとする。",
+    "image": "/assets/companions/01-haijima.png",
+    "imageAlt": "灰島。消音拳銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_02",
+    "slug": "makabe",
+    "name": "真壁",
+    "rarity": "R",
+    "weapon": "レバーアクションライフル",
+    "role": "援護",
+    "bio": "避難列車に乗せられなかった人の顔を忘れられない元駅員。発車合図のように一定の間隔で正確に撃つ。",
+    "image": "/assets/companions/02-makabe.png",
+    "imageAlt": "真壁。レバーアクションライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_03",
+    "slug": "saegusa",
+    "name": "三枝",
+    "rarity": "R",
+    "weapon": "ボルトアクション狙撃銃",
+    "role": "狙撃",
+    "bio": "町の人を撮り続けた写真館主。最後に撮った一枚には誰も写っていなかった。ファインダー越しに敵の一瞬を捉える。",
+    "image": "/assets/companions/03-saegusa.png",
+    "imageAlt": "三枝。ボルトアクション狙撃銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_04",
+    "slug": "koharu",
+    "name": "小春",
+    "rarity": "R",
+    "weapon": "ポンプアクションショットガン",
+    "role": "制圧",
+    "bio": "給食のおばちゃん。食べられない子にパンを一つ多く渡していた。仲間に迫る敵をまとめて押し返す。",
+    "image": "/assets/companions/04-koharu.png",
+    "imageAlt": "小春。ポンプアクションショットガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_05",
+    "slug": "hayami",
+    "name": "速水",
+    "rarity": "R",
+    "weapon": "軽量サブマシンガン",
+    "role": "機動",
+    "bio": "届けられなかった手紙を鞄にしまったままの郵便配達員。走りながら短く撃ち、味方の道を切り開く。",
+    "image": "/assets/companions/05-hayami.png",
+    "imageAlt": "速水。軽量サブマシンガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_06",
+    "slug": "hasumi",
+    "name": "蓮見",
+    "rarity": "R",
+    "weapon": "連射式ピストル",
+    "role": "援護",
+    "bio": "客が置いていった服を直し続ける仕立て屋。仲間の服を補修し、近くから細かな援護射撃をする。",
+    "image": "/assets/companions/06-hasumi.png",
+    "imageAlt": "蓮見。連射式ピストルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_07",
+    "slug": "yoruno",
+    "name": "夜野",
+    "rarity": "R",
+    "weapon": "自動拳銃",
+    "role": "救護",
+    "bio": "夜勤看護師。助かった人と助けられなかった人の名前をノートに書いている。仲間に迫る敵を素早く撃ち返す。",
+    "image": "/assets/companions/07-yoruno.png",
+    "imageAlt": "夜野。自動拳銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_08",
+    "slug": "tokito",
+    "name": "時任",
+    "rarity": "R",
+    "weapon": "精密射撃用リボルバー",
+    "role": "精密",
+    "bio": "止まった時計を直す老店主。亡き妻の時計だけは直せない。敵の動く一瞬を待って撃つ。",
+    "image": "/assets/companions/08-tokito.png",
+    "imageAlt": "時任。精密射撃用リボルバーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_09",
+    "slug": "sakaguchi",
+    "name": "坂口",
+    "rarity": "R",
+    "weapon": "大型リボルバー",
+    "role": "護衛",
+    "bio": "避難便に乗せられなかった人が心残りの元バス運転手。仲間の撤退を援護する一発を放つ。",
+    "image": "/assets/companions/09-sakaguchi.png",
+    "imageAlt": "坂口。大型リボルバーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_10",
+    "slug": "makino",
+    "name": "牧野",
+    "rarity": "R",
+    "weapon": "セミオートライフル",
+    "role": "分析",
+    "bio": "燃えた図書館から貸出カードを持ち帰った司書。敵の弱点を調べ、正確な射撃で味方を導く。",
+    "image": "/assets/companions/10-makino.png",
+    "imageAlt": "牧野。セミオートライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_11",
+    "slug": "umeko",
+    "name": "梅子",
+    "rarity": "R",
+    "weapon": "短銃身ショットガン",
+    "role": "制圧",
+    "bio": "銭湯の番台を長年務めた女性。近づく敵を撃ち返し、仲間に休めと言い続ける。",
+    "image": "/assets/companions/11-umeko.png",
+    "imageAlt": "梅子。短銃身ショットガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_12",
+    "slug": "chigusa",
+    "name": "千草",
+    "rarity": "R",
+    "weapon": "単発式ライフル",
+    "role": "精密",
+    "bio": "戦火の中でも花を並べていた花屋の青年。一輪を飾るように狙いを定めて撃つ。",
+    "image": "/assets/companions/12-chigusa.png",
+    "imageAlt": "千草。単発式ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_13",
+    "slug": "niwa",
+    "name": "丹羽",
+    "rarity": "R",
+    "weapon": "精密セミオートピストル",
+    "role": "精密",
+    "bio": "歯科技工士。器用な手先で装備の隙間を狙う。緊張すると仲間の防具を噛み合わせが悪いと直す。",
+    "image": "/assets/companions/13-niwa.png",
+    "imageAlt": "丹羽。精密セミオートピストルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_14",
+    "slug": "shiraishi",
+    "name": "白石",
+    "rarity": "R",
+    "weapon": "消音ライフル",
+    "role": "潜行",
+    "bio": "戻らなかった客の上着を保管し続けるクリーニング店主。目立たない場所から静かに撃つ。",
+    "image": "/assets/companions/14-shiraishi.png",
+    "imageAlt": "白石。消音ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_15",
+    "slug": "kogure",
+    "name": "小暮",
+    "rarity": "R",
+    "weapon": "改造カービン",
+    "role": "通信",
+    "bio": "雑音から誰かの歌声を探すラジオ修理工。通信をつなぎ、合図と射撃で仲間を援護する。",
+    "image": "/assets/companions/15-kogure.png",
+    "imageAlt": "小暮。改造カービンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_16",
+    "slug": "sabae",
+    "name": "鯖江",
+    "rarity": "R",
+    "weapon": "ダブルバレルショットガン",
+    "role": "制圧",
+    "bio": "魚屋。魚の鮮度を見抜く目で敵の集団を見つけ、二発で押し返す。",
+    "image": "/assets/companions/16-sabae.png",
+    "imageAlt": "鯖江。ダブルバレルショットガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_17",
+    "slug": "amamiya",
+    "name": "雨宮",
+    "rarity": "R",
+    "weapon": "麻酔弾ライフル",
+    "role": "制圧",
+    "bio": "動物病院の獣医。戦場に残された動物を探し、敵もできるだけ殺さず動きを止める。",
+    "image": "/assets/companions/17-amamiya.png",
+    "imageAlt": "雨宮。麻酔弾ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_18",
+    "slug": "toda",
+    "name": "戸田",
+    "rarity": "R",
+    "weapon": "刻印弾付き拳銃",
+    "role": "標識",
+    "bio": "失われた人の名前を記録から消さない戸籍係。敵に目印をつけ、味方全員が狙いやすくする。",
+    "image": "/assets/companions/18-toda.png",
+    "imageAlt": "戸田。刻印弾付き拳銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_19",
+    "slug": "sonoda",
+    "name": "園田",
+    "rarity": "R",
+    "weapon": "連射式カービン",
+    "role": "護衛",
+    "bio": "保育士。怖いものは先生が追い払うと言い続け、仲間の前に立って撃つ。",
+    "image": "/assets/companions/19-sonoda.png",
+    "imageAlt": "園田。連射式カービンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_20",
+    "slug": "naruse",
+    "name": "成瀬",
+    "rarity": "R",
+    "weapon": "軽機関銃",
+    "role": "補給",
+    "bio": "深夜コンビニ店員。どんな状況でも必要な物を見つけ、仲間の進路を弾幕で支える。",
+    "image": "/assets/companions/20-naruse.png",
+    "imageAlt": "成瀬。軽機関銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_21",
+    "slug": "hino",
+    "name": "火野",
+    "rarity": "R",
+    "weapon": "焼夷弾ランチャー",
+    "role": "範囲攻撃",
+    "bio": "同じ場所で屋台を出し続けたラーメン屋の大将。炎で敵の集団を追い払う。",
+    "image": "/assets/companions/21-hino.png",
+    "imageAlt": "火野。焼夷弾ランチャーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_22",
+    "slug": "odagiri",
+    "name": "小田桐",
+    "rarity": "R",
+    "weapon": "二挺拳銃",
+    "role": "機動",
+    "bio": "銀行窓口の元行員。敵の動きを読み、左右からテンポよく撃つ。小銭を種類ごとに並べて持つ。",
+    "image": "/assets/companions/22-odagiri.png",
+    "imageAlt": "小田桐。二挺拳銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_23",
+    "slug": "tsuchiya",
+    "name": "土屋",
+    "rarity": "R",
+    "weapon": "狩猟用ライフル",
+    "role": "精密",
+    "bio": "畑を踏み荒らされたあと種だけを持って逃げた農家の娘。遠くの敵を落ち着いて撃つ。",
+    "image": "/assets/companions/23-tsuchiya.png",
+    "imageAlt": "土屋。狩猟用ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_24",
+    "slug": "koga",
+    "name": "古賀",
+    "rarity": "R",
+    "weapon": "ネイルガン型銃",
+    "role": "破壊",
+    "bio": "学校の用務員。校舎を直してきた手で、敵の装備や遮蔽物を撃ち崩す。腰に鍵束をつけている。",
+    "image": "/assets/companions/24-koga.png",
+    "imageAlt": "古賀。ネイルガン型銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_25",
+    "slug": "shunputei",
+    "name": "春風亭",
+    "rarity": "R",
+    "weapon": "特殊弾リボルバー",
+    "role": "攪乱",
+    "bio": "師匠を失った落語家の見習い。音や光の違う弾で敵を惑わせ、まだ最後まで演じられない噺を抱えている。",
+    "image": "/assets/companions/25-shunputei.png",
+    "imageAlt": "春風亭。特殊弾リボルバーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_26",
+    "slug": "tomurai",
+    "name": "弔",
+    "rarity": "R",
+    "weapon": "大口径ピストル",
+    "role": "護衛",
+    "bio": "葬儀屋の若主人。仲間が倒れないよう、迫る敵を一発で止める。戦闘後、仲間の名前を呼ぶ。",
+    "image": "/assets/companions/26-tomurai.png",
+    "imageAlt": "弔。大口径ピストルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_27",
+    "slug": "nagatani",
+    "name": "長谷",
+    "rarity": "R",
+    "weapon": "軽量ショットガン",
+    "role": "機動",
+    "bio": "靴職人。逃げる客の靴を片方だけ直せなかったことを悔やむ。近距離射撃で道を切り開く。",
+    "image": "/assets/companions/27-nagatani.png",
+    "imageAlt": "長谷。軽量ショットガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_28",
+    "slug": "shinohara",
+    "name": "篠原",
+    "rarity": "R",
+    "weapon": "バースト射撃ライフル",
+    "role": "護衛",
+    "bio": "裁判所の書記官。仲間をかばうように短い連射を重ねる。書類に残らない罪があると知っている。",
+    "image": "/assets/companions/28-shinohara.png",
+    "imageAlt": "篠原。バースト射撃ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_29",
+    "slug": "minami",
+    "name": "南",
+    "rarity": "R",
+    "weapon": "フレアガン",
+    "role": "攪乱",
+    "bio": "娘に見せるはずだった手品をまだ披露できていない手品師。光と煙で敵の視線を集める。",
+    "image": "/assets/companions/29-minami.png",
+    "imageAlt": "南。フレアガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_30",
+    "slug": "kazama",
+    "name": "風間",
+    "rarity": "R",
+    "weapon": "長距離ライフル",
+    "role": "偵察",
+    "bio": "嵐の予報を出せなかった気象観測員。風や煙の流れを読み、遠くから正確に撃つ。",
+    "image": "/assets/companions/30-kazama.png",
+    "imageAlt": "風間。長距離ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_31",
+    "slug": "ishibashi",
+    "name": "石橋",
+    "rarity": "R",
+    "weapon": "連射式ショットガン",
+    "role": "制圧",
+    "bio": "閉じ込められた人を助けられなかったエレベーター保守員。狭い場所で敵を押し返す。",
+    "image": "/assets/companions/31-ishibashi.png",
+    "imageAlt": "石橋。連射式ショットガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_32",
+    "slug": "asakura",
+    "name": "朝倉",
+    "rarity": "R",
+    "weapon": "拡声器付きライフル",
+    "role": "指揮",
+    "bio": "避難放送をしていた元アナウンサー。声で指示を出しながら敵を撃つ。緊張すると天気予報を始める。",
+    "image": "/assets/companions/32-asakura.png",
+    "imageAlt": "朝倉。拡声器付きライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_33",
+    "slug": "tetsu",
+    "name": "鉄",
+    "rarity": "R",
+    "weapon": "重機関銃",
+    "role": "重火器",
+    "bio": "町工場の旋盤工。息子の自転車ベルを作りかけたまま工場を失った。重い銃で仲間の前に弾幕を張る。",
+    "image": "/assets/companions/33-tetsu.png",
+    "imageAlt": "鉄。重機関銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_34",
+    "slug": "azusa",
+    "name": "梓",
+    "rarity": "R",
+    "weapon": "小型サブマシンガン",
+    "role": "機動",
+    "bio": "美容師。客の希望を必ず聞いてから髪を切る。身軽に動きながら敵の注意をそらす。",
+    "image": "/assets/companions/34-azusa.png",
+    "imageAlt": "梓。小型サブマシンガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_35",
+    "slug": "manabe",
+    "name": "真鍋",
+    "rarity": "R",
+    "weapon": "古式銃改造ライフル",
+    "role": "精密",
+    "bio": "故郷を失った考古学助手。古い銃の仕組みに詳しく、失われた町の名を石板から探す。",
+    "image": "/assets/companions/35-manabe.png",
+    "imageAlt": "真鍋。古式銃改造ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_36",
+    "slug": "kuga",
+    "name": "久我",
+    "rarity": "R",
+    "weapon": "車載機関銃",
+    "role": "輸送",
+    "bio": "行き先を告げず遠くまでと頼んだ客を忘れられないタクシー運転手。仲間を運びながら追手を撃つ。",
+    "image": "/assets/companions/36-kuga.png",
+    "imageAlt": "久我。車載機関銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_37",
+    "slug": "shirai",
+    "name": "白井",
+    "rarity": "R",
+    "weapon": "薬剤弾ライフル",
+    "role": "支援",
+    "bio": "薬が足りず誰に渡すか選んだ夜を悔やむ薬剤師。煙幕や足止めの弾で仲間を助ける。",
+    "image": "/assets/companions/37-shirai.png",
+    "imageAlt": "白井。薬剤弾ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_38",
+    "slug": "hoshino",
+    "name": "星野",
+    "rarity": "R",
+    "weapon": "照準補助付き狙撃銃",
+    "role": "狙撃",
+    "bio": "友達と見る約束をした流星群を一人で見た元天文部員。夜空を見るように遠くを狙う。",
+    "image": "/assets/companions/38-hoshino.png",
+    "imageAlt": "星野。照準補助付き狙撃銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_39",
+    "slug": "narumi",
+    "name": "鳴海",
+    "rarity": "R",
+    "weapon": "二連式ピストル",
+    "role": "補給",
+    "bio": "客の荷物を預かるホテルのベルボーイ。必要な物を届けながら左右の手で敵を撃つ。",
+    "image": "/assets/companions/39-narumi.png",
+    "imageAlt": "鳴海。二連式ピストルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_40",
+    "slug": "shiori",
+    "name": "栞",
+    "rarity": "R",
+    "weapon": "装填式ライフル",
+    "role": "記憶",
+    "bio": "焼けた古書店から栞を持ち出した店主。敵の行動を読み、一発ずつ狙いを定める。",
+    "image": "/assets/companions/40-shiori.png",
+    "imageAlt": "栞。装填式ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_41",
+    "slug": "nida",
+    "name": "荷田",
+    "rarity": "R",
+    "weapon": "グレネードランチャー",
+    "role": "範囲攻撃",
+    "bio": "引っ越し業者。人の荷物を勝手に開けない。重い武器で敵の集団を遠くから撃つ。",
+    "image": "/assets/companions/41-nida.png",
+    "imageAlt": "荷田。グレネードランチャーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_42",
+    "slug": "maki",
+    "name": "牧",
+    "rarity": "R",
+    "weapon": "ボール弾ランチャー",
+    "role": "投擲",
+    "bio": "野球場の球拾いをしていた元選手。硬球のような特殊弾で敵をよろめかせる。",
+    "image": "/assets/companions/42-maki.png",
+    "imageAlt": "牧。ボール弾ランチャーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_43",
+    "slug": "mizumori",
+    "name": "水守",
+    "rarity": "R",
+    "weapon": "高圧水流銃",
+    "role": "制圧",
+    "bio": "水道局の作業員。水が止まった町を救えなかった悔しさから、水流で敵を押し流す。",
+    "image": "/assets/companions/43-mizumori.png",
+    "imageAlt": "水守。高圧水流銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_44",
+    "slug": "shinozaki",
+    "name": "篠崎",
+    "rarity": "R",
+    "weapon": "自動拳銃",
+    "role": "危機回避",
+    "bio": "もしもに備えてと保険を売っていた営業マン。敵が攻撃する前に撃ち、仲間の被害を減らす。",
+    "image": "/assets/companions/44-shinozaki.png",
+    "imageAlt": "篠崎。自動拳銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_45",
+    "slug": "domon",
+    "name": "土門",
+    "rarity": "R",
+    "weapon": "種子弾ライフル",
+    "role": "支援",
+    "bio": "修道院の庭師。荒れ地に残る花を避けて歩き、種子弾で敵の視界を遮る。",
+    "image": "/assets/companions/45-domon.png",
+    "imageAlt": "土門。種子弾ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_46",
+    "slug": "amari",
+    "name": "甘利",
+    "rarity": "R",
+    "weapon": "自販機型ロケットランチャー",
+    "role": "重火器",
+    "bio": "同じ場所で缶コーヒーを買う客を待っている補充員。大きな弾で苦境をひっくり返す。",
+    "image": "/assets/companions/46-amari.png",
+    "imageAlt": "甘利。自販機型ロケットランチャーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_47",
+    "slug": "aota",
+    "name": "青田",
+    "rarity": "R",
+    "weapon": "塗料弾ランチャー",
+    "role": "標識",
+    "bio": "銭湯のペンキ絵師。色弾で敵の位置を知らせ、味方の射撃を助ける。",
+    "image": "/assets/companions/47-aota.png",
+    "imageAlt": "青田。塗料弾ランチャーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_48",
+    "slug": "morisaki",
+    "name": "森崎",
+    "rarity": "R",
+    "weapon": "照明弾ピストル",
+    "role": "偵察",
+    "bio": "迷子センター職員。名前の分からない相手をあなたと呼ぶ。光弾で隠れた敵をあぶり出す。",
+    "image": "/assets/companions/48-morisaki.png",
+    "imageAlt": "森崎。照明弾ピストルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_49",
+    "slug": "makuta",
+    "name": "幕田",
+    "rarity": "R",
+    "weapon": "フィルム弾カービン",
+    "role": "攪乱",
+    "bio": "閉館の日も最後まで上映を続けた映写技師。光る弾で敵の視界を乱し、残像に紛れて撃つ。",
+    "image": "/assets/companions/49-makuta.png",
+    "imageAlt": "幕田。フィルム弾カービンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_50",
+    "slug": "harita",
+    "name": "貼田",
+    "rarity": "R",
+    "weapon": "マーキング弾ライフル",
+    "role": "標識",
+    "bio": "町の掲示板を貼り替えていた職員。敵に目印をつけ、戦闘後も誰かのために掲示を残す。",
+    "image": "/assets/companions/50-harita.png",
+    "imageAlt": "貼田。マーキング弾ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_51",
+    "slug": "aoshima",
+    "name": "青島",
+    "rarity": "SSR",
+    "weapon": "船長用大型リボルバー",
+    "role": "指揮",
+    "bio": "乗客のいない船でも避難名簿を読み上げるクルーズ船の元船長。最後の航海で乗せられなかった人々を探している。",
+    "image": "/assets/companions/51-aoshima.png",
+    "imageAlt": "青島。船長用大型リボルバーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_52",
+    "slug": "reika",
+    "name": "玲花",
+    "rarity": "SSR",
+    "weapon": "フレアピストル",
+    "role": "攪乱",
+    "bio": "乗客が去ったあともラウンジで最後の曲を弾いた船内ピアニスト。光弾で敵を惑わせ、音のない航海を続ける。",
+    "image": "/assets/companions/52-reika.png",
+    "imageAlt": "玲花。フレアピストルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_53",
+    "slug": "kureha",
+    "name": "紅葉",
+    "rarity": "SSR",
+    "weapon": "自動拳銃",
+    "role": "潜行",
+    "bio": "戻らない客のために空室を整え続ける客室係。タオルを白鳥に折る癖があり、静かな廊下から敵を撃つ。",
+    "image": "/assets/companions/53-kureha.png",
+    "imageAlt": "紅葉。自動拳銃を手にした全身イラスト。"
+  },
+  {
+    "id": "companion_54",
+    "slug": "kurata",
+    "name": "倉田",
+    "rarity": "SSR",
+    "weapon": "空気圧リベットランチャー",
+    "role": "重火器",
+    "bio": "クルーズ船の機関長。沈黙した機関室の音を今も聞き分ける。重い工具銃で仲間を守る。",
+    "image": "/assets/companions/54-kurata.png",
+    "imageAlt": "倉田。空気圧リベットランチャーを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_55",
+    "slug": "akagi",
+    "name": "赤城",
+    "rarity": "SSR",
+    "weapon": "拡散式ショットガン",
+    "role": "護衛",
+    "bio": "試合終了間際の失点を悔やみ続ける元ゴールキーパー。手袋をはめたまま、広く散る射撃で味方を守る。",
+    "image": "/assets/companions/55-akagi.png",
+    "imageAlt": "赤城。拡散式ショットガンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_56",
+    "slug": "tachibana",
+    "name": "橘",
+    "rarity": "SSR",
+    "weapon": "バースト射撃カービン",
+    "role": "機動",
+    "bio": "決勝戦でゴールを決められなかった元ストライカー。相手の隙へ走り込み、短い連射で突破口を作る。",
+    "image": "/assets/companions/56-tachibana.png",
+    "imageAlt": "橘。バースト射撃カービンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_57",
+    "slug": "otoha",
+    "name": "音羽",
+    "rarity": "SSR",
+    "weapon": "支援カービン",
+    "role": "支援",
+    "bio": "選手全員の背番号を覚えていたクラブの用具係。自分の番号は一度もなかった。必要な味方に弾幕を届ける。",
+    "image": "/assets/companions/57-otoha.png",
+    "imageAlt": "音羽。支援カービンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_58",
+    "slug": "kurosaki",
+    "name": "黒崎",
+    "rarity": "SSR",
+    "weapon": "整備用カービン",
+    "role": "護衛",
+    "bio": "海辺の人工島と本土を結ぶ橋を点検していた保守技師。橋の向こうに残した人を思い、退路を守る。",
+    "image": "/assets/companions/58-kurosaki.png",
+    "imageAlt": "黒崎。整備用カービンを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_59",
+    "slug": "umisaki",
+    "name": "海咲",
+    "rarity": "SSR",
+    "weapon": "長距離ライフル",
+    "role": "偵察",
+    "bio": "島の海辺で渡り鳥を観察していた女性。鳥の群れを読むように遠くの敵を見つける。",
+    "image": "/assets/companions/59-umisaki.png",
+    "imageAlt": "海咲。長距離ライフルを手にした全身イラスト。"
+  },
+  {
+    "id": "companion_60",
+    "slug": "yashiro",
+    "name": "八代",
+    "rarity": "SSR",
+    "weapon": "信号拳銃",
+    "role": "偵察",
+    "bio": "海辺の高層住宅街で夜警をしていた警備員。灯りが消えた窓の住人を覚えており、光弾で仲間を導く。",
+    "image": "/assets/companions/60-yashiro.png",
+    "imageAlt": "八代。信号拳銃を手にした全身イラスト。"
+  }
+];
+
+/* ---------- companions: a picture book of the 60 characters. Data comes only from characters.json (injected by the build as COMPANIONS) ---------- */
+var CMP={ov:null,grid:null,det:null,list:[],flt:'all',cur:-1,btn:null};
+function cmpSrc(c){return String(c.image||'').replace(/^\//,'').replace(/\.png$/i,'.jpg');}   // served beside the page: assets/companions/NN-name.jpg
+function cmpEl(tag,cls,txt,par){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined&&txt!==null)e.textContent=txt;if(par)par.appendChild(e);if(tag==='button')e.type='button';return e;}
+function cmpImg(c,par){var im=document.createElement('img');im.alt=c.imageAlt||c.name;im.loading='lazy';im.decoding='async';im.draggable=false;
+  im.addEventListener('error',function(){im.style.display='none';par.classList.add('noimg');});im.src=cmpSrc(c);par.appendChild(im);return im;}
+function cmpDraw(){
+  var G=CMP.grid;G.textContent='';CMP.list=COMPANIONS.filter(function(c){return CMP.flt==='all'||c.rarity===CMP.flt;});
+  CMP.list.forEach(function(c,i){
+    var b=cmpEl('button','cmpC'+(c.rarity==='SSR'?' ssr':''),null,G);b.setAttribute('aria-label',c.name+'（'+c.rarity+'・'+c.role+'）');
+    cmpImg(c,b);cmpEl('i','cmpR',c.rarity,b);var f=cmpEl('span','cmpF',null,b);cmpEl('b','',c.name,f);cmpEl('small','',c.role+'・'+c.weapon,f);
+    b.addEventListener('click',function(){sClick(0,c.rarity==='SSR'?1200:900,0.2);cmpShow(i);});
+  });
+  CMP.cnt.textContent=CMP.list.length+'人';
+}
+function cmpShow(i){
+  var n=CMP.list.length;if(!n)return;i=(i%n+n)%n;CMP.cur=i;var c=CMP.list[i],D=CMP.det,ssr=c.rarity==='SSR';
+  D.textContent='';D.className=ssr?'ssr':'';
+  var box=cmpEl('div','cmpBox',null,D),pic=cmpEl('div','cmpPic',null,box);cmpImg(c,pic).loading='eager';if(ssr)cmpEl('i','cmpShine',null,pic);
+  var info=cmpEl('div','cmpInfo',null,box),hd=cmpEl('div','cmpHd',null,info);cmpEl('i','cmpR',c.rarity,hd);cmpEl('h3','',c.name,hd);
+  var dl=cmpEl('dl','',null,info);[['レア度',ssr?'SSR（レア）':'R'],['武器',c.weapon],['役割',c.role]].forEach(function(r){cmpEl('dt','',r[0],dl);cmpEl('dd','',r[1],dl);});
+  cmpEl('p','',c.bio,info);
+  var nav=cmpEl('div','cmpNav',null,info),pv=cmpEl('button','',"← 前の人",nav),nx=cmpEl('button','',"次の人 →",nav),cl=cmpEl('button','cl','一覧へ',nav);
+  pv.addEventListener('click',function(e){e.stopPropagation();sClick(0,800,0.15);cmpShow(i-1);});nx.addEventListener('click',function(e){e.stopPropagation();sClick(0,800,0.15);cmpShow(i+1);});
+  cl.addEventListener('click',function(e){e.stopPropagation();cmpHide();});
+  D.classList.remove('off');
+  if(ssr&&!reduceMotion)[784,1047,1319,1568].forEach(function(f,q){tone({f:f,dur:0.12,v:0.04,type:'triangle',t0:q*0.06,rv:0.3});});
+}
+function cmpHide(){CMP.det.classList.add('off');CMP.cur=-1;}
+function cmpOpen(){CMP.flt='all';CMP.tabs.forEach(function(t){t.classList.toggle('on',t._f==='all');});cmpDraw();CMP.ov.classList.remove('off');CMP.ov.scrollTop=0;}
+function cmpClose(){cmpHide();CMP.ov.classList.add('off');}
+(function(){
+  if(typeof COMPANIONS==='undefined'||!COMPANIONS.length)return;
+  var css=[
+  '#cmp{position:fixed;inset:0;z-index:15;background:#08121b;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:0 max(12px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));font-family:var(--body)}#cmp.off,#cmpD.off{display:none}',
+  '#cmpTop{position:sticky;top:0;z-index:3;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 0 10px;background:linear-gradient(180deg,#08121b 78%,rgba(8,18,27,0))}',
+  '#cmpTop h2{margin:0;font:800 17px var(--body);letter-spacing:.06em;color:var(--ink,#f2f6f8)}#cmpTop h2 small{margin-left:8px;font:600 12px var(--body);color:var(--dim,#a9bcc8)}',
+  '#cmpTabs{display:flex;gap:6px;margin-left:auto}#cmpTabs button,#cmpX{height:36px;padding:0 14px;border-radius:18px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);color:#f2f6f8;font:700 12.5px var(--body);cursor:pointer;white-space:nowrap}',
+  '#cmpTabs button.on{background:linear-gradient(180deg,#ffc93d,#ffa200);color:#1a1200;border-color:transparent}#cmpX{border-radius:9px;background:rgba(255,255,255,.14)}',
+  '#cmpGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;max-width:1100px;margin:0 auto}@media (max-width:560px){#cmpGrid{grid-template-columns:repeat(3,1fr);gap:7px}}',
+  '.cmpC{position:relative;aspect-ratio:2/3;padding:0;border-radius:10px;overflow:hidden;border:2px solid #56646f;background:#16222c;cursor:pointer;color:#fff;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.45);transition:transform .12s}.cmpC:active{transform:scale(.97)}',
+  '.cmpC img,.cmpPic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block}',
+  '.cmpC::after,.cmpPic::after{content:"";position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(180deg,rgba(4,8,12,0),rgba(4,8,12,.78) 58%,rgba(4,8,12,.95));pointer-events:none}',
+  '.cmpF{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:0 8px 7px;display:flex;flex-direction:column;gap:2px}.cmpF b{font:800 15px/1.15 var(--body);letter-spacing:.04em;text-shadow:0 1px 3px #000}.cmpF small{font:600 10px/1.25 var(--body);color:#d2dde5;text-shadow:0 1px 2px #000;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}',
+  '.cmpR{position:absolute;left:6px;top:6px;z-index:1;min-width:24px;padding:3px 6px;border-radius:5px;background:#3d6fd0;color:#fff;font:900 11px/1 var(--num,var(--body));font-style:normal;text-align:center;letter-spacing:.04em;box-shadow:0 2px 5px rgba(0,0,0,.5)}',
+  '.noimg{background:repeating-linear-gradient(135deg,#1a2732 0 10px,#16222c 10px 20px)}',
+  /* SSR: gold frame that turns, a glow, and a slow shine across the picture */
+  '.cmpC.ssr{border-color:transparent;background:linear-gradient(#16222c,#16222c) padding-box,conic-gradient(from var(--cmpA,0deg),#fff3b0,#f6c945,#b8791a,#fff3b0,#ff9de0,#8adcff,#fff3b0) border-box;box-shadow:0 0 0 1px rgba(255,220,120,.35),0 0 16px rgba(255,190,40,.45),0 4px 12px rgba(0,0,0,.5);animation:cmpTurn 4s linear infinite}',
+  '@property --cmpA{syntax:"<angle>";inherits:false;initial-value:0deg}@keyframes cmpTurn{to{--cmpA:360deg}}',
+  '.cmpC.ssr .cmpR,#cmpD.ssr .cmpR{background:linear-gradient(135deg,#fff3b0,#f6c945 45%,#ff8fd8 75%,#8adcff);color:#3a2400;box-shadow:0 0 10px rgba(255,210,90,.8)}.cmpC.ssr .cmpF b{color:#ffe9a8}',
+  '.cmpC.ssr::before,.cmpShine{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.34) 50%,transparent 62%);background-size:260% 100%;animation:cmpSh 3.4s ease-in-out infinite;pointer-events:none}@keyframes cmpSh{0%,55%{background-position:130% 0}100%{background-position:-130% 0}}',
+  /* detail */
+  '#cmpD{position:fixed;inset:0;z-index:16;display:flex;align-items:center;justify-content:center;background:rgba(3,7,11,.9);padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));font-family:var(--body);overflow-y:auto}',
+  '#cmpD.ssr{background:radial-gradient(ellipse at 50% 40%,rgba(120,80,10,.55),rgba(3,7,11,.94) 70%)}',
+  '.cmpBox{display:flex;gap:16px;width:100%;max-width:760px;max-height:100%;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.2);border-top:3px solid var(--signal,#ffb000);background:linear-gradient(180deg,rgba(24,46,66,.98),rgba(9,20,32,.99));box-shadow:0 22px 60px rgba(0,0,0,.6);animation:cmpIn .22s ease-out}@keyframes cmpIn{from{transform:translateY(10px) scale(.97);opacity:0}}',
+  '#cmpD.ssr .cmpBox{border-color:rgba(255,215,110,.75);border-top-color:#ffe08a;box-shadow:0 0 0 1px rgba(255,220,120,.3),0 0 46px rgba(255,190,40,.4),0 22px 60px rgba(0,0,0,.6)}',
+  '.cmpPic{position:relative;flex:0 0 auto;height:min(72vh,480px);aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:#16222c}.cmpPic::after{height:26%}',
+  '.cmpInfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;color:#f2f6f8}.cmpHd{display:flex;align-items:center;gap:10px}.cmpHd .cmpR{position:static;font-size:13px;padding:5px 9px}.cmpHd h3{margin:0;font:800 24px/1.1 var(--body);letter-spacing:.06em}#cmpD.ssr .cmpHd h3{color:#ffe9a8;text-shadow:0 0 16px rgba(255,190,40,.55)}',
+  '.cmpInfo dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font:600 13.5px/1.4 var(--body)}.cmpInfo dt{color:#a9bcc8;font-weight:600;white-space:nowrap}.cmpInfo dd{margin:0}',
+  '.cmpInfo p{margin:0;padding:10px 12px;border-radius:9px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);font:400 13.5px/1.75 var(--body);color:#e2eaf0;text-wrap:pretty}',
+  '.cmpNav{display:flex;gap:8px;margin-top:auto}.cmpNav button{flex:1;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.05));color:#f2f6f8;font:700 13px var(--body);cursor:pointer;white-space:nowrap}.cmpNav .cl{background:linear-gradient(180deg,#ffc93d,#ffa200);color:#1a1200;border-color:transparent}',
+  '@media (max-width:560px){#cmpD{align-items:flex-start}.cmpBox{flex-direction:column;gap:10px}.cmpPic{width:min(62vw,250px);height:auto;align-self:center}.cmpHd h3{font-size:21px}}',
+  '@media (orientation:landscape) and (max-height:540px){.cmpPic{height:calc(100vh - 46px)}.cmpInfo{gap:7px}.cmpInfo p{font-size:12.5px;line-height:1.6;padding:8px 10px}.cmpNav button{height:38px}}',
+  '@media (prefers-reduced-motion:reduce){.cmpC.ssr,.cmpC.ssr::before,.cmpShine,.cmpBox{animation:none}}',
+  /* the way in, on the title */
+  '#cmpBtn{height:46px;padding:0 14px;font:700 14px var(--body);color:#d9ecff;background:linear-gradient(180deg,rgba(70,130,200,.3),rgba(20,50,90,.3));border:1px solid rgba(138,200,255,.75);border-radius:9px;display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0;white-space:nowrap;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.12)}',
+  '#cmpBtn i{flex:none;width:16px;height:22px;border-radius:3px;background:linear-gradient(160deg,#fff3b0,#f6c945 55%,#8a5a08);border:1px solid rgba(255,255,255,.75);box-shadow:5px 2px 0 -1px #7fb4e6}#cmpBtn small{margin-left:auto;font:600 11px/1 var(--body);color:#bcd8f2}',
+  '#gcRow.c3{grid-template-columns:1fr 1fr 1fr}@media (max-width:700px){#gcRow.c3{grid-template-columns:1fr 1fr}#gcRow.c3 #cmpBtn{grid-column:1/-1;height:40px}}html.m-kids #cmpBtn{display:none}'
+  ];
+  var st=document.createElement('style');st.textContent=css.join('\n');document.head.appendChild(st);
+  var ov=cmpEl('div','off',null,document.body);ov.id='cmp';CMP.ov=ov;
+  var top=cmpEl('div','',null,ov);top.id='cmpTop';var h=cmpEl('h2','','仲間図鑑',top);CMP.cnt=cmpEl('small','','',h);
+  var tabs=cmpEl('div','',null,top);tabs.id='cmpTabs';CMP.tabs=[['all','すべて'],['SSR','SSR'],['R','R']].map(function(t){var b=cmpEl('button','',t[1],tabs);b._f=t[0];
+    b.addEventListener('click',function(){sClick(0,900,0.15);CMP.flt=t[0];CMP.tabs.forEach(function(x){x.classList.toggle('on',x===b);});cmpDraw();ov.scrollTop=0;});return b;});
+  var x=cmpEl('button','','とじる',top);x.id='cmpX';x.addEventListener('click',function(){sClick(0,700,0.2);cmpClose();});
+  CMP.grid=cmpEl('div','',null,ov);CMP.grid.id='cmpGrid';
+  var det=cmpEl('div','off',null,document.body);det.id='cmpD';CMP.det=det;det.addEventListener('click',function(e){if(e.target===det)cmpHide();});
+  window.addEventListener('keydown',function(e){if(CMP.ov.classList.contains('off'))return;if(e.code==='Escape'){if(CMP.cur>=0)cmpHide();else cmpClose();}else if(CMP.cur>=0&&e.code==='ArrowRight')cmpShow(CMP.cur+1);else if(CMP.cur>=0&&e.code==='ArrowLeft')cmpShow(CMP.cur-1);});
+  var row=document.getElementById('gcRow');
+  if(row){var b=cmpEl('button','',null,row);b.id='cmpBtn';cmpEl('i','',null,b);b.appendChild(document.createTextNode('仲間図鑑'));cmpEl('small','',COMPANIONS.length+'人',b);row.classList.add('c3');CMP.btn=b;b.addEventListener('click',function(){sClick(0,900,0.2);cmpOpen();});}
 })();
 
 /* ---------- per-client logic ---------- */
