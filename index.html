@@ -1945,7 +1945,7 @@ function carGeo(mdl,paint,noW){
   // gantry cranes standing on the mapped crane rails (scenery)
   var RED0=rgb(0xc8402c),WHT=rgb(0xe6e9eb),DRK=rgb(0x3a3f45),craneMat=stdMat({roughness:0.55,metalness:0.35});
   D.cranes.forEach(function(c,ci){
-    var x=c[0]/10,z=c[1]/10,an=c[2],ga=Math.max(16,c[3]/10)/2,th=-an,gb=new GB(),GIR=ci===1,RED=GIR?rgb(0xe8b82a):RED0,BRN=rgb(0x7a4a1c);   // one crane wears the giraffe pattern, as the real terminal's does; the rest are red with white bands
+    var x=c[0]/10,z=c[1]/10,an=c[2],ga=Math.max(16,c[3]/10)/2,th=-an,gb=new GB(),GIR=ci===Math.min(4,D.cranes.length-1),RED=GIR?rgb(0xe8b82a):RED0,BRN=rgb(0x7a4a1c);   // one crane wears the giraffe pattern, as the real terminal's does; the rest are red with white bands
     [[-9,-ga],[9,-ga],[-9,ga],[9,ga]].forEach(function(o,k){
       if(!GIR){gb.box(1.8,3,1.8,o[0],11,o[1],WHT);gb.box(1.8,3,1.8,o[0],27,o[1],WHT);return;}
       for(var y=4;y<38;y+=3.3){gb.box(1.8,1.5,1.05,o[0],y+(k%2)*1.1,o[1]+(((y*7+k)|0)%3-1)*0.3,BRN);gb.box(1.05,1.3,1.8,o[0]+(((y*5+k)|0)%3-1)*0.3,y+1.7,o[1],BRN);}});
