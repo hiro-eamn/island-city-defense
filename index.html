@@ -2613,6 +2613,7 @@ function makePlayer(peer,name,face,pz){ // the figure others see (and you, in th
   var top=of===0?[0.10,0.12,0.075]:(of===7?[0.03,0.025,0.02]:(of===8?[0.82,0.82,0.8]:TOP)),bot=of===0?[0.085,0.10,0.065]:(of===3||of===4||of===9?[TOP[0]*0.9,TOP[1]*0.9,TOP[2]*0.9]:(of===8?[0.82,0.82,0.8]:BOT)),short=of===1||of===6,sleeve=short?SK:top,hand=of===0?[0.028,0.03,0.026]:SK,
       shoe=of===0||of===5?[0.02,0.02,0.02]:(of===3?[0.015,0.012,0.01]:[0.75,0.75,0.73]),dk=[top[0]*0.72,top[1]*0.72,top[2]*0.72];
   var GC=gcSuit(F);if(GC){of=10+F[18];top=GC.top;bot=GC.bot;short=!!GC.short;sleeve=short?SK:top;hand=SK;shoe=GC.shoe||[0.75,0.75,0.73];dk=[top[0]*0.72,top[1]*0.72,top[2]*0.72];}
+  var OV=makePlayer.ov;if(OV&&!GC){top=OV.top;bot=OV.bot;short=false;sleeve=top;dk=[top[0]*0.72,top[1]*0.72,top[2]*0.72];shoe=[0.05,0.045,0.04];}   // a companion wears the colours of their picture
   if(F[15])F[8]=0;
   var g=new THREE.Group(),hips=new THREE.Group(),b=new GB(),skb=new GB(),lo=new GB(),up=new THREE.Group(),inner=new THREE.Group(),sp,i,WH1=[1,1,1];
   g.rotation.order='YXZ';hips.position.y=0.95;g.add(hips);up.position.y=0.12;inner.position.y=-0.12;up.add(inner);hips.add(up);   // everything above the belt turns at the waist
@@ -4687,7 +4688,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年12月11日','仲間図鑑（タイトルの「仲間図鑑」から。60人の全身イラストと、レア度・武器・役割・人物紹介。SSRの10人は金色の枠と光の演出）／画面の細かい見た目を磨き直し（タイトルのボタンの並びと文字、カジノボタンに持っているコイン数、コインの枚数に桁区切り、ゲーム中の「しゃがむ」「ジャンプ」の文字、横画面のスロットの並び、ブラックジャックのカード置き場、縦画面の案内がボタンに重ならないように、スクロールバー）／公園の遊具で遊ぶとコインがもらえる（ブランコ・スプリングカーは10回ごとに+5、ブランコから飛んで着地すると飛んだ距離に応じて、ジャングルジムやロープのやぐらはてっぺんまで登る・飛び降りると高さに応じて、すべり台は長さと高さに応じて）'],['2026年12月10日','船にカジノ（スロット・ルーレット・ブラックジャック。コインで遊べる。タイトルの「カジノ」か、船内プロムナードのCASINO前から）／ランキングに「コイン」タブ／お助けロボットが船の上の階や屋上プールにもついてくる／クルーズ船を写真をもとに作り直し（白いバルコニーの帯、船尾の煙突とウォータースライダー、プールの彫刻、レーダードーム、ステンドグラス風の天井）／公園にスプリングカー（乗ってゆらせる）とジャングルジム、ロープのやぐらに登れる／クルーズ船の屋上にヘリポート（H）。ヘリで船の上を飛んで着陸でき、降りたら屋上デッキを歩ける／新しい版が出たら、タイトル画面で自動的に読み込み直す'],['2026年12月9日','ガチャを引くと映像が流れるように（機械が回ってカプセルが割れ、出たアイテムごとの場面とセリフ。SR以上は昇格演出あり。タップで飛ばせます）／センターマークスタワー・照葉ザ・タワー・オーシャン＆フォレストタワーと、ホテル下のショッピングモール、ポンプ場、センターマークスレジデンス・パークフロント・アーバンパレスの外観を写真に合わせた／コンテナターミナルのクレーンを赤白に、1基は実物と同じキリン模様に／戸建ての屋根を実際の街並みと同じ濃いグレー中心に'],['2026年12月8日','ジャンプしても画面は上下せず、キャラクターだけがとぶようにした'],['2026年12月7日','フォレストプレイス：門を入ってすぐに、石で縁取った丸い植え込みと木、その後ろに壁、壁の真後ろに駐車スペース／シェアテラスの中庭側をガラス張りに。木の軒天、白い細い柱、ウッドデッキ／中庭の芝生に白い輪とテラコッタ色の小道／02棟・03棟の入口に、黒いひさしと打ち放しの柱'],['2026年12月6日','フォレストプレイスを写真に合わせた：棟に白い縦の壁と茶色の帯、グレーのガラスの手すり／右の棟の入口に黒いひさしとタイルの柱／左の道に黒いひさしとチェーンのゲート／立体駐車場をグレーのルーバーと鉄骨の柱に、入口はステンレスのポールとチェーン／エントランスの中は、打ち放しの壁・本棚の壁・長いテーブル・紺のいす・庭の見える窓'],['2026年12月5日','フォレストプレイスの建物を写真の姿に：濃いグレーの棟を白いバルコニーの帯が囲み、上の階が段々に下がる／公園の遊具で遊べるようになった：ブランコは近づくと「乗る」が出て、降りるまでギーコギーコとこぐ。「飛ぶ」でとびおりると、着地で両手を広げてポーズ／すべり台は、はしごや階段を登って（はしごは登る動きつき）、上から好きなすべり台をすべれる。中央公園・グリーンベルト3・香椎照葉北公園・照葉の森公園'],['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年12月11日','仲間図鑑とキャラガチャ（タイトルの「仲間図鑑」から。毎朝6時に1日1回引ける。60人の全身イラストと、レア度・武器・役割・人物紹介。SSRの10人は金色の枠と光の演出。仲間になった人は、お助けロボットの代わりに戦場へ連れて行ける）／画面の細かい見た目を磨き直し（タイトルのボタンの並びと文字、カジノボタンに持っているコイン数、コインの枚数に桁区切り、ゲーム中の「しゃがむ」「ジャンプ」の文字、横画面のスロットの並び、ブラックジャックのカード置き場、縦画面の案内がボタンに重ならないように、スクロールバー）／公園の遊具で遊ぶとコインがもらえる（ブランコ・スプリングカーは10回ごとに+5、ブランコから飛んで着地すると飛んだ距離に応じて、ジャングルジムやロープのやぐらはてっぺんまで登る・飛び降りると高さに応じて、すべり台は長さと高さに応じて）'],['2026年12月10日','船にカジノ（スロット・ルーレット・ブラックジャック。コインで遊べる。タイトルの「カジノ」か、船内プロムナードのCASINO前から）／ランキングに「コイン」タブ／お助けロボットが船の上の階や屋上プールにもついてくる／クルーズ船を写真をもとに作り直し（白いバルコニーの帯、船尾の煙突とウォータースライダー、プールの彫刻、レーダードーム、ステンドグラス風の天井）／公園にスプリングカー（乗ってゆらせる）とジャングルジム、ロープのやぐらに登れる／クルーズ船の屋上にヘリポート（H）。ヘリで船の上を飛んで着陸でき、降りたら屋上デッキを歩ける／新しい版が出たら、タイトル画面で自動的に読み込み直す'],['2026年12月9日','ガチャを引くと映像が流れるように（機械が回ってカプセルが割れ、出たアイテムごとの場面とセリフ。SR以上は昇格演出あり。タップで飛ばせます）／センターマークスタワー・照葉ザ・タワー・オーシャン＆フォレストタワーと、ホテル下のショッピングモール、ポンプ場、センターマークスレジデンス・パークフロント・アーバンパレスの外観を写真に合わせた／コンテナターミナルのクレーンを赤白に、1基は実物と同じキリン模様に／戸建ての屋根を実際の街並みと同じ濃いグレー中心に'],['2026年12月8日','ジャンプしても画面は上下せず、キャラクターだけがとぶようにした'],['2026年12月7日','フォレストプレイス：門を入ってすぐに、石で縁取った丸い植え込みと木、その後ろに壁、壁の真後ろに駐車スペース／シェアテラスの中庭側をガラス張りに。木の軒天、白い細い柱、ウッドデッキ／中庭の芝生に白い輪とテラコッタ色の小道／02棟・03棟の入口に、黒いひさしと打ち放しの柱'],['2026年12月6日','フォレストプレイスを写真に合わせた：棟に白い縦の壁と茶色の帯、グレーのガラスの手すり／右の棟の入口に黒いひさしとタイルの柱／左の道に黒いひさしとチェーンのゲート／立体駐車場をグレーのルーバーと鉄骨の柱に、入口はステンレスのポールとチェーン／エントランスの中は、打ち放しの壁・本棚の壁・長いテーブル・紺のいす・庭の見える窓'],['2026年12月5日','フォレストプレイスの建物を写真の姿に：濃いグレーの棟を白いバルコニーの帯が囲み、上の階が段々に下がる／公園の遊具で遊べるようになった：ブランコは近づくと「乗る」が出て、降りるまでギーコギーコとこぐ。「飛ぶ」でとびおりると、着地で両手を広げてポーズ／すべり台は、はしごや階段を登って（はしごは登る動きつき）、上から好きなすべり台をすべれる。中央公園・グリーンベルト3・香椎照葉北公園・照葉の森公園'],['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -5223,7 +5224,16 @@ function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as 
 /* ---------- character mode: an armoured partner of our own design (navy, white and gold, green light) who stays close and fights beside you ---------- */
 var HERO=(function(){
   var on=false;try{on=localStorage.getItem('ic_hero')==='1';}catch(e){}
-  var H={on:on,made:false,x:0,z:0,y:0,yaw:0,ph:0,amp:0,shotT:0,punchT:0,armT:0,aim:0,hidden:true,kills:0},G=null,P=null,beam=null,beamT=0,tgt=new THREE.Vector3();
+  var H={on:on,made:false,x:0,z:0,y:0,yaw:0,ph:0,amp:0,shotT:0,punchT:0,armT:0,aim:0,hidden:true,kills:0},G=null,P=null,RP=null,RG=null,HUM=null,kind='',HB=1.12,W=null,DUM={rotation:{x:0}},beam=null,beamT=0,tgt=new THREE.Vector3();
+  function body(){ // the robot, or the companion you chose in the picture book: a person in the colours of their picture, with their own weapon
+    var c=(typeof CGA!=='undefined'&&!KIDS.on)?CGA.cur():null,k=c?c.id:'robot';if(k===kind)return;kind=k;
+    if(HUM){scene.remove(HUM.g);HUM=null;}RG.visible=false;
+    if(c){makePlayer.ov=CGA.cols(c);try{HUM=makePlayer('cmp'+c.id,c.name,CGA.face(c),0);}catch(e){HUM=null;}makePlayer.ov=null;}
+    if(HUM){HUM.g.visible=false;G=HUM.g;P={hips:HUM.hips,lL:{th:HUM.lL.th,sn:HUM.lL.sh},lR:{th:HUM.lR.th,sn:HUM.lR.sh},aL:DUM,aR:DUM};HB=0.95;W=CGA.wpn(c);beam.material.color.setRGB(2.2,1.7,0.8);
+      if(me.inGame)banner(c.name+' が一緒に戦います',c.role+'・'+c.weapon,3);}
+    else{G=RG;P=RP;HB=1.12;W=null;kind='robot';beam.material.color.setRGB(0.4,1.8,1.0);}
+    H.hidden=true;
+  }
   function build(){
     var NV=rgb(0x1c2f6b),WH=rgb(0xe9edf2),GD=rgb(0xd9a520),DK=[0.03,0.035,0.05],HP=Math.PI/2;
     var mat=stdMat({roughness:0.38,metalness:0.55}),glow=new THREE.MeshBasicMaterial({color:new THREE.Color(0.35,1.6,0.9)});
@@ -5250,13 +5260,14 @@ var HERO=(function(){
     var lab=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('ガーディアン'),depthTest:false,transparent:true}));lab.scale.set(1.5,0.375,1);lab.position.y=2.5;g.add(lab);
     P={hips:hips,aL:arm(-1),aR:arm(1),lL:leg(-1),lR:leg(1)};
     var bg=new THREE.CylinderGeometry(0.045,0.045,1,6);bg.rotateX(HP);beam=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:new THREE.Color(0.4,1.8,1.0),transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false}));beam.visible=false;beam.frustumCulled=false;scene.add(beam);
-    g.visible=false;scene.add(g);G=g;H.made=true;
+    g.visible=false;scene.add(g);G=g;RG=g;RP=P;H.made=true;
   }
   function place(){var s=Math.sin(me.yaw),c=Math.cos(me.yaw);H.x=me.x-s*1.0+c*2.4;H.z=me.z-c*1.0-s*2.4;resolve(H,0.5);H.yaw=me.yaw;}
   H.set=function(v){H.on=!!v;try{localStorage.setItem('ic_hero',v?'1':'0');}catch(e){}if(!v&&G){G.visible=false;beam.visible=false;H.hidden=true;}};
   H.update=function(dt){
     if(!H.on||!me.inGame)return;
     if(!H.made)build();
+    body();
     if(beamT>0){beamT-=dt;if(beamT<=0)beam.visible=false;}
     var away=!!myVeh||ZIP.on||me.down;
     if(away){G.visible=false;H.hidden=true;return;}
@@ -5266,16 +5277,17 @@ var HERO=(function(){
     var best=null,bd=30,aboard=!!(SHIP&&SHIP.up&&SHIP.up(me.x,me.z));   // upstairs in the ship or on its pool deck: stay at your side, on your level
     if(!aboard)views.forEach(function(v){var d=Math.hypot(v.x-H.x,v.z-H.z);if(d<bd&&Math.hypot(v.x-me.x,v.z-me.z)<42){bd=d;best=v;}});
     var s=Math.sin(me.yaw),c=Math.cos(me.yaw),gx=me.x-s*1.0+c*2.4,gz=me.z-c*1.0-s*2.4,want=0;            // otherwise: at your right side, a step ahead, clear of the over-the-shoulder camera
-    if(best){var T=TYPES[best.t],reach=T.r+1.5;
-      if(bd<16&&Math.hypot(best.x-me.x,best.z-me.z)<20){gx=best.x-(best.x-H.x)/bd*(reach-0.3);gz=best.z-(best.z-H.z)/bd*(reach-0.3);}   // close enough: go and hit it
+    if(best){var T=TYPES[best.t],reach=W?-1:T.r+1.5,rng=W?W.r:30;
+      if(W){if(bd>rng*0.85&&Math.hypot(best.x-me.x,best.z-me.z)<24){gx=best.x-(best.x-H.x)/bd*rng*0.6;gz=best.z-(best.z-H.z)/bd*rng*0.6;}}   // a person keeps their distance and shoots
+      else if(bd<16&&Math.hypot(best.x-me.x,best.z-me.z)<20){gx=best.x-(best.x-H.x)/bd*(reach-0.3);gz=best.z-(best.z-H.z)/bd*(reach-0.3);}   // close enough: go and hit it
       want=Math.atan2(-(best.x-H.x),-(best.z-H.z));
       H.shotT-=dt;H.punchT-=dt;
-      if(bd<reach&&H.punchT<=0){H.punchT=0.8;H.armT=0.3;H.aim=1;hit(best,30,T);fxSparks(best.x,T.h*0.6,best.z,10,(best.x-H.x)/bd,0.4,(best.z-H.z)/bd,1);sMetal(1.2,false);burst({dur:0.12,type:'lowpass',f:260,v:0.5});}
-      else if(bd>=reach&&H.shotT<=0&&los(H.x,H.z,best.x,best.z)){H.shotT=1.3;H.armT=0.35;H.aim=1;
-        var hx=H.x-Math.sin(H.yaw)*0.5,hz=H.z-Math.cos(H.yaw)*0.5,hy=H.y+1.75;tgt.set(best.x,T.h*0.6,best.z);
-        beam.position.set((hx+tgt.x)/2,(hy+tgt.y)/2,(hz+tgt.z)/2);beam.lookAt(tgt);beam.scale.set(1,1,Math.hypot(tgt.x-hx,tgt.y-hy,tgt.z-hz));beam.visible=true;beamT=0.12;
-        hit(best,18,T);fxSparks(tgt.x,tgt.y,tgt.z,8,-(best.x-H.x)/bd,0.3,-(best.z-H.z)/bd,0.8);flashLight(hx,hy,hz,5,14,0.3,1,0.7);
-        var dd=Math.hypot(H.x-me.x,H.z-me.z),vol=clamp(1-dd/40,0.15,1);tone({f:1400,f1:500,dur:0.18,v:0.05*vol,type:'sawtooth'});tone({f:700,f1:250,dur:0.2,v:0.04*vol,type:'square'});}
+      if(!W&&bd<reach&&H.punchT<=0){H.punchT=0.8;H.armT=0.3;H.aim=1;hit(best,30,T);fxSparks(best.x,T.h*0.6,best.z,10,(best.x-H.x)/bd,0.4,(best.z-H.z)/bd,1);sMetal(1.2,false);burst({dur:0.12,type:'lowpass',f:260,v:0.5});}
+      else if(bd>=reach&&bd<=rng&&H.shotT<=0&&los(H.x,H.z,best.x,best.z)){H.shotT=W?W.t:1.3;H.armT=0.35;H.aim=1;
+        var hx=H.x-Math.sin(H.yaw)*0.5,hz=H.z-Math.cos(H.yaw)*0.5,hy=H.y+(W?1.3:1.75);tgt.set(best.x,T.h*0.6,best.z);
+        beam.position.set((hx+tgt.x)/2,(hy+tgt.y)/2,(hz+tgt.z)/2);beam.lookAt(tgt);beam.scale.set(W?0.35:1,W?0.35:1,Math.hypot(tgt.x-hx,tgt.y-hy,tgt.z-hz));beam.visible=true;beamT=W?0.06:0.12;
+        hit(best,W?W.d:18,T);fxSparks(tgt.x,tgt.y,tgt.z,8,-(best.x-H.x)/bd,0.3,-(best.z-H.z)/bd,0.8);flashLight(hx,hy,hz,5,14,0.3,1,0.7);
+        var dd=Math.hypot(H.x-me.x,H.z-me.z),vol=clamp(1-dd/40,0.15,1);if(W){burst({dur:W.d>40?0.22:0.09,type:'highpass',f:W.d>40?900:1800,v:0.3*vol});tone({f:W.d>40?120:190,f1:60,dur:W.d>40?0.2:0.09,v:0.07*vol,type:'square'});}else{tone({f:1400,f1:500,dur:0.18,v:0.05*vol,type:'sawtooth'});tone({f:700,f1:250,dur:0.2,v:0.04*vol,type:'square'});}}
     }
     var dx=gx-H.x,dz=gz-H.z,dl=Math.hypot(dx,dz),ox=H.x,oz=H.z;
     if(dl>0.35){var sp=Math.min(dl*3.2,dl>9?10.5:7.5);H.x+=dx/dl*sp*dt;H.z+=dz/dl*sp*dt;if(!best)want=Math.atan2(-dx,-dz);}
@@ -5287,7 +5299,7 @@ var HERO=(function(){
     var gy=aboard?SHIP.uy(H.x,H.z):(SHIP?SHIP.h(H.x,H.z):0);if(Math.abs(gy-H.y)>8)H.y=gy;H.y+=(gy-H.y)*Math.min(1,dt*12);
     var sw=Math.sin(H.ph),cw=Math.cos(H.ph),a=H.amp;
     P.lL.th.rotation.x=sw*0.7*a;P.lR.th.rotation.x=-sw*0.7*a;P.lL.sn.rotation.x=-(0.1+0.8*Math.max(0,cw))*a;P.lR.sn.rotation.x=-(0.1+0.8*Math.max(0,-cw))*a;
-    P.hips.position.y=1.12+Math.abs(cw)*0.04*a;
+    P.hips.position.y=HB+Math.abs(cw)*0.04*a;
     if(H.armT>0)H.armT-=dt;else H.aim+=(0-H.aim)*Math.min(1,dt*6);
     P.aR.rotation.x=-1.5*H.aim+sw*0.5*a*(1-H.aim);P.aL.rotation.x=-sw*0.5*a-0.5*H.aim;
     G.position.set(H.x,H.y,H.z);G.rotation.set(-0.08*a,H.yaw,0);
@@ -8873,9 +8885,33 @@ var COMPANIONS=[
     "imageAlt": "八代。信号拳銃を手にした全身イラスト。"
   }
 ];
+var COMPCOL={"companion_01":["#39302c","#2b2523","#82634e"],"companion_02":["#332f32","#312f34","#504746"],"companion_03":["#42362e","#463b35","#6b5343"],"companion_04":["#323230","#343534","#2d2e2d"],"companion_05":["#855f4a","#7a5a48","#8b5c3f"],"companion_06":["#5b4533","#786c68","#705237"],"companion_07":["#665048","#4e413e","#5c4d4d"],"companion_08":["#473d39","#403934","#6c5d56"],"companion_09":["#4b413c","#373130","#453b36"],"companion_10":["#342d29","#2b2522","#6e5749"],"companion_11":["#3f3737","#544c4d","#625756"],"companion_12":["#58504b","#35312e","#3e3531"],"companion_13":["#544b46","#5a5552","#4c4643"],"companion_14":["#675349","#46403e","#6e5a4c"],"companion_15":["#3e3836","#3c3634","#3e3937"],"companion_16":["#524a44","#413a36","#443e43"],"companion_17":["#4d413e","#473c3c","#aaaaac"],"companion_18":["#604e42","#5b5049","#574740"],"companion_19":["#746154","#4e423c","#66574c"],"companion_20":["#464038","#38342e","#3b3432"],"companion_21":["#342d2a","#302c2a","#514643"],"companion_22":["#403b36","#443c37","#483c34"],"companion_23":["#38322f","#2a2623","#5c4f49"],"companion_24":["#615753","#5f5551","#795c48"],"companion_25":["#352f2c","#332e2a","#322e2c"],"companion_26":["#403632","#302b2b","#514441"],"companion_27":["#3d373a","#514b4c","#584c49"],"companion_28":["#4f4037","#4d443e","#655444"],"companion_29":["#3d3633","#37302d","#483e3b"],"companion_30":["#3a3430","#312b29","#746256"],"companion_31":["#48413c","#463f3a","#514a45"],"companion_32":["#443d39","#373130","#554b49"],"companion_33":["#453c39","#38322f","#614d42"],"companion_34":["#624e43","#433b34","#504845"],"companion_35":["#574a42","#584a42","#3a3432"],"companion_36":["#3f3835","#332d2a","#413633"],"companion_37":["#67584f","#60534d","#463e3a"],"companion_38":["#4d443f","#625854","#4b423e"],"companion_39":["#4b413b","#38312d","#6a5344"],"companion_40":["#423b3a","#3b3635","#aaaaac"],"companion_41":["#382d29","#251f1e","#453935"],"companion_42":["#50453e","#463e38","#715f56"],"companion_43":["#524945","#49423d","#6a5c53"],"companion_44":["#584b44","#695c54","#412f2a"],"companion_45":["#433c3c","#534b4a","#423835"],"companion_46":["#4e4b4d","#696465","#4f4643"],"companion_47":["#968278","#695b55","#4c4345"],"companion_48":["#63564f","#4e4541","#837065"],"companion_49":["#51453d","#463d39","#544844"],"companion_50":["#352d2b","#423a39","#403331"],"companion_51":["#5d514b","#4f4642","#4e433f"],"companion_52":["#352e2e","#3b3231","#aaaaac"],"companion_53":["#575151","#323037","#aaaaac"],"companion_54":["#423634","#362d2a","#2f2a28"],"companion_55":["#413938","#433d3d","#aaaaac"],"companion_56":["#5c4f47","#584a40","#443a37"],"companion_57":["#282529","#2f2c2d","#312d2e"],"companion_58":["#55504b","#5b544f","#6f6660"],"companion_59":["#6c5c4a","#665e5b","#7d6b62"],"companion_60":["#443c3a","#453a3a","#554947"]};
 
 /* ---------- companions: a picture book of the 60 characters. Data comes only from characters.json (injected by the build as COMPANIONS) ---------- */
 var CMP={ov:null,grid:null,det:null,list:[],flt:'all',cur:-1,btn:null};
+/* the character gacha: one pull a day, from 6:00 in the morning (the phone's own clock). own = who has joined, pick = who comes to the battlefield in place of the robot */
+var CGA={own:{},pick:'',last:0,H:6};
+try{var cg0=JSON.parse(localStorage.getItem('ic_cmp')||'null');if(cg0&&typeof cg0==='object'){if(Array.isArray(cg0.own))cg0.own.forEach(function(k){CGA.own[String(k)]=1;});CGA.pick=String(cg0.pick||'');CGA.last=+cg0.last||0;}}catch(e){}
+CGA.save=function(){try{localStorage.setItem('ic_cmp',JSON.stringify({own:Object.keys(CGA.own),pick:CGA.pick,last:CGA.last}));}catch(e){}};
+CGA.slot=function(){var d=new Date(),t=new Date(d.getFullYear(),d.getMonth(),d.getDate(),CGA.H).getTime();return t<=d.getTime()?t:t-864e5;};   // this morning's 6:00, or yesterday's if it is still before 6
+CGA.can=function(){return CGA.slot()>CGA.last;};
+CGA.count=function(){return Object.keys(CGA.own).length;};
+CGA.byId=function(id){for(var i=0;i<COMPANIONS.length;i++)if(COMPANIONS[i].id===id)return COMPANIONS[i];return null;};
+CGA.cur=function(){return CGA.pick&&CGA.own[CGA.pick]?CGA.byId(CGA.pick):null;};
+CGA.pull=function(){ // SSR 8%; someone new while anyone of that rarity is still missing
+  if(!CGA.can())return null;
+  var ssr=Math.random()<0.08,rest=function(r){return COMPANIONS.filter(function(c){return c.rarity===r&&!CGA.own[c.id];});},L=rest(ssr?'SSR':'R');if(!L.length)L=rest(ssr?'R':'SSR');
+  var dup=!L.length;if(dup)L=COMPANIONS.slice();var c=L[Math.floor(Math.random()*L.length)];
+  CGA.last=CGA.slot();if(dup){coins+=500;saveMeta();}else CGA.own[c.id]=1;CGA.save();return {c:c,dup:dup};
+};
+function cmpHash(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
+CGA.col=function(c){return (typeof COMPCOL!=='undefined'&&COMPCOL[c.id])||['#3a3f48','#2c2f36','#2a2320'];};
+CGA.cols=function(c){var k=CGA.col(c),f=function(h){var q=rgb(parseInt(h.slice(1),16));return [q[0]*1.25,q[1]*1.25,q[2]*1.25];};return {top:f(k[0]),bot:f(k[1])};};
+CGA.face=function(c){var h=cmpHash(c.id),F=FDEF.slice();F[0]=h%3;F[1]=[1,2,3,4,6,7][(h>>3)%6];F[14]=parseInt(CGA.col(c)[2].slice(1),16)+1;F[3]=(h>>6)%4;F[4]=(h>>8)%3;F[5]=0;F[7]=(h>>10)%7===0?1:0;F[8]=0;F[9]=2;F[12]=(h>>13)%3;return F;};
+CGA.wpn=function(c){ // how they shoot: seconds between shots, damage, range (m)
+  var w=c.weapon,o=/狙撃|長距離|精密|単発|ボルト|装填式|狩猟|古式|レバー/.test(w)?{t:2.2,d:58,r:44}:/ショットガン/.test(w)?{t:1.4,d:44,r:14}:/ランチャー|ロケット|グレネード|水流/.test(w)?{t:2.8,d:80,r:28}:/サブマシンガン|機関銃|連射|バースト|カービン|二挺|二連/.test(w)?{t:0.34,d:9,r:28}:{t:0.8,d:17,r:24};
+  if(c.rarity==='SSR')o.d=Math.round(o.d*1.35);return o;
+};
 function cmpSrc(c){return String(c.image||'').replace(/^\//,'').replace(/\.png$/i,'.jpg');}   // served beside the page: assets/companions/NN-name.jpg
 function cmpEl(tag,cls,txt,par){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined&&txt!==null)e.textContent=txt;if(par)par.appendChild(e);if(tag==='button')e.type='button';return e;}
 function cmpImg(c,par){var im=document.createElement('img');im.alt=c.imageAlt||c.name;im.loading='lazy';im.decoding='async';im.draggable=false;
@@ -8883,24 +8919,39 @@ function cmpImg(c,par){var im=document.createElement('img');im.alt=c.imageAlt||c
 function cmpDraw(){
   var G=CMP.grid;G.textContent='';CMP.list=COMPANIONS.filter(function(c){return CMP.flt==='all'||c.rarity===CMP.flt;});
   CMP.list.forEach(function(c,i){
-    var b=cmpEl('button','cmpC'+(c.rarity==='SSR'?' ssr':''),null,G);b.setAttribute('aria-label',c.name+'（'+c.rarity+'・'+c.role+'）');
+    if(!CGA.own[c.id]){var lk=cmpEl('div','cmpC lock',null,G);cmpEl('i','cmpR',c.rarity,lk);cmpEl('em','','？',lk);var lf=cmpEl('span','cmpF',null,lk);cmpEl('b','','？？？',lf);cmpEl('small','','まだ仲間になっていません',lf);return;}
+    var b=cmpEl('button','cmpC'+(c.rarity==='SSR'?' ssr':'')+(CGA.pick===c.id?' pick':''),null,G);b.setAttribute('aria-label',c.name+'（'+c.rarity+'・'+c.role+'）');if(CGA.pick===c.id)cmpEl('u','','同行中',b);
     cmpImg(c,b);cmpEl('i','cmpR',c.rarity,b);var f=cmpEl('span','cmpF',null,b);cmpEl('b','',c.name,f);cmpEl('small','',c.role+'・'+c.weapon,f);
     b.addEventListener('click',function(){sClick(0,c.rarity==='SSR'?1200:900,0.2);cmpShow(i);});
   });
-  CMP.cnt.textContent=CMP.list.length+'人';
+  CMP.cnt.textContent=CGA.count()+' / '+COMPANIONS.length+'人';cmpGaBtn();
 }
-function cmpShow(i){
-  var n=CMP.list.length;if(!n)return;i=(i%n+n)%n;CMP.cur=i;var c=CMP.list[i],D=CMP.det,ssr=c.rarity==='SSR';
+function cmpDraw2(){var st=CMP.ov.scrollTop;cmpDraw();CMP.ov.scrollTop=st;}
+function cmpShow(i,isNew,dir){
+  var n=CMP.list.length;if(!n)return;i=(i%n+n)%n;var step=dir||1,g0=0;while(!CGA.own[CMP.list[i].id]&&g0++<n)i=((i+step)%n+n)%n;if(!CGA.own[CMP.list[i].id])return;
+  CMP.cur=i;var c=CMP.list[i],D=CMP.det,ssr=c.rarity==='SSR';
   D.textContent='';D.className=ssr?'ssr':'';
   var box=cmpEl('div','cmpBox',null,D),pic=cmpEl('div','cmpPic',null,box);cmpImg(c,pic).loading='eager';if(ssr)cmpEl('i','cmpShine',null,pic);
   var info=cmpEl('div','cmpInfo',null,box),hd=cmpEl('div','cmpHd',null,info);cmpEl('i','cmpR',c.rarity,hd);cmpEl('h3','',c.name,hd);
   var dl=cmpEl('dl','',null,info);[['レア度',ssr?'SSR（レア）':'R'],['武器',c.weapon],['役割',c.role]].forEach(function(r){cmpEl('dt','',r[0],dl);cmpEl('dd','',r[1],dl);});
   cmpEl('p','',c.bio,info);
+  var on=CGA.pick===c.id,tk=cmpEl('button','cmpTake'+(on?' on':''),on?'同行中（やめてロボットに戻す）':'戦場に連れて行く（ロボットの代わり）',info);
+  tk.addEventListener('click',function(e){e.stopPropagation();sClick(0,on?600:1100,0.2);CGA.pick=on?'':c.id;CGA.save();if(!on&&typeof HERO!=='undefined'&&!HERO.on){HERO.set(true);var hb=document.getElementById('heroBtn');if(hb)hb.textContent='キャラモード：ON';}cmpDraw2();cmpShow(CMP.cur);});
+  if(isNew){var rb=cmpEl('div','cmpNew',isNew===2?'すでに仲間です（かわりに コイン +500）':'NEW！　仲間になりました',info);info.insertBefore(rb,info.firstChild);}
   var nav=cmpEl('div','cmpNav',null,info),pv=cmpEl('button','',"← 前の人",nav),nx=cmpEl('button','',"次の人 →",nav),cl=cmpEl('button','cl','一覧へ',nav);
-  pv.addEventListener('click',function(e){e.stopPropagation();sClick(0,800,0.15);cmpShow(i-1);});nx.addEventListener('click',function(e){e.stopPropagation();sClick(0,800,0.15);cmpShow(i+1);});
+  pv.addEventListener('click',function(e){e.stopPropagation();sClick(0,800,0.15);cmpShow(i-1,0,-1);});nx.addEventListener('click',function(e){e.stopPropagation();sClick(0,800,0.15);cmpShow(i+1,0,1);});
   cl.addEventListener('click',function(e){e.stopPropagation();cmpHide();});
   D.classList.remove('off');
   if(ssr&&!reduceMotion)[784,1047,1319,1568].forEach(function(f,q){tone({f:f,dur:0.12,v:0.04,type:'triangle',t0:q*0.06,rv:0.3});});
+}
+function cmpGaBtn(){var b=CMP.ga;if(!b)return;var can=CGA.can();b.classList.toggle('can',can);b.textContent=can?'きょうのキャラガチャを引く（1日1回）':'キャラガチャ：つぎは あす朝6時';b.disabled=!can;
+  if(CMP.btn){var sm=CMP.btn.querySelector('small');if(sm)sm.textContent=can?'引ける！':CGA.count()+'/'+COMPANIONS.length;CMP.btn.classList.toggle('can',can);}}
+function cmpPull(){ // the card comes face down, shakes, and turns over
+  var r=CGA.pull();if(!r)return;var D=CMP.det,ssr=r.c.rarity==='SSR',T=reduceMotion?200:(ssr?2600:1500);
+  CMP.flt='all';CMP.tabs.forEach(function(t){t.classList.toggle('on',t._f==='all');});cmpDraw();
+  D.textContent='';D.className='pull'+(ssr?' ssr':'');var k=cmpEl('div','cmpBack',null,D);cmpEl('b','','？',k);cmpEl('span','',ssr?'……この光は！':'だれが来るかな…',D);D.classList.remove('off');CMP.cur=-1;
+  [330,392,494,587].forEach(function(f,q){tone({f:f,dur:0.1,v:0.04,type:'triangle',t0:q*(T/1000)/5});});if(ssr)tone({f:220,f1:1760,dur:T/1000*0.9,v:0.03,type:'sawtooth',rv:0.4});
+  setTimeout(function(){var i=CMP.list.indexOf(r.c);cmpShow(i,r.dup?2:1);[523,659,784,1047].forEach(function(f,q){tone({f:f,dur:q===3?0.4:0.12,v:0.06,type:'triangle',t0:q*0.1,rv:0.3});});},T);
 }
 function cmpHide(){CMP.det.classList.add('off');CMP.cur=-1;}
 function cmpOpen(){CMP.flt='all';CMP.tabs.forEach(function(t){t.classList.toggle('on',t._f==='all');});cmpDraw();CMP.ov.classList.remove('off');CMP.ov.scrollTop=0;}
@@ -8938,6 +8989,18 @@ function cmpClose(){cmpHide();CMP.ov.classList.add('off');}
   '@media (max-width:560px){#cmpD{align-items:flex-start}.cmpBox{flex-direction:column;gap:10px}.cmpPic{width:min(62vw,250px);height:auto;align-self:center}.cmpHd h3{font-size:21px}}',
   '@media (orientation:landscape) and (max-height:540px){.cmpPic{height:calc(100vh - 46px)}.cmpInfo{gap:7px}.cmpInfo p{font-size:12.5px;line-height:1.6;padding:8px 10px}.cmpNav button{height:38px}}',
   '@media (prefers-reduced-motion:reduce){.cmpC.ssr,.cmpC.ssr::before,.cmpShine,.cmpBox{animation:none}}',
+  /* locked cards, the one who is coming along, the gacha */
+  '.cmpC.lock{cursor:default;border-style:dashed;border-color:#3a4650;background:repeating-linear-gradient(135deg,#131d26 0 10px,#101922 10px 20px);box-shadow:none}.cmpC.lock::after{display:none}.cmpC.lock em{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 46px var(--body);font-style:normal;color:rgba(255,255,255,.13)}.cmpC.lock .cmpF b{color:#7f909c}.cmpC.lock .cmpF small{color:#66757f}.cmpC.lock .cmpR{opacity:.55}',
+  '.cmpC u{position:absolute;right:6px;top:6px;z-index:2;padding:3px 7px;border-radius:9px;background:#2fb46e;color:#04160c;font:800 10px/1 var(--body);text-decoration:none;box-shadow:0 2px 5px rgba(0,0,0,.5)}.cmpC.pick{outline:2px solid #4fd08a;outline-offset:1px}',
+  '#cmpGa{display:block;width:100%;max-width:1100px;margin:0 auto 8px;height:46px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#a9bcc8;font:700 14px var(--body)}#cmpGa.can{cursor:pointer;border-color:transparent;background:linear-gradient(180deg,#ffc93d,#ffa200);color:#1a1200;box-shadow:0 4px 16px rgba(255,160,0,.4),inset 0 1px 0 rgba(255,255,255,.5);animation:cmpPulse 1.6s ease-in-out infinite}@keyframes cmpPulse{50%{box-shadow:0 4px 26px rgba(255,190,40,.75),inset 0 1px 0 rgba(255,255,255,.5)}}',
+  '.cmpHint{max-width:1100px;margin:0 auto 10px;font:400 12px/1.6 var(--body);color:#a9bcc8;text-wrap:pretty}',
+  '.cmpTake{height:44px;border-radius:10px;border:0;background:linear-gradient(180deg,#8df3b4,#2fb46e);color:#04160c;font:800 13.5px var(--body);cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.5)}.cmpTake.on{background:rgba(255,255,255,.08);color:#9fe8b8;border:1px solid rgba(79,208,138,.7);box-shadow:none}',
+  '.cmpNew{align-self:flex-start;padding:5px 12px;border-radius:14px;background:linear-gradient(90deg,#ffd24a,#ff8fd8);color:#2a1600;font:900 12.5px var(--body);letter-spacing:.06em;animation:cmpIn .4s ease-out}',
+  '#cmpD.pull{flex-direction:column;gap:18px;color:#fff;font:700 15px var(--body)}.cmpBack{width:min(46vw,190px);aspect-ratio:2/3;border-radius:12px;border:3px solid #7f909c;background:repeating-linear-gradient(135deg,#1c2b3a 0 12px,#16222e 12px 24px);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(120,190,255,.35);animation:cmpShake .5s ease-in-out infinite}.cmpBack b{font:900 70px var(--body);color:rgba(255,255,255,.3)}',
+  '#cmpD.pull.ssr .cmpBack{border-color:#ffe08a;box-shadow:0 0 60px rgba(255,200,60,.9),0 0 120px rgba(255,120,220,.45);animation:cmpShake .28s ease-in-out infinite,cmpGold 2.6s ease-in forwards}#cmpD.pull.ssr{color:#ffe9a8}',
+  '@keyframes cmpShake{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg) scale(1.03)}}@keyframes cmpGold{to{filter:brightness(2.6)}}@media (orientation:landscape) and (max-height:540px){.cmpBack{width:auto;height:62vh}}',
+  '#cmpBtn.can{border-color:#ffd24a;color:#ffe9a8}#cmpBtn.can small{color:#1a1200;background:linear-gradient(180deg,#ffc93d,#ffa200);padding:4px 8px;border-radius:9px;font-weight:800}',
+  '@media (orientation:landscape) and (max-height:540px){.cmpTake{height:38px}}',
   /* the way in, on the title */
   '#cmpBtn{height:46px;padding:0 14px;font:700 14px var(--body);color:#d9ecff;background:linear-gradient(180deg,rgba(70,130,200,.3),rgba(20,50,90,.3));border:1px solid rgba(138,200,255,.75);border-radius:9px;display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0;white-space:nowrap;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.12)}',
   '#cmpBtn i{flex:none;width:16px;height:22px;border-radius:3px;background:linear-gradient(160deg,#fff3b0,#f6c945 55%,#8a5a08);border:1px solid rgba(255,255,255,.75);box-shadow:5px 2px 0 -1px #7fb4e6}#cmpBtn small{margin-left:auto;font:600 11px/1 var(--body);color:#bcd8f2}',
@@ -8949,11 +9012,13 @@ function cmpClose(){cmpHide();CMP.ov.classList.add('off');}
   var tabs=cmpEl('div','',null,top);tabs.id='cmpTabs';CMP.tabs=[['all','すべて'],['SSR','SSR'],['R','R']].map(function(t){var b=cmpEl('button','',t[1],tabs);b._f=t[0];
     b.addEventListener('click',function(){sClick(0,900,0.15);CMP.flt=t[0];CMP.tabs.forEach(function(x){x.classList.toggle('on',x===b);});cmpDraw();ov.scrollTop=0;});return b;});
   var x=cmpEl('button','','とじる',top);x.id='cmpX';x.addEventListener('click',function(){sClick(0,700,0.2);cmpClose();});
+  CMP.ga=cmpEl('button','','',ov);CMP.ga.id='cmpGa';CMP.ga.addEventListener('click',function(){if(!CGA.can())return;sClick(0,1100,0.25);cmpPull();});
+  cmpEl('p','cmpHint','キャラガチャは毎朝6時に1回ぶん届きます（ためられません）。仲間になった人は、カードを開いて「戦場に連れて行く」を押すと、お助けロボットの代わりに一緒に戦います。',ov);
   CMP.grid=cmpEl('div','',null,ov);CMP.grid.id='cmpGrid';
   var det=cmpEl('div','off',null,document.body);det.id='cmpD';CMP.det=det;det.addEventListener('click',function(e){if(e.target===det)cmpHide();});
-  window.addEventListener('keydown',function(e){if(CMP.ov.classList.contains('off'))return;if(e.code==='Escape'){if(CMP.cur>=0)cmpHide();else cmpClose();}else if(CMP.cur>=0&&e.code==='ArrowRight')cmpShow(CMP.cur+1);else if(CMP.cur>=0&&e.code==='ArrowLeft')cmpShow(CMP.cur-1);});
+  window.addEventListener('keydown',function(e){if(CMP.ov.classList.contains('off'))return;if(e.code==='Escape'){if(CMP.cur>=0)cmpHide();else cmpClose();}else if(CMP.cur>=0&&e.code==='ArrowRight')cmpShow(CMP.cur+1,0,1);else if(CMP.cur>=0&&e.code==='ArrowLeft')cmpShow(CMP.cur-1,0,-1);});
   var row=document.getElementById('gcRow');
-  if(row){var b=cmpEl('button','',null,row);b.id='cmpBtn';cmpEl('i','',null,b);b.appendChild(document.createTextNode('仲間図鑑'));cmpEl('small','',COMPANIONS.length+'人',b);row.classList.add('c3');CMP.btn=b;b.addEventListener('click',function(){sClick(0,900,0.2);cmpOpen();});}
+  if(row){var b=cmpEl('button','',null,row);b.id='cmpBtn';cmpEl('i','',null,b);b.appendChild(document.createTextNode('仲間図鑑'));cmpEl('small','',COMPANIONS.length+'人',b);row.classList.add('c3');CMP.btn=b;b.addEventListener('click',function(){sClick(0,900,0.2);cmpOpen();});cmpGaBtn();setInterval(function(){try{if(!me.inGame)cmpGaBtn();}catch(e){}},30000);}
 })();
 
 /* ---------- per-client logic ---------- */
