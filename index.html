@@ -3314,7 +3314,7 @@ function updStores(dt){
         banner(CATN[pk],CATC[pk]+'に光る棚へ'+(held.length>1?'（'+held.length+'ケース持ち。歩くのが少し遅くなる）':''),1.6);sClick(0,900,0.3);burst({dur:0.08,type:'lowpass',f:500,v:0.2});}}
     else if(!carry){
       if(S.left===0&&NET.mode!=='coop'&&!SHIFT.on&&atCr){promptTxt='次の納品を受け取る（もう一度 品出し）';promptAct=true;if(useReq){S.rd=(S.rd||0)+1;delete myStock[S.i];sClick(0,1000,0.3);banner('納品が届いた','空いた棚 6か所に並べよう',2);}}
-      else if(insideS&&rd2<1.7&&!SHIFT.on){promptTxt='レジで買い物（コイン '+Math.floor(coins)+'）';promptAct=true;if(useReq)openKon(S);}
+      else if(insideS&&rd2<1.7&&!SHIFT.on){promptTxt='レジで買い物（コイン '+Math.floor(coins).toLocaleString()+'）';promptAct=true;if(useReq)openKon(S);}
       else if(S.left>0&&insideS)promptTxt='納品ケースから商品を取り、光っている空き棚へ（残り '+S.left+'）';
     }else if(carry===S.i+1){
       if(wj>=0){promptTxt='ここは '+CATN[S.slots[wj].cat]+' の棚。持っているのは '+hn;
@@ -4687,7 +4687,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年12月11日','公園の遊具で遊ぶとコインがもらえる（ブランコ・スプリングカーは10回ごとに+5、ブランコから飛んで着地すると飛んだ距離に応じて、ジャングルジムやロープのやぐらはてっぺんまで登る・飛び降りると高さに応じて、すべり台は長さと高さに応じて）'],['2026年12月10日','船にカジノ（スロット・ルーレット・ブラックジャック。コインで遊べる。タイトルの「カジノ」か、船内プロムナードのCASINO前から）／ランキングに「コイン」タブ／お助けロボットが船の上の階や屋上プールにもついてくる／クルーズ船を写真をもとに作り直し（白いバルコニーの帯、船尾の煙突とウォータースライダー、プールの彫刻、レーダードーム、ステンドグラス風の天井）／公園にスプリングカー（乗ってゆらせる）とジャングルジム、ロープのやぐらに登れる／クルーズ船の屋上にヘリポート（H）。ヘリで船の上を飛んで着陸でき、降りたら屋上デッキを歩ける／新しい版が出たら、タイトル画面で自動的に読み込み直す'],['2026年12月9日','ガチャを引くと映像が流れるように（機械が回ってカプセルが割れ、出たアイテムごとの場面とセリフ。SR以上は昇格演出あり。タップで飛ばせます）／センターマークスタワー・照葉ザ・タワー・オーシャン＆フォレストタワーと、ホテル下のショッピングモール、ポンプ場、センターマークスレジデンス・パークフロント・アーバンパレスの外観を写真に合わせた／コンテナターミナルのクレーンを赤白に、1基は実物と同じキリン模様に／戸建ての屋根を実際の街並みと同じ濃いグレー中心に'],['2026年12月8日','ジャンプしても画面は上下せず、キャラクターだけがとぶようにした'],['2026年12月7日','フォレストプレイス：門を入ってすぐに、石で縁取った丸い植え込みと木、その後ろに壁、壁の真後ろに駐車スペース／シェアテラスの中庭側をガラス張りに。木の軒天、白い細い柱、ウッドデッキ／中庭の芝生に白い輪とテラコッタ色の小道／02棟・03棟の入口に、黒いひさしと打ち放しの柱'],['2026年12月6日','フォレストプレイスを写真に合わせた：棟に白い縦の壁と茶色の帯、グレーのガラスの手すり／右の棟の入口に黒いひさしとタイルの柱／左の道に黒いひさしとチェーンのゲート／立体駐車場をグレーのルーバーと鉄骨の柱に、入口はステンレスのポールとチェーン／エントランスの中は、打ち放しの壁・本棚の壁・長いテーブル・紺のいす・庭の見える窓'],['2026年12月5日','フォレストプレイスの建物を写真の姿に：濃いグレーの棟を白いバルコニーの帯が囲み、上の階が段々に下がる／公園の遊具で遊べるようになった：ブランコは近づくと「乗る」が出て、降りるまでギーコギーコとこぐ。「飛ぶ」でとびおりると、着地で両手を広げてポーズ／すべり台は、はしごや階段を登って（はしごは登る動きつき）、上から好きなすべり台をすべれる。中央公園・グリーンベルト3・香椎照葉北公園・照葉の森公園'],['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
+  [['2026年12月11日','画面の細かい見た目を磨き直し（タイトルのボタンの並びと文字、カジノボタンに持っているコイン数、コインの枚数に桁区切り、ゲーム中の「しゃがむ」「ジャンプ」の文字、横画面のスロットの並び、ブラックジャックのカード置き場、縦画面の案内がボタンに重ならないように、スクロールバー）／公園の遊具で遊ぶとコインがもらえる（ブランコ・スプリングカーは10回ごとに+5、ブランコから飛んで着地すると飛んだ距離に応じて、ジャングルジムやロープのやぐらはてっぺんまで登る・飛び降りると高さに応じて、すべり台は長さと高さに応じて）'],['2026年12月10日','船にカジノ（スロット・ルーレット・ブラックジャック。コインで遊べる。タイトルの「カジノ」か、船内プロムナードのCASINO前から）／ランキングに「コイン」タブ／お助けロボットが船の上の階や屋上プールにもついてくる／クルーズ船を写真をもとに作り直し（白いバルコニーの帯、船尾の煙突とウォータースライダー、プールの彫刻、レーダードーム、ステンドグラス風の天井）／公園にスプリングカー（乗ってゆらせる）とジャングルジム、ロープのやぐらに登れる／クルーズ船の屋上にヘリポート（H）。ヘリで船の上を飛んで着陸でき、降りたら屋上デッキを歩ける／新しい版が出たら、タイトル画面で自動的に読み込み直す'],['2026年12月9日','ガチャを引くと映像が流れるように（機械が回ってカプセルが割れ、出たアイテムごとの場面とセリフ。SR以上は昇格演出あり。タップで飛ばせます）／センターマークスタワー・照葉ザ・タワー・オーシャン＆フォレストタワーと、ホテル下のショッピングモール、ポンプ場、センターマークスレジデンス・パークフロント・アーバンパレスの外観を写真に合わせた／コンテナターミナルのクレーンを赤白に、1基は実物と同じキリン模様に／戸建ての屋根を実際の街並みと同じ濃いグレー中心に'],['2026年12月8日','ジャンプしても画面は上下せず、キャラクターだけがとぶようにした'],['2026年12月7日','フォレストプレイス：門を入ってすぐに、石で縁取った丸い植え込みと木、その後ろに壁、壁の真後ろに駐車スペース／シェアテラスの中庭側をガラス張りに。木の軒天、白い細い柱、ウッドデッキ／中庭の芝生に白い輪とテラコッタ色の小道／02棟・03棟の入口に、黒いひさしと打ち放しの柱'],['2026年12月6日','フォレストプレイスを写真に合わせた：棟に白い縦の壁と茶色の帯、グレーのガラスの手すり／右の棟の入口に黒いひさしとタイルの柱／左の道に黒いひさしとチェーンのゲート／立体駐車場をグレーのルーバーと鉄骨の柱に、入口はステンレスのポールとチェーン／エントランスの中は、打ち放しの壁・本棚の壁・長いテーブル・紺のいす・庭の見える窓'],['2026年12月5日','フォレストプレイスの建物を写真の姿に：濃いグレーの棟を白いバルコニーの帯が囲み、上の階が段々に下がる／公園の遊具で遊べるようになった：ブランコは近づくと「乗る」が出て、降りるまでギーコギーコとこぐ。「飛ぶ」でとびおりると、着地で両手を広げてポーズ／すべり台は、はしごや階段を登って（はしごは登る動きつき）、上から好きなすべり台をすべれる。中央公園・グリーンベルト3・香椎照葉北公園・照葉の森公園'],['2026年12月4日','グリーンベルト3（フォレストプレイスの横の公園）にブランコ／ラサンテ照葉オーシャンテラス（2棟）を追加／アリーナを濃いグレーの縞の外観に、前の広場に赤いバスケットボールの丘／照葉スパリゾートをテラコッタ色の外壁に／アイタワーを赤い格子の外観に／アイランドシティ ザ・ガーデン（VI棟・低層棟・ヴィラII）を追加／スーパーセンターを青い外壁に／ホテルを白い外壁と黒い頂部に／東の海へのびる あいたか橋に、橋げたと手すり／はばたき公園に野鳥観察の壁と休憩所／中央公園の遊具に、輪の形の丘と小さい子向けの遊具／東の岸に展望デッキ／アリーナ・ホテル・ショッピングモールもドアから中に入れる／アイランドタワースカイクラブを、3本の塔を空中庭園でつないだ形に／アリーナ横のグリーンベルト2に、白いきのこ形の休憩所／こども病院の低い棟を、れんが色とオレンジの帯に／小学校を白い校舎に、砂の校庭とテニスコート／グリーンベルト2に赤いランニングコース／オーシャン＆フォレストタワー横の駐車場の屋上に車／香椎照葉北公園と照葉の森公園に、黄色いすべり台の遊具（森公園はブランコも）'],['2026年12月3日','アイランドタワー：3棟の足もとを低い土台にして、屋上にテラス／東の広い駐車場とスーパー北側の駐車場に区画と車／せせらぎ公園に幼児遊具と白いテント、てんとうむし広場にてんとう虫／はばたき公園に池と湿地、園路／西の大きな倉庫の屋根に太陽光パネル'],['2026年12月2日','こども病院を航空写真の形に：低い土台の上に十字の病棟、屋上に青いヘリポート／北東の環状道路の先の新しい区画に、家を約100軒'],['2026年12月1日','姿勢のボタンを「ふせる」「しゃがむ」「ジャンプ」の3つに分けた（もう一度押すと立つ）／北東の街を今の航空写真に合わせた：照葉オーシャンステージのEAST棟を高層に、WEST棟を追加。保育園ととなりの建物、タワー横の立体駐車場／香椎照葉7丁目に、抜けていた家を約50軒。どれもドアから中に入れる'],['2026年11月30日','ジャンプと姿勢のボタンを、右上の地図の下へ移した／フォレストプレイス：立体駐車場とシェアテラスの間を通り抜けられるようにした'],['2026年11月29日','ジャンプ・しゃがむ・ふせる（匍匐前進）ができるようになった：スマホは地図の下の「ジャンプ」と姿勢のボタン（押すとしゃがむ、長押しでふせる）、PCは X・C・Z／低い姿勢ほどねらいが安定し、ガンナーに撃たれにくい。そのかわり移動はおそい／仲間の姿勢もおたがいに見える'],['2026年11月28日','フォレストプレイス：右の棟とシェアテラスの間に、ロータリーから立体駐車場へ続く車道を通した／駐車場の入口を車道の正面に移し、幅を広げた'],['2026年11月27日','フォレストプレイスを航空写真に合わせた：立体駐車場の屋上に区画の線と車、中庭にしずく形の植え込み／となりのグリーンベルト3に、青いすべり台の遊具、柵のあるスプリング遊具、タイルの広場、扇形の砂場／インフィニガーデンの輪の内側に、円い中庭'],['2026年11月26日','中央公園を航空写真から作り直した：こどもの広場に遊具（六角の塔、長いローラーすべり台、青いすべり台、赤いトンネル、ロープのピラミッド、ブランコ、ターザンロープ、あずまや）／体験学習施設の緑の丘とガラスの屋根、白いガラスの温室／池は緑がかった水面になり、まわりに枯れた葦／円い花壇と、芝生の石の輪'],['2026年11月25日','遊びやすさの見直し：はじめての人には、歩く・見る・撃つを1つずつ試す案内が出る（できたらコイン +50）／左上の表示が明るい空でも読める。戦闘中は必要な行だけ／弾が少ないとリロード、体力が少ないとリュックのボタンが光る／ボタンを押すと光り、対応するスマホでは振動する／ポーズメニューを「設定」「見る」に整理。文字を大きくする設定と振動のON/OFFを追加／オープニングはタップですぐ飛ばせる／縦持ちで文字とボタンが重なっていたのを直した'],['2026年11月24日','ガチャをチケット制に：6時・11時・17時に1枚ずつとどき、とどいてから24時間で消える（ためられるのは3枚まで）'],['2026年11月23日','まいにちガチャ：1日3回、帽子・顔の小物・背中の荷物・コスチュームが出る（全41種類）。かぶったらコインに／出たものは「アバター・きせかえ」やガチャ画面で着がえられ、戦場でもその格好になる／ランキングに、みんなのアバターと服装が出る（行をタップで大きく見られる）／ホーム画面に追加したときのアイコンを新しくした'],['2026年11月22日','撃った手応え：当てるとダメージの数字、倒すと一瞬の「ため」と飛び散る部品、ウェーブ最後の1台はスローに／新しい敵：自爆するボマー、5ウェーブごとのボス「メガ・ヘビー」、逃げるゴールドロボ／ラッシュやガンナー小隊など、ウェーブに特徴がつく／赤いドラム缶を撃つと爆発してロボットを巻き込める／ウェーブを越えるたびに強化を1つ選べる（半額シール、ホットスナックなど）／小ネタ：自販機を撃つとジュース、品出しをすると「レジ応援」、ロボットの最期のひとこと、称号10種類（ポーズメニューで確認）'],['2026年11月21日','街を高級住宅地らしく：住宅は石張りと木のドア、マンションはガラスの手すり、店は金の看板に。室内は大理石やウォールナットの床、シャンデリア、絵画。ラーメン店は鮨店に／画面の解像度を上げた（重い端末では自動で下げる）／プレイ中もほかのアプリの音楽が止まらないように（ポーズメニューで切り替え）／スマホ横向きのトップ画面を中央に／建物の入り口を壁の模様に合わせた'],['2026年11月20日','対戦モード：4桁のコードで集まる個人戦。部屋を作る人が、試合時間・武器の数・COMの数・COMの強さを決める。プレイヤー撃破2点、COM撃破1点'],['2026年11月19日','建物の中に入れるようになった：住宅、マンションのエントランス、オフィス、カフェ、ラーメン店、クリニック、倉庫、スーパー、スパ（ドアの前まで歩くとそのまま入れる）。中に物資ケースがあることも。ミニマップの黄色い点が入り口／画面デザインを作り込み：タイトルのボタンをカードに、ランキングにメダル、体力バーやボタンの質感／ランキングを開くと最初に「みんな」を表示'],['2026年11月18日','みんなのランキングに品出しの数を表示／バトル中に並べたケースを別に数えてマイデータに表示'],['2026年11月18日','画面の見直し：品出しチャレンジ中は戦闘用のボタンを隠して、大きな「持つ・並べる」ボタンに／キッズモードのボタンをひらがなに／案内の文字がボタンに重ならないように／三人称で持っているケースが視界をふさがないように'],['2026年11月17日','Cマートの中で下を向くと、視点が天井の上に出てしまうのを直した'],['2026年11月17日','スマホで画面を2回タップすると拡大されてしまうのを止めた'],['2026年11月17日','毒ガスのとき、逃げる方向を緑の矢印で表示／品出しを作り込み：ケースを3つまで持てる、急ぎの棚、コンボ／品出しチャレンジ（トップから）／品出しの段位／ランキングに品出しの数'],['2026年11月16日','キッズモードに「まなびモード」：乗り物に乗る前に、かず（1〜5）・てんき・いろ・かたち のクイズ／右上にマイページ（なまえ・アバター）／三人称で走る向き'],['2026年11月16日','出撃のときに空から降りてくる導入／命中・撃破の表示と音／攻撃された方向、撃っている敵の体力、残りの敵の方向が分かる表示／ウェーブクリアのボーナス／結果カード（命中率・評価）／ポーズメニューに視点の速さと戦闘中の音楽／建物の高さを国の実測データに、信号・駐車場・生け垣を地図どおりに／フォレストプレイスの入り口・シェアテラス・芝生／はじめての人向けのヒント'],['2026年11月15日','定型文チャット／ボイスチャット（友達用のURLの協力プレイで）／この部屋のランキング／自己ベスト10とマイデータをこの端末に保存'],
    ['2026年11月15日','クルーズ船の中を作り直し：3階吹き抜け、入ってすぐクリスタルの螺旋階段、両側に店が並ぶ長いプロムナード、上の階の回廊と橋'],
    ['2026年11月15日','コンビニを「Cマート」に：青・赤・白の外観とロゴ、ワールドコーラ・コレクションの棚、スローガン、おつまみイカフライ。レジにコーラとイカフライ'],
    ['2026年11月15日','車・バイク・ヘリコプターに乗ったまま撃てる。乗り物でも視点を回せて、見ている方向（横や後ろも）へ撃つ'],
@@ -4780,8 +4780,8 @@ function metaHud(){
   var g=goalNow();
   var solo=soloRun(),GG=hs&&hs.g,FF=hs&&hs.f;
   elGoal.textContent='';var b=document.createElement('b'),flee=gasIn||(GG&&GG[5]===1&&gasDT>0);
-  b.textContent=SHIFT.on?'目標：時間内にたくさん並べる':practice?'プラクティス':KIDS.on?(KIDS.water?'ロボットに みずを かけよう':'ロボットを たおそう'):flee?'目標：安全エリアへ急ぐ':solo?(FF&&FF[0]===1?'最終決戦：ロボット'+FIN_N+'台を倒す':(hs&&hs.st==='fight'?'目標：ロボットを倒す':'目標：次のウェーブに備える')):'目標：WAVE '+g+' 突破';elGoal.appendChild(b);gasHud();
-  var cn=document.createElement('span');cn.className='cn';cn.textContent=(practice||KIDS.on?'':solo?'毒ガス '+Math.min(3,GG?GG[3]:0)+'/3回・':'')+'コイン '+Math.floor(coins)+'・利用券 '+tickets;elGoal.appendChild(cn);
+  b.textContent=SHIFT.on?'目標：時間内にたくさん並べる':practice?'自由に歩いて試せます':KIDS.on?(KIDS.water?'ロボットに みずを かけよう':'ロボットを たおそう'):flee?'目標：安全エリアへ急ぐ':solo?(FF&&FF[0]===1?'最終決戦：ロボット'+FIN_N+'台を倒す':(hs&&hs.st==='fight'?'目標：ロボットを倒す':'目標：次のウェーブに備える')):'目標：WAVE '+g+' 突破';elGoal.appendChild(b);gasHud();
+  var cn=document.createElement('span');cn.className='cn';cn.textContent=(practice||KIDS.on?'':solo?'毒ガス '+Math.min(3,GG?GG[3]:0)+'/3回・':'')+'コイン '+Math.floor(coins).toLocaleString()+'・利用券 '+tickets;elGoal.appendChild(cn);
   bBand.textContent='包帯 '+bands;bKit.textContent='応急 '+kits;bBand.classList.toggle('none',bands<=0);bKit.classList.toggle('none',kits<=0);
 }
 
@@ -4817,7 +4817,7 @@ function drawPack(){
   tile('スコープ',hasScope?'取り付け済み':'なし',null,false,!hasScope);
   tile('駐車場の自動キー',hasKey?'持っている':'なし',null,false,!hasKey);
   tile('のるーと利用券','× '+tickets,null,false,tickets<=0);
-  tile('コイン',Math.floor(coins)+' 枚',null,false,false);
+  tile('コイン',Math.floor(coins).toLocaleString()+' 枚',null,false,false);
 }
 (function(){
   function el(tag,id,cls,txt,parent){var e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(txt)e.textContent=txt;(parent||document.body).appendChild(e);return e;}
@@ -5409,8 +5409,8 @@ function worldDraw(body,row,note){
     var CM={},CL=[];(WORLD.rows||[]).concat(WORLD.rowsP||[]).forEach(function(r){if(r.g>=0&&!CM[r.id]){CM[r.id]=1;CL.push(r);}});CL.sort(function(a,b){return b.g-a.g;});
     if(!WORLD.rows){if(!WORLD.err)note('読み込み中…');}
     else if(!CL.length)note('まだだれのコインも載っていません。新しい版で記録を送った人から載ります。');
-    else{row(['順位','なまえ','所持コイン'],'h');CL.forEach(function(r,i){gcRow(row([(i+1)+'位',r.n,r.g+' 枚'],WORLD.a&&r.id===WORLD.a.u?'me':''),r.n,r.f);});}
-    note('たたかい・品出しのランキングに載っている人の、いま持っているコインの多い順です。あなた：'+Math.floor(coins)+' 枚。');
+    else{row(['順位','なまえ','所持コイン'],'h');CL.forEach(function(r,i){gcRow(row([(i+1)+'位',r.n,Number(r.g).toLocaleString()+' 枚'],WORLD.a&&r.id===WORLD.a.u?'me':''),r.n,r.f);});}
+    note('たたかい・品出しのランキングに載っている人の、いま持っているコインの多い順です。あなた：'+Math.floor(coins).toLocaleString()+' 枚。');
   }else if(WORLD.board===1){
     var P=WORLD.rowsP||(WORLD.rows?WORLD.rows.filter(function(r){return r.p>0;}).sort(function(a,b){return b.p-a.p;}):null);
     if(!P){if(!WORLD.err)note('読み込み中…');}
@@ -5420,7 +5420,7 @@ function worldDraw(body,row,note){
   }else{
   if(!WORLD.rows){if(!WORLD.err)note('読み込み中…');}
   else if(!WORLD.rows.length)note('まだだれも載っていません。ロボットを5台倒すと最初の1人になれます。');
-  else{row(['順位','なまえ','','クリア','WAVE','撃破','品出し','コイン'],'h');WORLD.rows.forEach(function(r,i){gcRow(row([(i+1)+'位',r.n,r.m?'協力':'ソロ',r.c+' 回','WAVE '+r.w,r.k+' 台',r.p>0?r.p+' ケース':'—',r.g>=0?r.g+' 枚':'—'],WORLD.a&&r.id===WORLD.a.u?'me':''),r.n,r.f);});}
+  else{row(['順位','なまえ','','クリア','WAVE','撃破','品出し','コイン'],'h');WORLD.rows.forEach(function(r,i){gcRow(row([(i+1)+'位',r.n,r.m?'協力':'ソロ',r.c+' 回','WAVE '+r.w,r.k+' 台',r.p>0?r.p+' ケース':'—',r.g>=0?Number(r.g).toLocaleString()+' 枚':'—'],WORLD.a&&r.id===WORLD.a.u?'me':''),r.n,r.f);});}
   }
   note(WORLD.on?'たたかいは、クリア回数 → 到達WAVE → 撃破数の順の上位50人です。あなたの「なまえ」、アバター（顔と服装）、いちばん良かった1回の記録、品出しの数と段位、持っているコインの数だけが、このゲームを開いた全員に見えます。顔のある行をタップすると、その人のアバターを大きく見られます。品出しが「—」の人は、まだ新しい版で記録を送っていない人です。':'いまは参加していません。あなたの記録はだれにも見えません。');
   var b=document.createElement('button');b.type='button';b.className='sdel';b.textContent=WORLD.on?'ランキングに参加しない（自分の記録を消す）':'ランキングに参加する';
@@ -5483,7 +5483,7 @@ function socDraw(){
   }else{
     var t=Math.floor(STATS.time),hh=Math.floor(t/3600),mm=Math.floor(t%3600/60);
     row(['なまえ',me.name||(document.getElementById('nm')&&document.getElementById('nm').value)||'—']);row(['倒したロボット',STATS.kills+' 台']);row(['最高WAVE','WAVE '+STATS.best]);row(['クリア回数',STATS.clears+' 回']);row(['遊んだ回数',STATS.games+' 回']);row(['品出しの段位',danTxt(STATS.sp)]);row(['並べたケース（合計）',(STATS.stock||0)+' ケース']);row(['うち バトル中の品出し',(STATS.bstock||0)+' ケース']);row(['品出しチャレンジ最高',(STATS.sbest||0).toLocaleString()+' 点']);
-    row(['プレイ時間',(hh?hh+'時間 ':'')+mm+'分']);row(['のるーと利用券',tickets+' 枚']);row(['コイン',Math.floor(coins)+' 枚']);row(['買った服',owned.length+' 着']);
+    row(['プレイ時間',(hh?hh+'時間 ':'')+mm+'分']);row(['のるーと利用券',tickets+' 枚']);row(['コイン',Math.floor(coins).toLocaleString()+' 枚']);row(['買った服',owned.length+' 着']);
     note('データはこの端末のこのブラウザに保存されます。別の端末や別のリンク（GitHub版とClaude版）では別々になります。');
     var b=document.createElement('button');b.type='button';b.className='sdel';b.textContent='記録を消す';b.addEventListener('click',function(){if(b.dataset.sure){STATS={kills:0,time:0,best:0,clears:0,games:0,stock:0,sp:0,sbest:0,recs:[]};statSave();socDraw();}else{b.dataset.sure='1';b.textContent='もう一度押すと、撃破数・自己ベスト・品出しの段位を消します';}});body.appendChild(b);
   }
@@ -7222,7 +7222,7 @@ function gcDraw(){
   GCU.go.textContent=n>0?GCU.go.dataset.a+n+GCU.go.dataset.b:'つぎは '+gcNextH()+'時';GCU.go.disabled=n<=0||GCU.busy;
   var L=GCU.last;GCU.put.style.display=(L&&!GCU.busy&&myFace[15+L.s]!==L.i)?'':'none';
   GCU.list.textContent='';
-  var hd=document.createElement('div');hd.className='gt';hd.textContent='コレクション　'+gcCount()+' / '+gcTotal()+'　　コイン '+Math.floor(coins)+' 枚';GCU.list.appendChild(hd);
+  var hd=document.createElement('div');hd.className='gt';hd.textContent='コレクション　'+gcCount()+' / '+gcTotal()+'　　コイン '+Math.floor(coins).toLocaleString()+' 枚';GCU.list.appendChild(hd);
   var tk=document.createElement('div');tk.className='gn';tk.style.marginTop='0';tk.textContent='チケット '+n+'枚'+(n?'（いちばん古い1枚は あと'+gcSpan(T[0]+GCLIFE-Date.now())+'で消える）':'')+'　つぎは '+gcNextH()+'時にとどく';GCU.list.appendChild(tk);
   for(s=0;s<4;s++){
     var h=document.createElement('div');h.className='gh';h.textContent=GCSLOT[s]+'　'+gcCount(s)+' / '+(GCI[s].length-1);GCU.list.appendChild(h);
@@ -7544,7 +7544,7 @@ var CSY=['🍒','🍋','🔔','⭐','💎','7'],CSW=[5,5,4,3,2,1],CSP=[6,10,20,4
 var CRO=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26],CRED={1:1,3:1,5:1,7:1,9:1,12:1,14:1,16:1,18:1,19:1,21:1,23:1,25:1,27:1,30:1,32:1,34:1,36:1};
 function csEl(tag,cls,txt,par){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined&&txt!==null)e.textContent=txt;if(par)par.appendChild(e);if(tag==='button')e.type='button';return e;}
 function csN(){return Math.floor(coins);}
-function csHud(){if(CAS.coin)CAS.coin.textContent=csN()+' 枚';}
+function csHud(){if(CAS.coin)CAS.coin.textContent=csN().toLocaleString()+' 枚';}
 function csSay(t,cls){if(!CAS.msg)return;CAS.msg.textContent=t;CAS.msg.className='csMsg'+(cls?' '+cls:'');if(cls&&CAS.msg.animate&&!reduceMotion)CAS.msg.animate([{transform:'scale(.7)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:340,easing:'ease-out'});}
 function csTake(n){if(csN()<n){csSay('コインが足りません。ロボットを倒したり、品出しをすると増えます。');tone({f:200,dur:0.15,v:0.05,type:'square'});return false;}coins-=n;csHud();return true;}
 function csWin(n,big){if(n>0){coins+=n;}saveMeta();csHud();
@@ -8169,6 +8169,46 @@ function playTick(dt,use){
   var b=document.createElement('button');b.id='bFly';b.type='button';b.className='btn off';b.textContent='飛ぶ';document.body.appendChild(b);PLAY.bF=b;
   b.addEventListener('pointerdown',function(e){e.preventDefault();if(PLAY.mode==='swing'||PLAY.mode==='top'||PLAY.mode==='ride'||PLAY.mode==='gtop')PLAY.fly=true;});
   window.addEventListener('keydown',function(e){if(e.repeat||!me.inGame||paused)return;if(e.code==='KeyX'&&(PLAY.mode==='swing'||PLAY.mode==='top'||PLAY.mode==='ride'||PLAY.mode==='gtop'))PLAY.fly=true;});
+})();
+
+/* ---------- UI polish pass (title, HUD, casino, panels): only looks and small labels, no game rules ---------- */
+(function(){
+  var css=[
+    /* title */
+    '#card::before{content:"NEW　カジノ オープン（船の中か、下の「カジノ」から）"!important}',
+    '#vsBtn{font-weight:700!important}',
+    '@media (min-width:561px){#card .g2.t3 .sbtn.sbtn{display:grid!important;grid-template-columns:24px 1fr;grid-template-rows:auto auto;column-gap:9px;row-gap:3px;align-content:center;align-items:center;padding:0 8px 0 11px!important;height:50px!important;line-height:1.1!important}#card .g2.t3 .sbtn.sbtn::before{grid-row:1/3;grid-column:1;margin:0!important}#card .g2.t3 .sbtn.sbtn::after{position:static!important;grid-column:2;grid-row:2}}',
+    '@media (max-width:560px){#card .g2.t3 .sbtn.sbtn{height:58px!important;padding:7px 2px 6px!important;line-height:1.15!important;white-space:normal}}',
+    '#card .q .sbtn{font-size:12px!important;color:#c6d3dc!important;height:36px!important}#card .q .sbtn::before{--c:#c6d3dc}',
+    '#bonTl{background:linear-gradient(90deg,rgba(255,190,40,.2),rgba(255,190,40,.07))!important;border:1px solid rgba(255,206,84,.7);color:#ffe08a!important;border-radius:9px!important;font-size:12px!important;padding:6px 10px 6px 34px!important;position:relative;text-shadow:0 1px 2px rgba(0,0,0,.6)}',
+    '#bonTl::before{content:"";position:absolute;left:10px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#e0a21a 60%,#8a5a08);box-shadow:0 0 8px rgba(255,190,40,.7)}',
+    '#gcRow{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}#gcBtn,#csBtn{border-radius:9px!important;height:46px!important;min-width:0;box-shadow:0 4px 12px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);white-space:nowrap;overflow:hidden;transition:transform .08s}#gcBtn:active,#csBtn:active{transform:translateY(1px) scale(.99)}',
+    '#csBtn small{margin-left:auto;font:600 11px/1 var(--num,var(--body));color:#ffe08a;opacity:.95}',
+    '@media (max-width:560px){#gcBtn,#csBtn{font-size:12.5px!important;padding:0 9px!important;gap:7px!important}#csBtn small{font-size:10px}}'
+    ,'#card .g2.t3{grid-template-rows:auto!important;grid-auto-rows:auto!important;height:auto!important}',
+    /* panels */
+    '#gacha{background:#08121b!important}',
+    '*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.28);border-radius:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-button{display:none}'
+    /* in-game */
+    ,'#bProne,#bStance,#bJump{font-size:10px!important;white-space:nowrap;padding:0!important;letter-spacing:-.03em;line-height:1!important}',
+    '#lives{font-size:12.5px!important;letter-spacing:.02em;text-shadow:0 1px 3px rgba(0,0,0,.8)}#goal b{text-shadow:0 1px 3px rgba(0,0,0,.8)}#goal .cn{text-shadow:0 1px 3px rgba(0,0,0,.9)}',
+    '#net{padding:1px 8px;border-radius:9px;background:rgba(6,14,22,.5);color:#c6d3dc!important;text-shadow:none}',
+    '.dn.big{text-shadow:0 2px 0 rgba(0,0,0,.6),0 0 14px rgba(255,190,40,.5)}'
+    /* casino */
+    ,'@media (orientation:landscape) and (max-height:540px){.csMach{display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto 1fr auto;column-gap:18px;row-gap:6px;align-items:center;justify-items:center;padding:12px 16px!important}.csMach .csReels{grid-column:2;grid-row:1/5}.csMach .csLamp{grid-column:1;grid-row:1}.csMach .csTitle{grid-column:1;grid-row:2;font-size:26px}.csMach .csMsg{grid-column:1;grid-row:3;align-self:center}.csMach .csCtl{grid-column:1;grid-row:4}}',
+    '.csMsg{text-wrap:balance}.csHelp,.csNote,.csCard small,.csHead span{text-wrap:pretty}',
+    '.csHand:empty::before,.csHand:empty::after{content:"";width:60px;height:86px;border-radius:7px;border:2px dashed rgba(255,255,255,.28);background:rgba(0,0,0,.12)}@media (orientation:landscape) and (max-height:540px){.csHand:empty::before,.csHand:empty::after{width:46px;height:66px}}',
+    '.csChip{transition:transform .1s}.csChip:active{transform:translateY(2px)}.csCard{transition:transform .12s,box-shadow .12s}.csCard:active{transform:scale(.98)}',
+    '#csBack{white-space:nowrap}'
+    /* portrait: keep the banner off the look stick and the stance buttons */
+    ,'#banner small{text-wrap:balance}',
+    '@media (orientation:portrait) and (max-width:560px){#banner{left:10px!important;right:auto!important;width:47%!important;text-align:left!important;font-size:17px!important;line-height:1.25!important;transform:none!important}#banner small{display:inline-block!important;margin:5px 0 0!important;border-radius:10px!important;padding:4px 10px!important;font-size:11.5px!important;line-height:1.4!important;text-wrap:pretty}}',
+    '@media (max-width:560px){#card .g2.t3 .sbtn.sbtn{height:62px!important;padding:8px 2px 9px!important}}'
+  ];
+  var st=document.createElement('style');st.textContent=css.join('\n');document.head.appendChild(st);
+  var cb=document.getElementById('csBtn'),sm=null;
+  function coinTxt(){if(!cb)return;if(!sm){sm=document.createElement('small');cb.appendChild(sm);}var t='コイン '+Math.floor(coins).toLocaleString()+'枚';if(sm.textContent!==t)sm.textContent=t;}
+  try{coinTxt();setInterval(function(){try{if(!me.inGame)coinTxt();}catch(e){}},2000);}catch(e){}
 })();
 
 /* ---------- per-client logic ---------- */
