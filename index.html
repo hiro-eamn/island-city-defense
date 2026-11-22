@@ -7688,7 +7688,26 @@ function casOpen(inGame){
   csShow('hall');try{tone({f:523,dur:0.12,v:0.05,type:'triangle'});tone({f:659,dur:0.12,v:0.05,type:'triangle',t0:0.1});tone({f:784,dur:0.25,v:0.05,type:'triangle',t0:0.2});}catch(e){}
 }
 function casClose(){CAS.tm.forEach(clearTimeout);CAS.tm=[];cancelAnimationFrame(CAS.rraf);CAS.busy=false;CAS.el.classList.add('off');saveMeta();if(CAS.inG){CAS.inG=false;try{if(NET.mode!=='coop')paused=false;}catch(e){}CAS.cd=performance.now()+1200;}try{gcBtnText();}catch(e){}}
+/* a limited-time gift left beside the on-demand bus stop by the start: 100,000 coins, once per device, until the end date */
+var BON={x:0,z:0,g:null,init:false,done:false,n:100000,end:new Date(2026,10,23,23,59,59).getTime(),key:'ic_bon1'};
+function bonTick(use){
+  var B=BON;if(B.done)return;
+  if(!B.init){B.init=true;var got=false;try{got=localStorage.getItem(B.key)==='1';}catch(e){}
+    if(got||Date.now()>B.end||document.documentElement.classList.contains('m-kids')){B.done=true;return;}
+    B.x=SPAWN.x+17.5;B.z=SPAWN.z-5.5;var g=new THREE.Group(),q=new GB(),GC=[1.9,1.35,0.25],GD2=[1.5,1.0,0.15],i,k;
+    for(i=0;i<19;i++){var a=i*2.4,r=i<1?0:(i<7?0.34:0.68),n=i<1?9:(i<7?6:3)+(i%3);for(k=0;k<n;k++)q.cyl(0.16,0.16,0.045,14,Math.cos(a)*r,0.03+k*0.05,Math.sin(a)*r,k%2?GC:GD2);}
+    q.box(0.9,0.5,0.6,0,0.25,-1.0,[0.25,0.14,0.06]);q.box(0.96,0.08,0.66,0,0.52,-1.0,GC);for(i=0;i<5;i++)q.cyl(0.16,0.16,0.045,14,-0.3+i*0.15,0.6+(i%2)*0.03,-1.0,GC,0.5,i,0);
+    var m=new THREE.Mesh(q.geo(),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.25,metalness:0.9,emissive:new THREE.Color(0.25,0.16,0.02)}));m.castShadow=true;g.add(m);
+    var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('10万コイン'),depthTest:false,transparent:true}));sp.scale.set(2.4,0.6,1);sp.position.y=1.7;g.add(sp);
+    g.position.set(B.x,0,B.z);scene.add(g);B.g=g;}
+  if(!B.g)return;B.g.rotation.y+=0.012;
+  if(promptAct||myVeh||me.down||Math.hypot(me.x-B.x,me.z-B.z)>2.6)return;
+  promptTxt='10万コインをもらう';promptAct=true;
+  if(use){B.done=true;coins+=B.n;saveMeta();try{localStorage.setItem(B.key,'1');}catch(e){}scene.remove(B.g);B.g=null;banner('コイン +100,000','所持 '+Math.floor(coins)+' 枚',3.5);
+    try{[784,988,1175,1568,1976,2349].forEach(function(f,k){tone({f:f,dur:k===5?0.4:0.09,v:0.06,type:'triangle',t0:k*0.08,rv:0.3});});}catch(e){}}
+}
 function casTick(use){
+  try{bonTick(use);}catch(e){BON.done=true;}
   if(promptAct||!SHIP||!SHIP.cas||!me.inGame||me.down||document.documentElement.classList.contains('m-kids')||!SHIP.cas(me.x,me.z))return;
   promptTxt='カジノに入る';promptAct=true;if(use&&!(CAS.cd>performance.now()))casOpen(true);
 }
