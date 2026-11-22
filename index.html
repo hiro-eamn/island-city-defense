@@ -7554,6 +7554,7 @@ function csRain(n){if(reduceMotion||!CAS.el)return;for(var i=0;i<n;i++)(function
 function csLater(f,ms){var id=setTimeout(function(){f();},ms);CAS.tm.push(id);return id;}
 function csChips(par,on){var w=csEl('div','csChips','',par);[10,50,100,500].forEach(function(v){var b=csEl('button','csChip c'+v+(CAS.chip===v?' on':''),String(v),w);b.addEventListener('click',function(){if(CAS.busy)return;CAS.chip=v;Array.prototype.forEach.call(w.children,function(x){x.classList.toggle('on',x===b);});sClick(0,1200,0.15);if(on)on();});});return w;}
 /* drawings for the hall */
+function csHelp(par,lines){var h=csEl('div','csHelp','',par);csEl('b','','あそびかた',h);var o=csEl('ol','',null,h);lines.forEach(function(t){csEl('li','',t,o);});return h;}
 function csCarpet(cv){var g=cv.getContext('2d'),W=cv.width,H=cv.height,i,k,gr=g.createLinearGradient(0,0,0,H);
   gr.addColorStop(0,'#0c0a10');gr.addColorStop(0.3,'#191320');gr.addColorStop(0.3,'#e0a21a');gr.addColorStop(1,'#a8700c');g.fillStyle=gr;g.fillRect(0,0,W,H);
   var hz=H*0.3;g.strokeStyle='rgba(20,12,6,.85)';g.lineCap='butt';
@@ -7591,10 +7592,11 @@ function csShow(v){
 function csHall(){
   var h=csEl('div','csHead','',CAS.body);csEl('b','','CASINO',h);csEl('span','','コインを賭けてあそぶ場所。ゲーム内のコインだけを使います（お金はかかりません）',h);
   var w=csEl('div','csHall','',CAS.body);
-  [['slot','スロット','3つそろえば大当たり。7が3つで300倍'],['rou','ルーレット','赤か黒か、数字1点で36倍'],['bj','ブラックジャック','21に近いほうが勝ち。BJは2.5倍']].forEach(function(q){
+  [['slot','スロット','ボタンを押すだけ。同じ絵が3つそろえば当たり'],['rou','ルーレット','玉がどこに止まるかを当てる。赤か黒かなら2倍'],['bj','ブラックジャック','カードの合計を21に近づける。相手より近ければ勝ち']].forEach(function(q){
     var b=csEl('button','csCard','',w),c=document.createElement('canvas');c.width=360;c.height=240;b.appendChild(c);csArt(c,q[0]);csEl('strong','',q[1],b);csEl('small','',q[2],b);
     b.addEventListener('click',function(){sClick(0,900,0.2);csShow(q[0]);});});
-  CAS.msg=csEl('div','csMsg','コインは、ロボットを倒す・ミッション・品出し・ガチャのかぶりで増えます。',CAS.body);
+  CAS.msg=csEl('div','csMsg','やりたいゲームをタップ。コインは、ロボットを倒す・ミッション・品出し・ガチャのかぶりで増えます。',CAS.body);
+  csHelp(CAS.body,['まるいチップ（10・50・100・500）で、1回に賭けるコインの枚数をえらびます。','勝つと、賭けた枚数の何倍かがもどってきます。負けると、賭けた分がなくなります。','右上が、いま持っているコインです。足りなくなったら遊べません。']);
 }
 function csCell(par,s){var c=csEl('div','csCell'+(s==='7'?' s7':''),s,par);return c;}
 function csPick(){var t=0,i,r;for(i=0;i<CSW.length;i++)t+=CSW[i];r=Math.random()*t;for(i=0;i<CSW.length;i++){r-=CSW[i];if(r<0)return i;}return 0;}
@@ -7604,10 +7606,11 @@ function csSlot(){
   var rw=csEl('div','csReels','',m);CAS.reels=[];
   for(i=0;i<3;i++){var r=csEl('div','csReel','',rw),st=csEl('div','csStrip','',r);if(!CAS.cur[i])CAS.cur[i]=[csPick(),csPick(),csPick()];CAS.cur[i].forEach(function(s){csCell(st,CSY[s]);});CAS.reels.push(st);}
   csEl('div','csLine','',rw);
-  CAS.msg=csEl('div','csMsg','かける枚数をえらんで、まわす',m);
+  CAS.msg=csEl('div','csMsg','賭ける枚数をえらんで「まわす」を押す',m);
   var ctl=csEl('div','csCtl','',m);csChips(ctl);
   var go=csEl('button','csGo','まわす',ctl);go.addEventListener('click',csSpin);
   var pt=csEl('div','csPay','',CAS.body);CSY.slice().reverse().forEach(function(s,k){var d=csEl('span','',null,pt),t=csEl('b',s==='7'?'s7':'',s+s+s,d);d.appendChild(document.createTextNode(' ×'+CSP[5-k]));});var d2=csEl('span','',null,pt);csEl('b','','🍒🍒',d2);d2.appendChild(document.createTextNode(' ×2'));
+  csHelp(CAS.body,['チップで、1回に賭ける枚数をえらびます。','「まわす」を押すと、3つの絵が回って止まります。','まん中の赤い線の上に、同じ絵が3つならんだら当たり。上の表の「×」の数だけ、賭けた枚数が何倍にもなってもどります。','さくらんぼは、2つだけでも2倍です。']);
 }
 function csSpin(){
   if(CAS.busy||CAS.view!=='slot')return;var bet=CAS.chip;if(!csTake(bet))return;CAS.busy=true;csSay('…');
@@ -7626,7 +7629,7 @@ function csSpin(){
 }
 function csRou(){
   var wrap=csEl('div','csRou','',CAS.body),left=csEl('div','csRL','',wrap),cv=document.createElement('canvas');cv.width=cv.height=440;cv.className='csWheel';left.appendChild(cv);CAS.rw=cv;CAS.rres=-1;
-  CAS.msg=csEl('div','csMsg','チップをえらんで、賭ける場所をタップ',left);
+  CAS.msg=csEl('div','csMsg','チップをえらんで、当たりそうな場所をタップ',left);
   var right=csEl('div','csRR','',wrap);CAS.rb={};
   var grid=csEl('div','csNums','',right),i;
   function cell(par,key,txt,cls){var b=csEl('button','csB '+cls,txt,par);b.dataset.k=key;csEl('i','',null,b);b.addEventListener('click',function(){if(CAS.busy)return;var tot=csTot();if(csN()<tot+CAS.chip){csSay('コインが足りません');return;}CAS.rb[key]=(CAS.rb[key]||0)+CAS.chip;sClick(0,1000,0.2);csBets();});return b;}
@@ -7635,14 +7638,15 @@ function csRou(){
   var ctl=csEl('div','csCtl','',right);csChips(ctl);
   var cl=csEl('button','csSub','クリア',ctl);cl.addEventListener('click',function(){if(CAS.busy)return;CAS.rb={};csBets();});
   var go=csEl('button','csGo','まわす',ctl);go.addEventListener('click',csRoll);
-  csEl('div','csNote','数字1点は36倍、1〜12などは3倍、赤・黒・奇数・偶数・前半・後半は2倍（賭けた分こみ）',right);
+  csEl('div','csNote','当たるともどる枚数：数字ぴったり＝賭けた枚数の36倍 ／ 1〜12・13〜24・25〜36＝3倍 ／ 赤・黒・奇数・偶数・1〜18・19〜36＝2倍',right);
+  csHelp(CAS.body,['玉が0〜36のどの数字に止まるかを当てるゲームです。','チップをえらんでから、緑の台の「数字」や「赤」「黒」などをタップすると、そこに賭けられます。何か所に賭けてもOK。同じ場所を何回もタップすると増えます。','「まわす」を押すと玉が回ります。止まった数字に賭けていれば当たり。','当たりにくい賭け方ほど、たくさんもどります。まずは「赤」か「黒」がおすすめ（当たれば2倍）。','0（緑）に止まると、赤・黒・奇数・偶数などはすべてはずれです。まちがえたら「クリア」で置き直せます。']);
   CAS.ra=Math.random()*6;csRDraw(-1,0);csBets();
 }
 function csTot(){var t=0,k;for(k in CAS.rb)t+=CAS.rb[k];return t;}
-function csBets(){var bs=CAS.body.querySelectorAll('.csB'),i;for(i=0;i<bs.length;i++){var v=CAS.rb[bs[i].dataset.k]||0;bs[i].lastChild.textContent=v?String(v):'';bs[i].classList.toggle('on',v>0);}if(!CAS.busy&&CAS.msg&&CAS.view==='rou'){var t=csTot();CAS.msg.className='csMsg';CAS.msg.textContent=t?'賭け合計 '+t+' 枚　「まわす」で勝負':'チップをえらんで、賭ける場所をタップ';}}
+function csBets(){var bs=CAS.body.querySelectorAll('.csB'),i;for(i=0;i<bs.length;i++){var v=CAS.rb[bs[i].dataset.k]||0;bs[i].lastChild.textContent=v?String(v):'';bs[i].classList.toggle('on',v>0);}if(!CAS.busy&&CAS.msg&&CAS.view==='rou'){var t=csTot();CAS.msg.className='csMsg';CAS.msg.textContent=t?'いま賭けているのは 合計 '+t+' 枚。「まわす」を押すと玉が回ります':'チップをえらんで、当たりそうな場所をタップ';}}
 function csRDraw(res,ba){var g=CAS.rw.getContext('2d'),S=CAS.rw.width;g.clearRect(0,0,S,S);csWheel(g,S/2,S/2,S*0.45,CAS.ra,ba,res);}
 function csRoll(){
-  if(CAS.busy||CAS.view!=='rou')return;var tot=csTot();if(!tot){csSay('先に賭ける場所をタップしてください');return;}if(!csTake(tot))return;CAS.busy=true;csSay('ノーモアベット…');
+  if(CAS.busy||CAS.view!=='rou')return;var tot=csTot();if(!tot){csSay('先に、緑の台の数字や「赤」「黒」をタップして賭けてください');return;}if(!csTake(tot))return;CAS.busy=true;csSay('玉が回っています…');
   var ri=Math.floor(Math.random()*37),num=CRO[ri],T=reduceMotion?0.3:5.2,t0=performance.now(),w0=CAS.ra,st=6.2832/37,lastTick=-1;
   function fr(){var t=Math.min(1,(performance.now()-t0)/1000/T),e=1-t,wa=w0+t*T*0.7;CAS.ra=wa;
     var ba=wa+ri*st-e*e*e*34;CAS.rball=0.97-(t>0.62?(t-0.62)/0.38:0)*0.29+(t>0.62&&t<0.95?Math.abs(Math.sin(t*40))*0.03*(1-t)*8:0);
@@ -7658,28 +7662,29 @@ function csRoll(){
   fr();
 }
 function csBj(){
-  var t=csEl('div','csFelt','',CAS.body);csEl('div','csArc','BLACKJACK PAYS 3 TO 2　・　ディーラーは17以上で止まる',t);
-  var dl=csEl('div','csHandL','ディーラー',t),dh=csEl('div','csHand','',t),pl=csEl('div','csHandL','あなた',t),ph=csEl('div','csHand','',t);
-  CAS.msg=csEl('div','csMsg','かける枚数をえらんで、くばる',t);
-  var ctl=csEl('div','csCtl','',t),chips=csChips(ctl),deal=csEl('button','csGo','くばる',ctl),hit=csEl('button','csGo alt','ヒット',ctl),stand=csEl('button','csGo','スタンド',ctl),dbl=csEl('button','csSub','ダブル',ctl);
+  var t=csEl('div','csFelt','',CAS.body);csEl('div','csArc','合計が21に近いほうが勝ち　・　21をこえたら負け',t);
+  var dl=csEl('div','csHandL','相手（お店の人）',t),dh=csEl('div','csHand','',t),pl=csEl('div','csHandL','あなた',t),ph=csEl('div','csHand','',t);
+  CAS.msg=csEl('div','csMsg','賭ける枚数をえらんで「カードをくばる」を押す',t);
+  var ctl=csEl('div','csCtl','',t),chips=csChips(ctl),deal=csEl('button','csGo','カードをくばる',ctl),hit=csEl('button','csGo alt','もう1枚ひく',ctl),stand=csEl('button','csGo','これで勝負',ctl),dbl=csEl('button','csSub','賭けを2倍にして、あと1枚だけひく',ctl);
   var B=CAS.bj={d:[],p:[],bet:0,on:false,dh:dh,ph:ph,dl:dl,pl:pl};
   function mode(play){chips.style.display=play?'none':'';deal.style.display=play?'none':'';hit.style.display=stand.style.display=play?'':'none';dbl.style.display=play&&B.p.length===2&&csN()>=B.bet?'':'none';}
   function card(){var r=1+Math.floor(Math.random()*13),s=Math.floor(Math.random()*4);return {r:r,s:s};}
   function val(h){var t=0,a=0;h.forEach(function(c){var v=c.r>10?10:c.r;if(c.r===1){a++;v=11;}t+=v;});while(t>21&&a>0){t-=10;a--;}return t;}
   function show(par,c,hid){var e=csEl('div','csCard2'+(hid?' back':(c.s===1||c.s===2?' red':'')),'',par);if(!hid){csEl('b','',['','A','2','3','4','5','6','7','8','9','10','J','Q','K'][c.r],e);csEl('span','',['♠','♥','♦','♣'][c.s],e);}sClick(0,2200,0.12);return e;}
-  function labels(open){dl.textContent='ディーラー'+(B.d.length?'　'+(open?val(B.d):(B.d[0].r>10?10:(B.d[0].r===1?11:B.d[0].r))+' + ?'):'');pl.textContent='あなた'+(B.p.length?'　'+val(B.p):'');}
+  function labels(open){dl.textContent='相手（お店の人）'+(B.d.length?'　合計 '+(open?val(B.d):(B.d[0].r>10?10:(B.d[0].r===1?11:B.d[0].r))+' + ？（1枚はまだ裏向き）'):'');pl.textContent='あなた'+(B.p.length?'　合計 '+val(B.p):'');}
   function end(txt,mul,cls){B.on=false;CAS.busy=false;var win=Math.floor(B.bet*mul);dh.textContent='';B.d.forEach(function(c){show(dh,c);});labels(true);csSay(txt+(win>0?'　+'+win+' 枚':''),cls);csWin(win,mul>2);mode(false);}
   function dealer(){labels(true);dh.textContent='';B.d.forEach(function(c){show(dh,c);});
     (function step(){var dv=val(B.d);if(dv<17){csLater(function(){var c=card();B.d.push(c);show(dh,c);labels(true);step();},reduceMotion?60:620);return;}
-      var pv=val(B.p);csLater(function(){if(dv>21)end('ディーラーがバースト！ 勝ち',2,'win');else if(pv>dv)end('勝ち！',2,'win');else if(pv===dv)end('引き分け（賭けた分がもどります）',1,'');else end('負け…',0,'');},reduceMotion?60:450);})();}
+      var pv=val(B.p);csLater(function(){if(dv>21)end('相手が21をこえた！ あなたの勝ち',2,'win');else if(pv>dv)end('あなたのほうが21に近い！ 勝ち',2,'win');else if(pv===dv)end('同じ数で引き分け（賭けた分がもどります）',1,'');else end('相手のほうが21に近い… 負け',0,'');},reduceMotion?60:450);})();}
   deal.addEventListener('click',function(){if(CAS.busy)return;var bet=CAS.chip;if(!csTake(bet))return;CAS.busy=true;B.on=true;B.bet=bet;B.d=[card(),card()];B.p=[card(),card()];dh.textContent='';ph.textContent='';
     show(ph,B.p[0]);csLater(function(){show(dh,B.d[0]);},180);csLater(function(){show(ph,B.p[1]);},360);csLater(function(){show(dh,B.d[1],true);labels(false);
-      var pb=val(B.p)===21,db=val(B.d)===21;if(pb||db){if(pb&&db)end('どちらもブラックジャック。引き分け',1,'');else if(pb)end('ブラックジャック！',2.5,'jack');else end('ディーラーがブラックジャック…',0,'');return;}
-      csSay('ヒット（もう1枚）か、スタンド（勝負）');mode(true);},540);});
-  hit.addEventListener('click',function(){if(!B.on)return;var c=card();B.p.push(c);show(ph,c);labels(false);mode(true);if(val(B.p)>21)end('バースト… 21をこえました',0,'');else if(val(B.p)===21){mode(false);deal.style.display='none';chips.style.display='none';dealer();}});
+      var pb=val(B.p)===21,db=val(B.d)===21;if(pb||db){if(pb&&db)end('どちらも最初の2枚で21。引き分け',1,'');else if(pb)end('最初の2枚で21！ 大当たり（2.5倍）',2.5,'jack');else end('相手が最初の2枚で21… 負け',0,'');return;}
+      csSay('「もう1枚ひく」か「これで勝負」をえらぶ');mode(true);},540);});
+  hit.addEventListener('click',function(){if(!B.on)return;var c=card();B.p.push(c);show(ph,c);labels(false);mode(true);if(val(B.p)>21)end('21をこえてしまった… 負け',0,'');else if(val(B.p)===21){mode(false);deal.style.display='none';chips.style.display='none';dealer();}});
   stand.addEventListener('click',function(){if(!B.on)return;hit.style.display=stand.style.display=dbl.style.display='none';dealer();});
-  dbl.addEventListener('click',function(){if(!B.on||B.p.length!==2||!csTake(B.bet))return;B.bet*=2;var c=card();B.p.push(c);show(ph,c);labels(false);hit.style.display=stand.style.display=dbl.style.display='none';if(val(B.p)>21)end('バースト… 21をこえました',0,'');else dealer();});
+  dbl.addEventListener('click',function(){if(!B.on||B.p.length!==2||!csTake(B.bet))return;B.bet*=2;var c=card();B.p.push(c);show(ph,c);labels(false);hit.style.display=stand.style.display=dbl.style.display='none';if(val(B.p)>21)end('21をこえてしまった… 負け',0,'');else dealer();});
   mode(false);
+  csHelp(CAS.body,['カードの数字を足して、21に近づけるゲームです。相手（お店の人）より21に近ければ勝ちで、賭けた枚数が2倍になってもどります。','数え方：2〜10はそのまま。J・Q・Kは「10」。Aは「1」か「11」の、つごうのいいほうで数えます。','「カードをくばる」を押すと、あなたに2枚、相手に2枚（1枚は裏向き）くばられます。','合計が小さいと思ったら「もう1枚ひく」。何回でもひけますが、21をこえたらその場で負けです。','もう十分と思ったら「これで勝負」。相手が裏のカードを開け、合計が17以上になるまでひきます。相手が21をこえたら、あなたの勝ち。','最初の2枚でちょうど21（Aと、10・J・Q・Kのどれか）なら大当たりで2.5倍。','「賭けを2倍にして、あと1枚だけひく」は、最初の2枚のときだけ押せます。自信があるとき用です。']);
 }
 function casOpen(inGame){
   if(document.documentElement.classList.contains('m-kids'))return;
@@ -7756,6 +7761,7 @@ function casTick(use){
   '.csB{position:relative;height:34px;border-radius:4px;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.25);color:#fff;font:700 13px var(--body);cursor:pointer;padding:0}','.csB.r{background:#c8202e}','.csB.k{background:#141418}','.csB.g{background:#12964a}','.csB.z{grid-column:1/-1}','.csB.o{height:38px}',
   '.csB i{position:absolute;right:-3px;top:-5px;min-width:20px;height:20px;padding:0 3px;border-radius:10px;background:#f6c945;color:#2a1600;font:900 10px/20px var(--body);font-style:normal;display:none;box-shadow:0 2px 0 rgba(0,0,0,.5);z-index:1}','.csB.on i{display:block}','.csB.hit{outline:3px solid #fff3b0;box-shadow:0 0 14px #ffe27a;z-index:1}',
   '.csNote{font:400 11px/1.5 var(--body);color:rgba(255,255,255,.85)}',
+  '.csHelp{width:100%;max-width:620px;padding:10px 14px 12px;border-radius:12px;background:rgba(0,0,0,.72);border:1px solid rgba(246,201,69,.55);font:400 13px/1.65 var(--body);color:#fff}','.csHelp b{display:block;font:900 14px var(--body);color:#f6c945;margin-bottom:2px}','.csHelp ol{margin:0;padding-left:1.4em}','.csHelp li{margin:2px 0}',
   '.csFelt{width:100%;max-width:620px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 12px 18px;border-radius:16px 16px 200px 200px/16px 16px 90px 90px;background:radial-gradient(ellipse at 50% 0,#1f8a52,#0a3a22 75%);border:4px solid #c9a24a;box-shadow:0 10px 30px rgba(0,0,0,.7),inset 0 0 30px rgba(0,0,0,.4)}',
   '.csArc{font:700 11px var(--body);letter-spacing:.08em;color:#f6dc8a;text-align:center}','.csHandL{font:700 13px var(--body);color:#fff}','.csHand{display:flex;gap:6px;min-height:92px;align-items:center;justify-content:center;flex-wrap:wrap}',
   '.csCard2{width:60px;height:86px;border-radius:7px;background:#fff;color:#16161a;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 8px rgba(0,0,0,.5);animation:csDeal .28s ease-out}','.csCard2 b{font:900 24px/1 var(--body)}','.csCard2 span{font-size:28px;line-height:1}','.csCard2.red{color:#d21f3c}',
