@@ -1214,7 +1214,7 @@ function cparkBuild(AOP,W,roofM){
     }catch(e){}}
   twr(bAt(501,179),[0.1,0.11,0.13],[0.78,0.79,0.81],[0.17,0.19,0.22],[0.13,0.14,0.16]);                       // Center Marks Tower: charcoal with pale grey lines
   twr(bAt(904,-476),[0.15,0.12,0.1],[0.52,0.5,0.47],[0.3,0.37,0.43],[0.9,0.88,0.83]);                          // Teriha The Tower: dark brown, glass balconies, pale crown
-  [bAt(794,-324),bAt(882,-307)].forEach(function(B){twr(B,[0.2,0.15,0.12],[0.62,0.58,0.52],[0.27,0.3,0.34],[0.24,0.17,0.13],[0.34,0.15,0.1]);});   // Ocean & Forest towers: brown with a red-brown stripe up each face
+  [bAt(794,-324),bAt(882,-307)].forEach(function(B){twr(B,[0.2,0.1,0.085],[0.9,0.9,0.88],[0.22,0.2,0.2],[0.22,0.12,0.1],[0.92,0.92,0.9]);});   // Ocean & Forest towers: maroon-brown tile, white balcony edges, a white pier up each face
   /* the shopping mall (from photos): low grey metal-clad blocks, a dark glazed shop front, and a warm timber band under a thin dark canopy */
   var MALL=[];[[427.6,-115.6],[472.6,-115.6],[440,-90],[465,-129],[450,-140],[485,-100]].forEach(function(q){var B=bAt(q[0],q[1]);if(B&&!B.sp&&MALL.indexOf(B)<0)MALL.push(B);});
   MALL.forEach(function(B){try{var p=cpOff(B.p,0.5),O=cpOff(B.p,2.7),mt=Math.min(B.h,10.6);walls(W.plain,cpOff(p,0.05),4.3,mt,[0.4,0.41,0.43],{tile:3,flat:true});walls(W.plain,cpOff(p,0.08),mt-0.5,mt+0.1,[0.12,0.12,0.13],{tile:3,flat:true});slab(B.p,cpOff(p,0.1),mt+0.1,[0.3,0.3,0.31]);
