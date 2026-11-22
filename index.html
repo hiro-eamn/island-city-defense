@@ -7694,7 +7694,7 @@ function casOpen(inGame){
 }
 function casClose(){CAS.tm.forEach(clearTimeout);CAS.tm=[];cancelAnimationFrame(CAS.rraf);CAS.busy=false;CAS.el.classList.add('off');saveMeta();if(CAS.inG){CAS.inG=false;try{if(NET.mode!=='coop')paused=false;}catch(e){}CAS.cd=performance.now()+1200;}try{gcBtnText();}catch(e){}}
 /* a limited-time gift left beside the on-demand bus stop by the start: 100,000 coins, once per device, until the end date */
-var BON={x:0,z:0,g:null,init:false,done:false,n:100000,end:new Date(2026,10,23,23,59,59).getTime(),key:'ic_bon1'};
+var BON={x:0,z:0,g:null,init:false,done:false,n:100000,end:new Date(2026,10,29,23,59,59).getTime(),key:'ic_bon1'};
 function bonTick(use){
   var B=BON;if(B.done)return;
   if(!B.init){B.init=true;var got=false;try{got=localStorage.getItem(B.key)==='1';}catch(e){}
@@ -7703,14 +7703,14 @@ function bonTick(use){
     for(i=0;i<19;i++){var a=i*2.4,r=i<1?0:(i<7?0.34:0.68),n=i<1?9:(i<7?6:3)+(i%3);for(k=0;k<n;k++)q.cyl(0.16,0.16,0.045,14,Math.cos(a)*r,0.03+k*0.05,Math.sin(a)*r,k%2?GC:GD2);}
     q.box(0.9,0.5,0.6,0,0.25,-1.0,[0.25,0.14,0.06]);q.box(0.96,0.08,0.66,0,0.52,-1.0,GC);for(i=0;i<5;i++)q.cyl(0.16,0.16,0.045,14,-0.3+i*0.15,0.6+(i%2)*0.03,-1.0,GC,0.5,i,0);
     var m=new THREE.Mesh(q.geo(),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.25,metalness:0.9,emissive:new THREE.Color(0.25,0.16,0.02)}));m.castShadow=true;g.add(m);
-    var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('10万コイン'),depthTest:false,transparent:true}));sp.scale.set(2.4,0.6,1);sp.position.y=1.7;g.add(sp);var sp2=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('コインキャンペーン実施中'),depthTest:false,transparent:true}));sp2.scale.set(3.6,0.9,1);sp2.position.y=2.35;g.add(sp2);
-    setTimeout(function(){try{if(!B.done&&me.inGame)banner('コインキャンペーン実施中','スタート地点そばの「のるーと のりば」の横に 10万コイン（1人1回・11/23まで）',5);}catch(e){}},3500);
+    var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('10万コイン'),depthTest:false,transparent:true}));sp.scale.set(2.4,0.6,1);sp.position.y=1.7;g.add(sp);var sp2=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('カジノ オープン記念'),depthTest:false,transparent:true}));sp2.scale.set(3.6,0.9,1);sp2.position.y=2.35;g.add(sp2);
+    setTimeout(function(){try{if(!B.done&&me.inGame)banner('カジノ オープン記念 100,000コイン','すぐそばの「のるーと のりば」の横に落ちています（1回限り・11/29まで）',6);}catch(e){}},3500);
     g.position.set(B.x,0,B.z);scene.add(g);B.g=g;}
   if(!B.g)return;B.g.rotation.y+=0.012;
   if(promptAct||myVeh||me.down||Math.hypot(me.x-B.x,me.z-B.z)>2.6)return;
   if(Date.now()>B.end){B.done=true;scene.remove(B.g);B.g=null;return;}
-  promptTxt='コインキャンペーン：10万コインをもらう';promptAct=true;
-  if(use){B.done=true;coins+=B.n;saveMeta();try{localStorage.setItem(B.key,'1');}catch(e){}scene.remove(B.g);B.g=null;banner('コイン +100,000','コインキャンペーン　所持 '+Math.floor(coins)+' 枚',3.5);if(B.tl)B.tl.style.display='none';
+  promptTxt='カジノ オープン記念：100,000コインをひろう';promptAct=true;
+  if(use){B.done=true;coins+=B.n;saveMeta();try{localStorage.setItem(B.key,'1');}catch(e){}scene.remove(B.g);B.g=null;banner('コイン +100,000','カジノは、クルーズ船の中か、タイトル画面の「カジノ」から遊べます',5);if(B.tl)B.tl.style.display='none';
     try{[784,988,1175,1568,1976,2349].forEach(function(f,k){tone({f:f,dur:k===5?0.4:0.09,v:0.06,type:'triangle',t0:k*0.08,rv:0.3});});}catch(e){}}
 }
 function casTick(use){
@@ -7779,16 +7779,18 @@ function casTick(use){
   var cb=document.createElement('button');cb.type='button';cb.id='csBtn';cb.appendChild(document.createElement('i'));cb.appendChild(document.createTextNode('カジノ'));
   if(gb&&gb.parentNode){var row=document.createElement('div');row.id='gcRow';gb.parentNode.insertBefore(row,gb);row.appendChild(gb);row.appendChild(cb);}
   cb.addEventListener('click',function(){casOpen(false);});
-  try{var bgot=localStorage.getItem(BON.key)==='1';if(!bgot&&Date.now()<=BON.end&&gb&&gb.parentNode){var tl=document.createElement('div');tl.id='bonTl';tl.textContent='コインキャンペーン実施中：スタート地点そば「のるーと のりば」の横に 10万コイン（1人1回・11/23まで）';
+  try{var bgot=localStorage.getItem(BON.key)==='1';if(!bgot&&Date.now()<=BON.end&&gb&&gb.parentNode){var tl=document.createElement('div');tl.id='bonTl';tl.textContent='カジノ オープン記念（11/29まで）：出撃すると、戦場に 100,000コイン が落ちています（1回限り）';
     tl.style.cssText='font:700 12.5px/1.4 var(--body);color:#2a1600;background:linear-gradient(90deg,#ffd24a,#ffb000);border-radius:4px;padding:5px 10px;text-align:center';var rw=document.getElementById('gcRow');rw.parentNode.insertBefore(tl,rw);BON.tl=tl;
-      if(!document.documentElement.classList.contains('m-kids')){   // and say so once each time the app is opened
+      var seen=false;try{seen=localStorage.getItem('ic_bonpop1')==='1';localStorage.setItem('ic_bonpop1','1');}catch(e){}
+      if(!seen&&!document.documentElement.classList.contains('m-kids')){   // and say so the first time the app is opened during the week
         var pp=document.createElement('div');pp.id='bonPop';pp.style.cssText='position:fixed;inset:0;z-index:44;display:flex;align-items:center;justify-content:center;background:rgba(4,10,16,.6);padding:16px';
         var bx=document.createElement('div');bx.style.cssText='max-width:420px;width:100%;text-align:center;padding:18px 16px 16px;border-radius:14px;border:2px solid #fff3b0;background:linear-gradient(180deg,#ffd24a,#e89a0a);color:#2a1600;box-shadow:0 12px 40px rgba(0,0,0,.6);font-family:var(--body)';
-        var h1=document.createElement('div');h1.textContent='コインキャンペーン実施中！';h1.style.cssText='font:900 22px/1.3 var(--body)';
-        var h2=document.createElement('div');h2.textContent='10万コイン プレゼント';h2.style.cssText='font:900 30px/1.3 var(--body);color:#7a1c00;margin:4px 0';
-        var h3=document.createElement('div');h3.textContent='スタート地点そばの「のるーと のりば」の横に置いてあります。1人1回、11月23日まで。';h3.style.cssText='font:700 13px/1.6 var(--body)';
-        var ok=document.createElement('button');ok.type='button';ok.textContent='OK';ok.style.cssText='margin-top:12px;height:44px;min-width:140px;border-radius:22px;border:2px solid #2a1600;background:#2a1600;color:#ffe9a8;font:900 16px var(--body);cursor:pointer';
-        bx.appendChild(h1);bx.appendChild(h2);bx.appendChild(h3);bx.appendChild(ok);pp.appendChild(bx);document.body.appendChild(pp);
+        var h1=document.createElement('div');h1.textContent='カジノ オープン記念！　1週間限定';h1.style.cssText='font:900 22px/1.3 var(--body)';
+        var h2=document.createElement('div');h2.textContent='100,000コイン プレゼント';h2.style.cssText='font:900 30px/1.3 var(--body);color:#7a1c00;margin:4px 0';
+        var h3=document.createElement('div');h3.textContent='戦場に出撃すると、100,000コインが落ちています。スタート地点のすぐそば、「のるーと のりば」の横です。受け取りは1回限り、11月29日（日）まで。';h3.style.cssText='font:700 13px/1.6 var(--body)';
+        var h4=document.createElement('div');h4.textContent='ひろったコインは、新しくオープンしたカジノで使えます。カジノは、ゲーム中のクルーズ船の中か、このタイトル画面の「カジノ」ボタンから遊べます。';h4.style.cssText='font:700 12.5px/1.6 var(--body);margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(42,22,0,.14)';
+        var ok=document.createElement('button');ok.type='button';ok.textContent='出撃してひろう！';ok.style.cssText='margin-top:12px;height:44px;min-width:140px;border-radius:22px;border:2px solid #2a1600;background:#2a1600;color:#ffe9a8;font:900 16px var(--body);cursor:pointer';
+        bx.appendChild(h1);bx.appendChild(h2);bx.appendChild(h3);bx.appendChild(h4);bx.appendChild(ok);pp.appendChild(bx);document.body.appendChild(pp);
         var cls=function(){if(pp.parentNode)pp.parentNode.removeChild(pp);};ok.addEventListener('click',cls);pp.addEventListener('click',function(e){if(e.target===pp)cls();});
       }}}catch(e){}
 })();
