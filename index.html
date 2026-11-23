@@ -105,7 +105,14 @@ html,body{height:100%;margin:0;background:var(--sea);color:var(--ink);font-famil
 #card h1 span{margin:7px 0 2px!important;letter-spacing:.2em!important}
 </style>
 <div id="kv"><i></i><b>LASTLAND<small>アイランドシティ最後の灯火</small></b></div>
-<script>(function(){var k=document.getElementById('kv'),t0=Date.now(),d=0;window.kvDone=function(){if(d)return;d=1;setTimeout(function(){k.style.opacity=0;k.style.pointerEvents='none';setTimeout(function(){k.remove();},500);},Math.max(0,1300-(Date.now()-t0)));};setTimeout(window.kvDone,10000);})();</script>
+<script>(function(){var k=document.getElementById('kv'),t0=Date.now(),rdy=0,hold=0,out=0;
+function go(){if(out||!rdy||hold)return;out=1;setTimeout(function(){k.style.opacity=0;k.style.pointerEvents='none';document.documentElement.classList.add('kvout');setTimeout(function(){k.remove();},500);},Math.max(0,1300-(Date.now()-t0)));}
+window.kvDone=function(){rdy=1;go();};setTimeout(function(){rdy=1;hold=0;go();},10000);
+try{if(/github\.io$/.test(location.hostname)&&window.fetch){hold=1;setTimeout(function(){if(hold===1){hold=0;go();}},2600);
+fetch(location.pathname+'?c='+Date.now(),{method:'HEAD',cache:'no-store'}).then(function(r){var lm=Date.parse(r.headers.get('Last-Modified')||''),mine=Date.parse(document.lastModified),last=0;
+if(lm&&mine&&lm-mine>=8000){try{last=+sessionStorage.getItem('ic_upd')||0;}catch(e){}if(last<lm){try{sessionStorage.setItem('ic_upd',String(lm));}catch(e){}hold=2;var u=new URL(location.href);u.searchParams.set('u',String(Math.round(lm/1000)));location.replace(u.href);return;}}
+hold=0;go();}).catch(function(){hold=0;go();});}}catch(e){hold=0;}
+})();</script>
 <canvas id="c"></canvas>
 <div id="touch"></div>
 <div id="vig" class="hud"></div>
@@ -127,7 +134,7 @@ html,body{height:100%;margin:0;background:var(--sea);color:var(--ink);font-famil
 
 <div id="start">
   <div id="card">
-    <h1>LASTLAND<span>アイランドシティ最後の灯火</span></h1>
+    <h1><b>LASTLAND</b><span>アイランドシティ最後の灯火</span></h1>
     <p>実際の地図から再現した福岡市アイランドシティで、押し寄せる無人ロボットを仲間と協力して撃退する試作版です。</p>
     <div id="row">
       <input id="nm" type="text" maxlength="10" placeholder="なまえ" autocomplete="off">
@@ -4718,7 +4725,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月23日','ゲームの名前が「LASTLAND アイランドシティ最後の灯火」になりました。開いたときに、新しいキービジュアルが出てからタイトル画面に切り替わります。タイトル画面の色も、夜空とオーロラ、街明かりの金色に合わせました'],
+  [['2026年11月23日','ゲームの名前が「LASTLAND アイランドシティ最後の灯火」になりました。開いたときに、新しいキービジュアルが出てからタイトル画面に切り替わります。タイトル画面の色も、夜空とオーロラ、街明かりの金色に合わせました（ゆっくり動くオーロラと星、金色に光るロゴ）。新しい版があるときは、キービジュアルの裏で読み直すようにしました'],
    ['2026年11月23日','カジノのスロットを本格的に作り直し：リールを自分のボタンで止める（おまかせも選べる）、絵のならびが決まった本物式のリール、777確定のBONUSランプ、毎日変わる設定1〜6（次の日に発表）、差枚のグラフ、777の履歴、スペック表。777が前より出やすくなりました（配当は同じ）'],
    ['2026年11月23日','カジノのスロットに「今日のデータ」：回転数（777が出ると0にもどる）、今日回した数、それぞれの当たりが出た回数、差枚。毎日0時にリセット'],
    ['2026年11月22日','カジノ：ルーレットに「これまでに出た数字」の履歴（20回分）／スロットに演出を追加（チャンス予告、リーチ、当たりの絵が光る、大当たりの画面）。演出は「あり・なし」を選べる'],
@@ -9931,28 +9938,57 @@ function frame(tms,manual){
 requestAnimationFrame(frame);
 })();
 
-/* ---------- title screen theme: night sky, aurora and city-light gold, taken from the key visual (looks only) ---------- */
+/* ---------- title screen theme: night sky, aurora and city-light gold, taken from the key visual (looks only; no layout or rule changes) ---------- */
 (function(){
   try{var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap';document.head.appendChild(l);}catch(e){}
   var SERIF='"Cinzel","Trajan Pro","Times New Roman","Hiragino Mincho ProN","Yu Mincho",serif',MIN='"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
+  var stars=[],sx=[7,19,31,44,58,69,83,94,13,37,52,76,88,25,63],sy=[6,15,9,22,5,17,11,26,3,13,24,8,20,27,2],q;
+  for(q=0;q<sx.length;q++)stars.push('radial-gradient(circle at '+sx[q]+'% '+sy[q]+'%,rgba(255,255,255,'+(q%3?'.75':'.95')+') 0 '+(q%4?'.7':'1.1')+'px,transparent '+(q%4?'1.4':'2')+'px)');
   var css=[
-    '#start{background:radial-gradient(120% 50% at 22% -6%,rgba(64,190,255,.34),transparent 62%),radial-gradient(95% 44% at 88% 2%,rgba(146,96,245,.36),transparent 64%),linear-gradient(180deg,rgba(10,13,46,.58) 0%,rgba(9,11,38,.74) 36%,rgba(5,7,24,.97) 80%)!important}',
-    '#card h1{font-family:'+SERIF+'!important;font-weight:700!important;letter-spacing:.05em!important;color:#fff6e4!important;text-shadow:0 2px 0 rgba(0,0,0,.5),0 0 22px rgba(255,196,120,.38),0 0 44px rgba(90,170,255,.25)!important;background:linear-gradient(90deg,rgba(255,170,80,0),#ffcf8a 12%,#fff4d8 30%,rgba(255,180,90,.55) 60%,rgba(255,170,80,0)) left bottom/100% 2px no-repeat!important}',
-    '#card h1 span{font-family:'+MIN+'!important;font-weight:600!important;color:#f3e3c2!important;letter-spacing:.26em!important;text-shadow:0 1px 3px rgba(0,0,0,.8)!important}#card h1 span::before{display:none!important}',
+    /* sky */
+    '#start{background:linear-gradient(180deg,rgba(10,13,46,.6) 0%,rgba(9,11,38,.76) 36%,rgba(5,7,24,.97) 80%)!important}',
+    '#tbg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}#tbg i{position:absolute;display:block;will-change:transform,opacity}',
+    '#tbg .a{left:-30%;top:-22%;width:110%;height:60%;background:radial-gradient(closest-side,rgba(60,200,255,.42),rgba(60,200,255,.12) 55%,transparent);animation:tbA 17s ease-in-out infinite alternate}',
+    '#tbg .b{right:-34%;top:-20%;width:105%;height:58%;background:radial-gradient(closest-side,rgba(150,96,255,.5),rgba(150,96,255,.14) 55%,transparent);animation:tbB 23s ease-in-out infinite alternate}',
+    '#tbg .c{left:10%;top:-30%;width:80%;height:52%;background:radial-gradient(closest-side,rgba(90,255,220,.16),transparent);animation:tbA 29s ease-in-out infinite alternate-reverse}',
+    '#tbg .s{inset:0;background:'+stars.join(',')+';animation:tbS 5.5s ease-in-out infinite alternate}',
+    '#tbg .g{left:0;right:0;bottom:0;height:34%;background:radial-gradient(60% 100% at 50% 100%,rgba(255,170,80,.10),transparent 70%)}',
+    '@keyframes tbA{from{transform:translate3d(-4%,0,0) scale(1)}to{transform:translate3d(9%,5%,0) scale(1.14)}}',
+    '@keyframes tbB{from{transform:translate3d(4%,2%,0) scale(1.1)}to{transform:translate3d(-10%,-2%,0) scale(.96)}}',
+    '@keyframes tbS{from{opacity:.45}to{opacity:1}}',
+    /* logo */
+    '#card h1{font-family:'+SERIF+'!important;font-weight:700!important;font-size:42px!important;line-height:1!important;letter-spacing:.05em!important;background:none!important;padding-bottom:0!important;text-shadow:none!important}',
+    '#card h1 b{display:inline-block;font-weight:700;color:#fff3d6;background:linear-gradient(100deg,rgba(255,255,255,0) 42%,rgba(255,255,255,.95) 50%,rgba(255,255,255,0) 58%) 130% 0/260% 100% no-repeat,linear-gradient(180deg,#ffffff 0%,#fff4dc 36%,#f0c486 64%,#fff1d2 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 0 16px rgba(255,190,110,.4));animation:tLg 7s ease-in-out 1.6s infinite}',
+    '#card h1 b::after{content:"";display:block;height:2px;margin:7px -6px 0;border-radius:2px;background:linear-gradient(90deg,rgba(255,170,80,0),#ffb866 22%,#fff8e4 50%,#ffb866 78%,rgba(255,170,80,0));box-shadow:0 0 10px rgba(255,176,90,.9),0 0 22px rgba(255,150,60,.45)}',
+    '@keyframes tLg{0%,62%{background-position:130% 0,0 0}80%,100%{background-position:-60% 0,0 0}}',
+    '#card h1 span{display:block!important;margin:9px 0 2px!important;font:600 13.5px/1 '+MIN+'!important;color:#f3e3c2!important;letter-spacing:.3em!important;text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 12px rgba(120,170,255,.35)!important}#card h1 span::before{display:none!important}',
     '#card p{color:#b7bfe2!important}',
-    '#card::before{background:linear-gradient(90deg,#ffe2a6,#f6b048)!important;color:#1d1203!important}',
-    '#go{background:linear-gradient(180deg,#ffe6ae,#f3a93a)!important;color:#1d1203!important;box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 24px rgba(255,180,80,.32),inset 0 1px 0 rgba(255,255,255,.55)!important}',
-    '#coopBtn{background:linear-gradient(180deg,#8fe8ff,#3d8ff0)!important;color:#03122b!important;box-shadow:0 6px 16px rgba(0,0,0,.4),0 0 20px rgba(70,180,255,.28),inset 0 1px 0 rgba(255,255,255,.5)!important}',
-    '#vsBtn{background:linear-gradient(180deg,#c3a6ff,#7748e2)!important;color:#fff!important;box-shadow:0 6px 16px rgba(0,0,0,.4),0 0 20px rgba(150,100,255,.3),inset 0 1px 0 rgba(255,255,255,.4)!important}#vsBtn *{color:#fff!important}#vsBtn::before{--c:#fff}',
-    '#card .g2.t3 .sbtn.sbtn{background:linear-gradient(180deg,rgba(38,42,104,.8),rgba(11,13,44,.92))!important;border-color:rgba(150,170,255,.34)!important}',
-    '#card .g2.t3 #kidsBtn.sbtn{border-color:rgba(255,214,140,.6)!important}#card .g2.t3 #shiftBtn.sbtn{border-color:rgba(110,210,255,.55)!important}',
-    '#card .q .sbtn{background:rgba(12,14,46,.62)!important;border-color:rgba(150,170,255,.24)!important;color:#c9cff0!important}#card .q .sbtn::before{--c:#c9cff0}',
+    '#card::before{background:linear-gradient(90deg,#ffe2a6,#f6b048)!important;color:#1d1203!important;box-shadow:0 0 14px rgba(255,180,80,.35)}',
+    /* main buttons */
+    '#go{background:linear-gradient(105deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.6) 50%,rgba(255,255,255,0) 60%) 140% 0/240% 100% no-repeat,linear-gradient(180deg,#ffeab8,#f3a93a)!important;color:#1d1203!important;box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 26px rgba(255,180,80,.36),inset 0 1px 0 rgba(255,255,255,.65),inset 0 -2px 0 rgba(140,70,0,.28)!important;animation:tGo 5.5s ease-in-out 2.4s infinite}',
+    '@keyframes tGo{0%,70%{background-position:140% 0,0 0}90%,100%{background-position:-50% 0,0 0}}',
+    '#coopBtn{background:linear-gradient(180deg,#9aecff,#3d8ff0)!important;color:#03122b!important;box-shadow:0 6px 16px rgba(0,0,0,.45),0 0 22px rgba(70,180,255,.3),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 0 rgba(0,40,120,.3)!important}',
+    '#vsBtn{background:linear-gradient(180deg,#c9aeff,#7446e0)!important;color:#fff!important;box-shadow:0 6px 16px rgba(0,0,0,.45),0 0 22px rgba(150,100,255,.34),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 0 rgba(40,0,110,.35)!important}#vsBtn *{color:#fff!important}#vsBtn::before{--c:#fff}',
+    '#go,#coopBtn,#vsBtn{transition:transform .08s,filter .12s}#go:active,#coopBtn:active,#vsBtn:active{transform:translateY(1px) scale(.985);filter:brightness(.94)}',
+    /* panels */
+    '#card .g2.t3 .sbtn.sbtn{background:linear-gradient(180deg,rgba(44,48,118,.82),rgba(12,14,48,.94))!important;border-color:rgba(160,178,255,.36)!important;box-shadow:0 4px 14px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.14)!important;transition:transform .08s,border-color .15s}',
+    '#card .g2.t3 #kidsBtn.sbtn{border-color:rgba(255,214,140,.62)!important}#card .g2.t3 #shiftBtn.sbtn{border-color:rgba(110,210,255,.58)!important}',
+    '#card .q .sbtn{background:linear-gradient(180deg,rgba(22,25,70,.66),rgba(10,12,40,.7))!important;border-color:rgba(150,170,255,.24)!important;color:#c9cff0!important;transition:transform .08s,border-color .15s}#card .q .sbtn::before{--c:#c9cff0}',
+    '#card .sbtn:active{transform:translateY(1px) scale(.985)}',
+    '@media (hover:hover){#card .sbtn:hover{border-color:rgba(255,220,160,.7)!important}#go:hover,#coopBtn:hover,#vsBtn:hover{filter:brightness(1.06)}}',
     '#bonTl{background:linear-gradient(90deg,rgba(255,196,110,.22),rgba(255,196,110,.07))!important;border-color:rgba(255,214,140,.7)!important;color:#ffe6b4!important}',
-    '#gcBtn,#csBtn{box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12)!important}',
-    '#meBtn{background:rgba(12,14,46,.72)!important;border-color:rgba(150,170,255,.34)!important}',
-    '#credit{color:#8f97c2!important}#netline{color:#7fe0c0!important}'
+    '#gcBtn,#csBtn{box-shadow:0 4px 12px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.14)!important}',
+    '#meBtn{background:linear-gradient(180deg,rgba(30,33,88,.8),rgba(12,14,46,.82))!important;border-color:rgba(160,178,255,.4)!important;box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12)}',
+    '#credit{color:#8f97c2!important}#netline{color:#7fe0c0!important}',
+    /* entrance, once the key visual fades (buttons stay tappable the whole time) */
+    '@keyframes tIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}',
+    'html.kvout #card h1,html.kvout #card p,html.kvout #row,html.kvout #card .acts,html.kvout #card .g2,html.kvout #bonTl,html.kvout #gcRow{animation:tIn .5s cubic-bezier(.2,.7,.2,1) backwards}',
+    'html.kvout #card p{animation-delay:.05s}html.kvout #row{animation-delay:.1s}html.kvout #card .acts{animation-delay:.15s}html.kvout #card .g2.t3{animation-delay:.2s}html.kvout #card .g2.q{animation-delay:.25s}html.kvout #bonTl{animation-delay:.3s}html.kvout #gcRow{animation-delay:.35s}',
+    '@media (orientation:landscape) and (max-height:540px){#card h1{font-size:27px!important}#card h1 b::after{margin-top:5px}#card h1 span{font-size:11.5px!important;margin-top:6px!important}}',
+    '@media (prefers-reduced-motion:reduce){#tbg i,#card h1 b,#go,html.kvout #card *,html.kvout #row,html.kvout #bonTl,html.kvout #gcRow{animation:none!important}}'
   ];
   var st=document.createElement('style');st.textContent=css.join('\n');document.head.appendChild(st);
+  try{var s0=document.getElementById('start'),bg=document.createElement('div');bg.id='tbg';bg.setAttribute('aria-hidden','true');['a','b','c','s','g'].forEach(function(n){var e=document.createElement('i');e.className=n;bg.appendChild(e);});s0.insertBefore(bg,s0.firstChild);}catch(e){}
 })();
 
 ;try{kvDone();}catch(e){}
