@@ -2539,6 +2539,7 @@ var pviews=new Map(),soldierMat=stdMat({roughness:0.85,metalness:0.02});
 function labelTex(name){
   var c=document.createElement('canvas');c.width=256;c.height=64;var g=c.getContext('2d');
   g.font='bold 34px sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=6;g.strokeStyle='rgba(0,0,0,.8)';
+  var tw=g.measureText(name).width;if(tw>240){g.font='bold '+Math.max(14,Math.floor(34*240/tw))+'px sans-serif';g.lineWidth=5;}   // long names shrink to fit instead of being cut off at the sides
   g.strokeText(name,128,32);g.fillStyle='#fff';g.fillText(name,128,32);
   return new THREE.CanvasTexture(c);
 }
@@ -4738,7 +4739,7 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月24日','みんなのランキングの「なまえ」が「ななし」になったり、マイページで変えた名前が出なかったりするのを直しました。開き直すと正しい名前にもどります'],
+  [['2026年11月24日','みんなのランキングの「なまえ」が「ななし」になったり、マイページで変えた名前が出なかったりするのを直しました。開き直すと正しい名前にもどります／一緒に戦う仲間とお助けロボットの頭の上の名前を小さく。長い名前は左右が切れずに収まるように'],
    ['2026年11月23日','ゲームの名前が「LASTLAND アイランドシティ最後の灯火」になりました。開いたときに、新しいキービジュアルが出てからタイトル画面に切り替わります。タイトル画面の色も、夜空とオーロラ、街明かりの金色に合わせました（ゆっくり動くオーロラと星、金色に光るロゴ）。新しい版があるときは、キービジュアルの裏で読み直すようにしました'],
    ['2026年11月23日','カジノのスロットを本格的に作り直し：リールを自分のボタンで止める（おまかせも選べる）、絵のならびが決まった本物式のリール、777確定のBONUSランプ、毎日変わる設定1〜6（次の日に発表）、差枚のグラフ、777の履歴、スペック表。777が前より出やすくなりました（配当は同じ）'],
    ['2026年11月23日','カジノのスロットに「今日のデータ」：回転数（777が出ると0にもどる）、今日回した数、それぞれの当たりが出た回数、差枚。毎日0時にリセット'],
@@ -5280,11 +5281,14 @@ function mapDots(g,X,Z,big,W,H){ // enemies as outlined diamonds, team-mates as 
 var HERO=(function(){
   var on=false;try{on=localStorage.getItem('ic_hero')==='1';}catch(e){}
   var H={on:on,made:false,x:0,z:0,y:0,yaw:0,ph:0,amp:0,shotT:0,punchT:0,armT:0,aim:0,hidden:true,kills:0},G=null,P=null,RP=null,RG=null,HUM=null,kind='',HB=1.12,W=null,DUM={rotation:{x:0}},beam=null,beamT=0,tgt=new THREE.Vector3();
+  function labFit(sp,w){ // the name over a helper's head: small, and smaller still when they stand right next to you, so it never fills the view
+    sp.scale.set(w,w*0.25,1);sp.onBeforeRender=function(r,s,cam){var p=this.parent;if(!p)return;var k=clamp(Math.hypot(cam.position.x-p.position.x,cam.position.z-p.position.z)/7,0.45,1);this.scale.set(w*k,w*0.25*k,1);};
+  }
   function body(){ // the robot, or the companion you chose in the picture book: a person in the colours of their picture, with their own weapon
     var c=(typeof CGA!=='undefined'&&!KIDS.on)?CGA.cur():null,k=c?c.id:'robot';if(k===kind)return;kind=k;
     if(HUM){scene.remove(HUM.g);HUM=null;}RG.visible=false;
     if(c){makePlayer.ov=CGA.cols(c);try{HUM=makePlayer('cmp'+c.id,c.name,CGA.face(c),0);}catch(e){HUM=null;}makePlayer.ov=null;}
-    if(HUM){HUM.g.visible=false;G=HUM.g;P={hips:HUM.hips,lL:{th:HUM.lL.th,sn:HUM.lL.sh},lR:{th:HUM.lR.th,sn:HUM.lR.sh},aL:DUM,aR:DUM};HB=0.95;W=CGA.wpn(c);beam.material.color.setRGB(2.2,1.7,0.8);
+    if(HUM){HUM.g.visible=false;try{HUM.sp.position.y=2.08;labFit(HUM.sp,1.2);}catch(e){}G=HUM.g;P={hips:HUM.hips,lL:{th:HUM.lL.th,sn:HUM.lL.sh},lR:{th:HUM.lR.th,sn:HUM.lR.sh},aL:DUM,aR:DUM};HB=0.95;W=CGA.wpn(c);beam.material.color.setRGB(2.2,1.7,0.8);
       if(me.inGame)banner(c.name+' が一緒に戦います',c.role+'・'+c.weapon,3);}
     else{G=RG;P=RP;HB=1.12;W=null;kind='robot';beam.material.color.setRGB(0.4,1.8,1.0);}
     H.hidden=true;
@@ -5312,7 +5316,7 @@ var HERO=(function(){
       q=new GB();q.tube([0,0,0],[0,-0.46,0],0.09,0.075,WH,9);q.box(0.15,0.12,0.32,0,-0.52,-0.06,NV);q.box(0.16,0.03,0.33,0,-0.565,-0.06,DK);mesh(q,sn);
       th.add(sn);hips.add(th);return {th:th,sn:sn};
     }
-    var lab=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('ガーディアン'),depthTest:false,transparent:true}));lab.scale.set(1.5,0.375,1);lab.position.y=2.5;g.add(lab);
+    var lab=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('ガーディアン'),depthTest:false,transparent:true}));lab.position.y=2.45;labFit(lab,1.2);g.add(lab);
     P={hips:hips,aL:arm(-1),aR:arm(1),lL:leg(-1),lR:leg(1)};
     var bg=new THREE.CylinderGeometry(0.045,0.045,1,6);bg.rotateX(HP);beam=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:new THREE.Color(0.4,1.8,1.0),transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false}));beam.visible=false;beam.frustumCulled=false;scene.add(beam);
     g.visible=false;scene.add(g);G=g;RG=g;RP=P;H.made=true;
