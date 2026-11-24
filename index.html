@@ -4738,7 +4738,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月23日','ゲームの名前が「LASTLAND アイランドシティ最後の灯火」になりました。開いたときに、新しいキービジュアルが出てからタイトル画面に切り替わります。タイトル画面の色も、夜空とオーロラ、街明かりの金色に合わせました（ゆっくり動くオーロラと星、金色に光るロゴ）。新しい版があるときは、キービジュアルの裏で読み直すようにしました'],
+  [['2026年11月24日','みんなのランキングの「なまえ」が「ななし」になったり、マイページで変えた名前が出なかったりするのを直しました。開き直すと正しい名前にもどります'],
+   ['2026年11月23日','ゲームの名前が「LASTLAND アイランドシティ最後の灯火」になりました。開いたときに、新しいキービジュアルが出てからタイトル画面に切り替わります。タイトル画面の色も、夜空とオーロラ、街明かりの金色に合わせました（ゆっくり動くオーロラと星、金色に光るロゴ）。新しい版があるときは、キービジュアルの裏で読み直すようにしました'],
    ['2026年11月23日','カジノのスロットを本格的に作り直し：リールを自分のボタンで止める（おまかせも選べる）、絵のならびが決まった本物式のリール、777確定のBONUSランプ、毎日変わる設定1〜6（次の日に発表）、差枚のグラフ、777の履歴、スペック表。777が前より出やすくなりました（配当は同じ）'],
    ['2026年11月23日','カジノのスロットに「今日のデータ」：回転数（777が出ると0にもどる）、今日回した数、それぞれの当たりが出た回数、差枚。毎日0時にリセット'],
    ['2026年11月22日','カジノ：ルーレットに「これまでに出た数字」の履歴（20回分）／スロットに演出を追加（チャンス予告、リーチ、当たりの絵が光る、大当たりの画面）。演出は「あり・なし」を選べる'],
@@ -5442,7 +5443,7 @@ function worldAuth(){ // an id token for this browser's anonymous account, made 
   else p=wJson('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+WORLD.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'}).then(function(j){return {u:j.localId,r:j.refreshToken,t:j.idToken,e:+j.expiresIn};});
   return p.then(function(x){WORLD.a={u:x.u,r:x.r};WORLD.tok=x.t;WORLD.exp=Date.now()+((x.e||3600)-120)*1000;try{localStorage.setItem('ic_wa',JSON.stringify(WORLD.a));}catch(e){}return x.t;});
 }
-function worldBest(){var r=STATS.recs[0]||{c:0,w:0,k:0,m:0};var c=clamp(r.c|0,0,99),w=clamp(r.w|0,0,999),k=clamp(r.k|0,0,99999),n=String(me.name||'ななし').slice(0,12);return {n:n,c:c,w:w,k:k,s:c*1e8+w*1e5+k,m:r.m?1:0,p:clamp(STATS.stock|0,0,999999),d:danOf(STATS.sp),f:myFace.join(','),g:clamp(Math.floor(coins)||0,0,99999999)};}
+function worldBest(){var r=STATS.recs[0]||{c:0,w:0,k:0,m:0};var c=clamp(r.c|0,0,99),w=clamp(r.w|0,0,999),k=clamp(r.k|0,0,99999),nmE=document.getElementById('nm'),n=String((nmE&&nmE.value||'').trim().slice(0,10)||me.name||'ななし').slice(0,12);return {n:n,c:c,w:w,k:k,s:c*1e8+w*1e5+k,m:r.m?1:0,p:clamp(STATS.stock|0,0,999999),d:danOf(STATS.sp),f:myFace.join(','),g:clamp(Math.floor(coins)||0,0,99999999)};}
 function worldMaybe(){ // send only when your best game or your name has changed, and never more often than every 30 seconds
   if(!worldOk()||!WORLD.on||WORLD.busy||(practice&&!SHIFT.on))return;var b=worldBest(),hasK=b.k>=5||b.c>0;if(!hasK&&(WORLD.old||b.p<6))return;
   var sig=b.n+'|'+b.s+'|'+b.m+(WORLD.old?'':'|'+b.p+'|'+b.d+'|'+b.f+(WORLD.noG?'':'|'+b.g));if(sig===WORLD.sent||Date.now()<WORLD.t)return;
@@ -9690,7 +9691,7 @@ var FOGD=0.00021;
   el('p','','mnote','なまえとアバターは、この端末のこのブラウザに保存されます。',mp.body);
   function meShow(){var n=(nm.value||'').trim();if(ml.textContent!==(n||'マイページ'))ml.textContent=n||'マイページ';var pv0=av&&av.querySelector('canvas');if(pv0){try{var g2=mc.getContext('2d');g2.clearRect(0,0,68,68);g2.drawImage(pv0,0,0,pv0.width,pv0.width,0,0,68,68);}catch(e){}}}
   mi.addEventListener('input',function(){nm.value=mi.value.slice(0,10);var n=nm.value.trim();try{if(n)localStorage.setItem('ic_name',n);}catch(e){}meShow();});
-  nm.addEventListener('input',meShow);meB.addEventListener('click',function(){mi.value=nm.value;mp.open();});mp.onClose=meShow;
+  nm.addEventListener('input',meShow);meB.addEventListener('click',function(){mi.value=nm.value;mp.open();});mp.onClose=function(){meShow();try{WORLD.t=0;worldMaybe();}catch(e){}};
   if(nm.value){nm.style.display='none';goB.style.flex='1';}
   more.remove();a2.remove();meShow();setInterval(function(){if(!$('start').classList.contains('off'))meShow();},1000);
   function pop(id,title){
