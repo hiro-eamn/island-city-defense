@@ -109,7 +109,7 @@ html,body{height:100%;margin:0;background:var(--sea);color:var(--ink);font-famil
 @keyframes kvX{0%{transform:scale(1.07);opacity:1;filter:brightness(1)}45%{opacity:1;filter:brightness(1.9)}100%{transform:scale(1.65);opacity:0;filter:brightness(2.6)}}
 @keyframes kvY{0%{transform:scale(1.07);opacity:1}100%{transform:scale(1.5);opacity:0}}
 @keyframes kvF{0%{opacity:0;transform:scale(.3,.6)}30%{opacity:1;transform:scale(1.2,1)}100%{opacity:0;transform:scale(2.6,2.4)}}
-@media (orientation:portrait){#kv i{background-size:cover;background-position:center 40%}}
+@media (orientation:portrait){#kv i{background-size:cover;background-position:center 40%}#kv::before{display:none}}
 @media (orientation:landscape) and (max-height:540px){#kv::before{inset:0;filter:none;background-position:center 62%}#kv i{display:none}#kv u{transform-origin:28% 14%;background:radial-gradient(ellipse 50% 60% at 28% 14%,rgba(255,236,200,.95),rgba(255,180,90,.45) 45%,rgba(255,180,90,0) 75%)}
 #kv.out::before{animation:kvX .9s cubic-bezier(.55,0,.85,.35) forwards}
 #kv b{display:block;position:absolute;left:0;width:56%;top:calc(12px + env(safe-area-inset-top,0px));text-align:center;font:400 38px/1 "Cinzel","Times New Roman","Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.06em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.85),0 0 26px rgba(255,170,60,.35)}
@@ -123,7 +123,7 @@ iv=setInterval(go,100);k.addEventListener('pointerdown',function(){skip=1;go();}
 window.kvDone=function(){rdy=1;go();};setTimeout(function(){rdy=1;hold=0;skip=1;go();},10000);
 try{if(/github\.io$/.test(location.hostname)&&window.fetch){hold=1;setTimeout(function(){if(hold===1){hold=0;go();}},2600);
 fetch(location.pathname+'?c='+Date.now(),{method:'HEAD',cache:'no-store'}).then(function(r){var lm=Date.parse(r.headers.get('Last-Modified')||''),mine=Date.parse(document.lastModified),last=0;
-if(lm&&mine&&lm-mine>=8000){try{last=+sessionStorage.getItem('ic_upd')||0;}catch(e){}if(last<lm){try{sessionStorage.setItem('ic_upd',String(lm));}catch(e){}hold=2;var u=new URL(location.href);u.searchParams.set('u',String(Math.round(lm/1000)));location.replace(u.href);return;}}
+if(lm&&mine&&lm-mine>=8000){try{last=+sessionStorage.getItem('ic_upd')||0;}catch(e){}if(last<lm&&new URL(location.href).searchParams.get('u')!==String(Math.round(lm/1000))){try{sessionStorage.setItem('ic_upd',String(lm));}catch(e){}hold=2;var u=new URL(location.href);u.searchParams.set('u',String(Math.round(lm/1000)));location.replace(u.href);return;}}
 hold=0;go();}).catch(function(){hold=0;go();});}}catch(e){hold=0;}
 })();</script>
 <canvas id="c"></canvas>
@@ -4739,7 +4739,8 @@ var elGoal,elClear,elFlash,elWear,bBand,bKit;
   bBand.addEventListener('pointerdown',function(e){e.preventDefault();useBand();});bKit.addEventListener('pointerdown',function(e){e.preventDefault();useKit();});
   // what changed and when, on the start card
   var h=el('div','hist','',null,null),card=$('card');card.insertBefore(h,$('how'));
-  [['2026年11月24日','みんなのランキングの「なまえ」が「ななし」になったり、マイページで変えた名前が出なかったりするのを直しました。開き直すと正しい名前にもどります／一緒に戦う仲間とお助けロボットの頭の上の名前を小さく。長い名前は左右が切れずに収まるように'],
+  [['2026年11月25日','タイトル画面を軽くしました：タイトルが出ている間は裏の3Dの島を描くのを休み、スマホでは背景の絵を止め絵に。スマホで開けない・落ちる・熱くなるのを防ぎます'],
+   ['2026年11月24日','みんなのランキングの「なまえ」が「ななし」になったり、マイページで変えた名前が出なかったりするのを直しました。開き直すと正しい名前にもどります／一緒に戦う仲間とお助けロボットの頭の上の名前を小さく。長い名前は左右が切れずに収まるように'],
    ['2026年11月23日','ゲームの名前が「LASTLAND アイランドシティ最後の灯火」になりました。開いたときに、新しいキービジュアルが出てからタイトル画面に切り替わります。タイトル画面の色も、夜空とオーロラ、街明かりの金色に合わせました（ゆっくり動くオーロラと星、金色に光るロゴ）。新しい版があるときは、キービジュアルの裏で読み直すようにしました'],
    ['2026年11月23日','カジノのスロットを本格的に作り直し：リールを自分のボタンで止める（おまかせも選べる）、絵のならびが決まった本物式のリール、777確定のBONUSランプ、毎日変わる設定1〜6（次の日に発表）、差枚のグラフ、777の履歴、スペック表。777が前より出やすくなりました（配当は同じ）'],
    ['2026年11月23日','カジノのスロットに「今日のデータ」：回転数（777が出ると0にもどる）、今日回した数、それぞれの当たりが出た回数、差枚。毎日0時にリセット'],
@@ -7918,7 +7919,7 @@ function casTick(use){
   try{if(!/github\.io$/.test(location.hostname)||!window.fetch)return;
     var chk=function(){if(me.inGame)return;fetch(location.pathname+'?c='+Date.now(),{method:'HEAD',cache:'no-store'}).then(function(r){
       var lm=Date.parse(r.headers.get('Last-Modified')||''),mine=Date.parse(document.lastModified),last=0;if(!lm||!mine||lm-mine<8000)return;
-      try{last=+sessionStorage.getItem('ic_upd')||0;}catch(e){}if(last>=lm||me.inGame)return;try{sessionStorage.setItem('ic_upd',String(lm));}catch(e){}
+      try{last=+sessionStorage.getItem('ic_upd')||0;}catch(e){}if(last>=lm||me.inGame||new URL(location.href).searchParams.get('u')===String(Math.round(lm/1000)))return;try{sessionStorage.setItem('ic_upd',String(lm));}catch(e){}
       var u=new URL(location.href);u.searchParams.set('u',String(Math.round(lm/1000)));location.replace(u.href);}).catch(function(){});};
     setTimeout(chk,2500);document.addEventListener('visibilitychange',function(){if(!document.hidden)chk();});
   }catch(e){}
@@ -9854,6 +9855,8 @@ function frame(tms,manual){
   if(paused&&me.inGame&&NET.mode!=='coop'){now-=dt;drawScene(true);return;}
   readPeers();
   if(!me.inGame){
+    var ts=document.getElementById('start');   // the title screen is a picture now and hides the island completely: after a few frames (so the shaders are ready for the game) the 3D view rests, which keeps phones cool and stops them from running out of memory
+    if(ts&&!ts.classList.contains('off')&&document.getElementById('tbg')){if(frame.tn>5)return;frame.tn=(frame.tn||0)+1;}else frame.tn=0;
     if(!reduceMotion)orbit+=dt*0.07;
     camera.position.set(Math.sin(orbit)*2500,1050,Math.cos(orbit)*2100);camera.lookAt(0,0,0);
     drawScene(false);return;
@@ -9977,6 +9980,8 @@ requestAnimationFrame(frame);
     '@keyframes tbA{from{transform:translate3d(-4%,0,0) scale(1)}to{transform:translate3d(9%,5%,0) scale(1.14)}}',
     '@keyframes tbB{from{transform:translate3d(4%,2%,0) scale(1.1)}to{transform:translate3d(-10%,-2%,0) scale(.96)}}',
     '@keyframes tbS{from{opacity:.45}to{opacity:1}}',
+    /* phones: the same picture, held still, without the blended moving layers (lighter on memory and battery) */
+    '@media (hover:none),(max-width:700px){#tbg i{will-change:auto}#tbg .k{inset:0;animation:none}#tbg .a,#tbg .b{animation:none;mix-blend-mode:normal}}',
     /* logo */
     '#card h1{font-family:'+SERIF+'!important;font-weight:700!important;font-size:42px!important;line-height:1!important;letter-spacing:.05em!important;background:none!important;padding-bottom:0!important;text-shadow:none!important}',
     '#card h1 b{display:inline-block;font-weight:700;color:#fff3d6;background:linear-gradient(100deg,rgba(255,255,255,0) 42%,rgba(255,255,255,.95) 50%,rgba(255,255,255,0) 58%) 130% 0/260% 100% no-repeat,linear-gradient(180deg,#ffffff 0%,#fff4dc 36%,#f0c486 64%,#fff1d2 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 0 16px rgba(255,190,110,.4));animation:tLg 7s ease-in-out 1.6s infinite}',
